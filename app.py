@@ -3,18 +3,34 @@ import pandas as pd
 import plotly.express as px
 
 # 1. 설정
-GITHUB_USER = "sharpkbju-bot" # 본인 ID 확인!
+GITHUB_USER = "sharpkbju-bot" 
 BASE_URL = f"https://raw.githubusercontent.com/{GITHUB_USER}/kb-realestate-app/main/data/"
 
 st.set_page_config(page_title="내 부동산 자산 관리 앱", layout="wide")
 st.title("📊 KB 부동산 주간 지표 분석기")
 
-# 2. 데이터 로드 및 정제 함수 (중복 제거 로직 포함)
+# 2. 데이터 로드 및 정제 함수 (인코딩 자동 감지 추가)
 @st.cache_data
 def load_kb_data(file_name):
     url = BASE_URL + file_name
+    
+    # [핵심] 여러 인코딩 방식을 순차적으로 시도합니다.
+    encodings = ['utf-8', 'cp949', 'euc-kr']
+    df_raw = None
+    
+    for enc in encodings:
+        try:
+            df_raw = pd.read_csv(url, encoding=enc, header=None)
+            break # 읽기에 성공하면 루프 탈출
+        except:
+            continue
+            
+    if df_raw is None:
+        st.error(f"파일({file_name})을 읽을 수 없습니다. 인코딩 형식을 확인해 주세요.")
+        return None
+
     try:
-        df_raw = pd.read_csv(url, encoding='cp949', header=None)
+        # 컬럼명 조립 및 중복 제거 로직 (이전과 동일)
         new_cols = []
         last_h1 = ""
         for i in range(df_raw.shape[1]):
@@ -49,13 +65,11 @@ def load_kb_data(file_name):
         df = df.dropna(subset=[df.columns[0]])
         return df
     except Exception as e:
-        st.error(f"데이터 로드 중 오류 발생: {e}")
+        st.error(f"데이터 정제 중 오류 발생: {e}")
         return None
 
 # 3. 사이드바 설정
 st.sidebar.header("🔍 지역 및 데이터 검색")
-
-# 파일 선택
 file_list = ["kb_price_maemae_change.csv", "kb_price_jeonse_change.csv", "kb_price_maemae_index.csv", "kb_price_jeonse_index.csv"]
 selected_file = st.sidebar.selectbox("데이터 종류 선택", file_list)
 
@@ -63,32 +77,19 @@ df = load_kb_data(selected_file)
 
 if df is not None and not df.empty:
     all_regions = df.columns[1:].tolist()
-    
-    # [새 기능] 키워드 검색창 추가
     search_query = st.sidebar.text_input("지역명 검색 (예: 광명, 노원, 연수)", "")
-    
-    # 검색어가 있으면 필터링된 목록을 보여주고, 없으면 전체 목록을 보여줍니다.
     filtered_regions = [r for r in all_regions if search_query in r] if search_query else all_regions
     
-    # 기본 선택값 (광명, 노원, 연수 우선 검색)
+    # 기본 선택 (광명, 노원, 연수 우선 검색)
     default_sel = [r for r in filtered_regions if any(k in r for k in ["광명", "노원", "연수"])]
-
-    selected_regions = st.sidebar.multiselect(
-        "최종 분석 지역 선택", 
-        options=filtered_regions, 
-        default=default_sel[:3]
-    )
+    selected_regions = st.sidebar.multiselect("최종 분석 지역 선택", options=filtered_regions, default=default_sel[:3])
 
     # 4. 메인 화면 출력
     st.subheader(f"📍 {selected_file} 추이 비교")
-    
     if selected_regions:
-        fig = px.line(df, x=df.columns[0], y=selected_regions, 
-                     title="주간 시세 변동",
-                     labels={df.columns[0]: "날짜", "value": "수치", "variable": "지역"})
+        fig = px.line(df, x=df.columns[0], y=selected_regions, title="주간 시세 변동 추이")
         fig.update_layout(hovermode="x unified")
         st.plotly_chart(fig, use_container_width=True)
-        
         with st.expander("📊 최신 데이터 상세 수치 보기"):
             st.dataframe(df[[df.columns[0]] + selected_regions].tail(10))
     else:
