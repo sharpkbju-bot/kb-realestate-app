@@ -9,28 +9,23 @@ BASE_URL = f"https://raw.githubusercontent.com/{GITHUB_USER}/kb-realestate-app/m
 st.set_page_config(page_title="내 부동산 자산 관리 앱", layout="wide")
 st.title("📊 KB 부동산 주간 지표 분석기")
 
-# 2. 데이터 로드 및 정제 함수 (인코딩 자동 감지 추가)
+# 2. 데이터 로드 및 정제 (인코딩 자동 감지)
 @st.cache_data
 def load_kb_data(file_name):
     url = BASE_URL + file_name
-    
-    # [핵심] 여러 인코딩 방식을 순차적으로 시도합니다.
     encodings = ['utf-8', 'cp949', 'euc-kr']
     df_raw = None
     
     for enc in encodings:
         try:
             df_raw = pd.read_csv(url, encoding=enc, header=None)
-            break # 읽기에 성공하면 루프 탈출
+            break
         except:
             continue
             
-    if df_raw is None:
-        st.error(f"파일({file_name})을 읽을 수 없습니다. 인코딩 형식을 확인해 주세요.")
-        return None
+    if df_raw is None: return None
 
     try:
-        # 컬럼명 조립 및 중복 제거 로직 (이전과 동일)
         new_cols = []
         last_h1 = ""
         for i in range(df_raw.shape[1]):
@@ -58,8 +53,7 @@ def load_kb_data(file_name):
         
         for col in df.columns[1:]:
             s = df[col]
-            if isinstance(s, pd.DataFrame):
-                s = s.iloc[:, 0]
+            if isinstance(s, pd.DataFrame): s = s.iloc[:, 0]
             df[col] = pd.to_numeric(s.astype(str).str.replace(',', '').replace('nan', ''), errors='coerce')
         
         df = df.dropna(subset=[df.columns[0]])
@@ -69,7 +63,7 @@ def load_kb_data(file_name):
         return None
 
 # 3. 사이드바 설정
-st.sidebar.header("🔍 지역 및 데이터 검색")
+st.sidebar.header("🔍 지역 검색 및 필터")
 file_list = ["kb_price_maemae_change.csv", "kb_price_jeonse_change.csv", "kb_price_maemae_index.csv", "kb_price_jeonse_index.csv"]
 selected_file = st.sidebar.selectbox("데이터 종류 선택", file_list)
 
@@ -77,20 +71,34 @@ df = load_kb_data(selected_file)
 
 if df is not None and not df.empty:
     all_regions = df.columns[1:].tolist()
-    search_query = st.sidebar.text_input("지역명 검색 (예: 광명, 노원, 연수)", "")
-    filtered_regions = [r for r in all_regions if search_query in r] if search_query else all_regions
     
-    # 기본 선택 (광명, 노원, 연수 우선 검색)
-    default_sel = [r for r in filtered_regions if any(k in r for k in ["광명", "노원", "연수"])]
-    selected_regions = st.sidebar.multiselect("최종 분석 지역 선택", options=filtered_regions, default=default_sel[:3])
+    # [개선] 검색어 입력 시 자동 매칭 로직
+    search_query = st.sidebar.text_input("지역명 검색 (예: 관악, 광명, 노원)", "")
+    
+    # 검색어에 해당하는 지역들을 찾습니다.
+    matched_regions = [r for r in all_regions if search_query and search_query in r]
+    
+    # 기본 노출 지역 (광명, 노원, 연수) - 검색어가 없을 때만 기본값으로 작동
+    if not search_query:
+        default_sel = [r for r in all_regions if any(k in r for k in ["광명", "노원", "연수"])]
+    else:
+        default_sel = matched_regions # 검색어가 있으면 검색된 지역을 기본 선택
+
+    # 최종 선택 상자 (검색 결과가 자동으로 채워짐)
+    selected_regions = st.sidebar.multiselect(
+        "최종 분석 지역 선택", 
+        options=all_regions, 
+        default=default_sel[:10] # 너무 많아지지 않게 상위 10개만 자동 선택
+    )
 
     # 4. 메인 화면 출력
-    st.subheader(f"📍 {selected_file} 추이 비교")
+    st.subheader(f"📍 {selected_file} 분석 결과")
     if selected_regions:
         fig = px.line(df, x=df.columns[0], y=selected_regions, title="주간 시세 변동 추이")
-        fig.update_layout(hovermode="x unified")
+        fig.update_layout(hovermode="x unified", legend_title_text="지역명")
         st.plotly_chart(fig, use_container_width=True)
-        with st.expander("📊 최신 데이터 상세 수치 보기"):
+        
+        with st.expander("📊 상세 데이터 확인"):
             st.dataframe(df[[df.columns[0]] + selected_regions].tail(10))
     else:
-        st.info("왼쪽 사이드바에서 지역을 검색하고 선택해 주세요.")
+        st.info("검색창에 '관악' 등을 입력하거나 목록에서 지역을 선택해 주세요.")
