@@ -58,7 +58,7 @@ def load_kb_data(file_name):
         return None
 
 # 3. 사이드바 및 파일 선택
-file_list = ["kb_price_maemae_change.csv", "kb_price_jeonse_change.csv", "kb_price_maemae_index.csv", "kb_price_jeonse_index.csv"]
+file_list = ["kb_price_maemae_change.csv", "kb_price_jeonse_change.csv", "kb_price_index_maemae.csv", "kb_price_index_jeonse.csv"]
 selected_file = st.sidebar.selectbox("파일 선택", file_list)
 
 # 4. 실행
