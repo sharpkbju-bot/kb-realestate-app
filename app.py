@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 
 # 1. 설정
-GITHUB_USER = "아이디-bot" # 본인 ID 확인!
+GITHUB_USER = "sharpkbju-bot" # 본인 ID 확인!
 BASE_URL = f"https://raw.githubusercontent.com/{GITHUB_USER}/kb-realestate-app/main/data/"
 
 st.set_page_config(page_title="내 부동산 자산 관리 앱", layout="wide")
