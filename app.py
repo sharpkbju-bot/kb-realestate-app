@@ -9,41 +9,46 @@ BASE_URL = f"https://raw.githubusercontent.com/{GITHUB_USER}/kb-realestate-app/m
 st.set_page_config(page_title="내 부동산 자산 관리 앱", layout="wide")
 st.title("📊 KB 부동산 주간 지표 분석기")
 
-# 2. 데이터 로드 및 정제 (가장 안전한 방식)
+# 2. 데이터 로드 및 정제
 @st.cache_data
 def load_kb_data(file_name):
     url = BASE_URL + file_name
     try:
-        # 헤더 없이 로드 (0, 1행은 이름, 2행부터 데이터)
+        # 헤더 없이 로드 (가장 원시적인 형태)
         df_raw = pd.read_csv(url, encoding='cp949', header=None)
         
-        # 1) 컬럼명 조립
+        # [안전장치 1] 컬럼명 직접 조립 (병합 셀 완벽 복구)
         new_cols = []
-        last_city = ""
+        last_h1 = ""
         for i in range(df_raw.shape[1]):
-            city = str(df_raw.iloc[0, i]).strip()
-            dist = str(df_raw.iloc[1, i]).strip()
+            h1 = str(df_raw.iloc[0, i]).strip()
+            h2 = str(df_raw.iloc[1, i]).strip()
             
-            # 시/도 이름이 비어있으면 이전 이름 사용 (병합 셀 처리)
-            if city != "" and "nan" not in city.lower() and "unnamed" not in city.lower():
-                last_city = city
+            if h1 != "" and "nan" not in h1.lower() and "unnamed" not in h1.lower():
+                last_h1 = h1
             
-            combined = f"{last_city} {dist}".strip()
+            combined = f"{last_h1} {h2}".strip()
             if not combined or "nan" in combined.lower():
                 combined = "날짜" if i == 0 else f"지역_{i}"
             new_cols.append(combined)
             
-        # 2) 데이터 본문만 추출 (2행부터)
+        # 데이터 본문 추출 (2행부터)
         df = df_raw.iloc[2:].copy()
         df.columns = new_cols
         
-        # 3) [핵심] 숫자 변환 (하나씩 확실하게)
+        # [안전장치 2] 숫자 변환 (DataFrame.str 에러 원천 차단)
         for col in df.columns[1:]:
-            # 데이터를 먼저 시리즈(Series)로 추출한 뒤, 문자열 처리 후 숫자로 바꿉니다.
-            s = df[col].astype(str).str.replace(',', '')
-            df[col] = pd.to_numeric(s, errors='coerce')
+            # .squeeze()를 사용해 강제로 '시리즈(Series)'로 변환합니다.
+            # 그 후 모든 데이터를 문자열로 바꾸고 콤마를 제거한 뒤 숫자로 바꿉니다.
+            target_series = df[col]
+            if isinstance(target_series, pd.DataFrame):
+                target_series = target_series.iloc[:, 0] # 중복 컬럼 발생 시 첫 번째 선택
+            
+            # 콤마 제거 및 숫자 변환
+            clean_s = target_series.astype(str).str.replace(',', '').replace('nan', '')
+            df[col] = pd.to_numeric(clean_s, errors='coerce')
         
-        # 날짜 열에 값이 없는 행 삭제
+        # 날짜 열 기준 정렬 및 빈 행 삭제
         df = df.dropna(subset=[df.columns[0]])
         return df
     except Exception as e:
@@ -51,7 +56,12 @@ def load_kb_data(file_name):
         return None
 
 # 3. 사이드바 설정
-file_list = ["kb_price_maemae_change.csv", "kb_price_jeonse_change.csv", "kb_price_maemae_index.csv", "kb_price_jeonse_index.csv"]
+file_list = [
+    "kb_price_maemae_change.csv", 
+    "kb_price_jeonse_change.csv", 
+    "kb_price_maemae_index.csv", 
+    "kb_price_jeonse_index.csv"
+]
 selected_file = st.sidebar.selectbox("파일 선택", file_list)
 
 # 4. 실행
@@ -59,10 +69,10 @@ df = load_kb_data(selected_file)
 
 if df is not None and not df.empty:
     all_regions = df.columns[1:].tolist()
-    # 광명, 노원, 연수구 자동 검색
+    # 광명, 노원, 연수구 자동 검색 (사용자님 주요 자산 지역)
     default_sel = [r for r in all_regions if any(k in r for k in ["광명", "노원", "연수"])]
     
-    selected_regions = st.sidebar.multiselect("지역 선택", options=all_regions, default=default_sel[:3])
+    selected_regions = st.sidebar.multiselect("분석할 지역 선택", options=all_regions, default=default_sel[:3])
 
     if selected_regions:
         # 그래프 출력
