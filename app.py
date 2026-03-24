@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 
 # 1. 설정: GitHub ID와 저장소 이름을 입력하세요
-GITHUB_USER = "사용자님의_깃허브_아이디"
+GITHUB_USER = "sharpkbju-bot"
 REPO_NAME = "kb-realestate-app"
 BASE_URL = f"https://raw.githubusercontent.com/{GITHUB_USER}/{REPO_NAME}/main/data/"
 
