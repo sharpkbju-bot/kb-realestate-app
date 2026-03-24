@@ -13,7 +13,7 @@ st.set_page_config(page_title="내 부동산 자산 대시보드", layout="wide"
 @st.cache_data
 def load_kb_data(file_name, skip_rows=1):
     url = BASE_URL + file_name
-    df = pd.read_csv(url, skiprows=skip_rows)
+    df = pd.read_csv(url, skiprows=skip_rows, encoding='cp949')
     # 첫 번째 열을 날짜형식으로 변환 (KB 시계열 특성 반영)
     df.rename(columns={df.columns[0]: '날짜'}, inplace=True)
     return df
