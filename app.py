@@ -62,7 +62,13 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #f0f0f0;
     }
 
-    /* [수정 사항] 랭킹 카드 - 세련된 퍼플 그라데이션 배경 및 강력한 그림자 */
+    /* [수정 사항] 요약 카드 내부 라벨 컬러 진한 파란(#000080)으로 변경 */
+    .summary-label {
+        font-weight: 900;
+        color: #000080 !important;
+    }
+
+    /* [수정 사항] 랭킹 카드 - 세련된 퍼플 그라데이션 배경 및 더욱 강력한 그림자 */
     .rank-card {
         padding: 12px 15px; border-radius: 12px; margin-bottom: 12px;
         display: flex; align-items: center; justify-content: space-between;
@@ -71,13 +77,13 @@ st.markdown("""
         background: linear-gradient(135deg, rgba(243, 229, 245, 0.95), rgba(225, 190, 231, 0.95)) !important;
         
         /* 그림자 대폭 강화 및 내부 그림자 추가 */
-        box-shadow: 0 10px 25px rgba(0,0,0,0.3) !important, inset 0 2px 5px rgba(255,255,255,0.5) !important; 
+        box-shadow: 0 15px 35px rgba(0,0,0,0.5) !important, inset 0 2px 5px rgba(255,255,255,0.5) !important; 
         border: 1px solid rgba(103, 58, 183, 0.2); /* 은은한 퍼플 보더 */
     }
     
     .rank-info { display: flex; align-items: center; gap: 8px; }
     
-    /* [수정 사항] 랭킹 카드 내부의 모든 글자 퍼플(#4a148c)로 변경 */
+    /* 랭킹 카드 내부의 모든 글자 퍼플(#4a148c) (기존 유지) */
     .rank-num, .rank-name, .rank-val {
         color: #4a148c !important; /* 짙은 퍼플 */
     }
@@ -90,7 +96,8 @@ st.markdown("""
     .rank-m { border-left: 7px solid #FF4500; }
     .rank-j { border-left: 7px solid #000080; }
 
-    .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #333; }
+    /* [수정 사항] 그래프 제목 컬러 진한 파란(#000080)으로 변경 */
+    .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #000080; }
 
     /* 종료 버튼 및 화면 정중앙 배치 */
     div.stButton { display: flex; justify-content: center; margin: 40px 0; }
@@ -181,8 +188,16 @@ def main():
             sub_df = df.iloc[start_idx : curr_idx + 1]
             fig = px.line(sub_df, x='날짜', y=sel_region, markers=True)
             fig.update_traces(line_color=line_color, line_width=4, marker=dict(size=10, color='white', line=dict(width=2, color=line_color)))
-            fig.update_layout(height=220, margin=dict(l=10,r=10,t=10,b=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', hovermode=False)
-            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+            
+            # [수정 사항] 그래프 폰트 컬러 진한 파란(#000080)으로 변경 및 hovermode 고정
+            fig.update_layout(height=220, margin=dict(l=10,r=10,t=10,b=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
+                              hovermode=False, dragmode=False, 
+                              font=dict(color='#000080'),
+                              xaxis=dict(fixedrange=True, tickfont=dict(color='#000080')),
+                              yaxis=dict(fixedrange=True, tickfont=dict(color='#000080')))
+            
+            # [수정 사항] 그래프 터치 및 드래그 비활성화 (고정)
+            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False, 'scrollZoom': False})
 
         draw_chart(df_maemae, '#e74c3c', f'📈 {sel_region} 매매 트렌드 (4주)')
         draw_chart(df_jeonse, '#000080', f'📉 {sel_region} 전세 트렌드 (4주)')
