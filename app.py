@@ -175,9 +175,9 @@ def main():
                 j_color = "#e74c3c" if j_val > 0 else "#000080" if j_val < 0 else "#333"
 
                 with c1:
-                    st.markdown(f'<div class="metric-container"><div class="metric-label">매매 증감</div><div class="metric-value" style="color: {m_color};">{m_val:+.2f}%</div></div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="metric-container"><div class="metric-label">전주 대비 매매 증감</div><div class="metric-value" style="color: {m_color};">{m_val:+.2f}%</div></div>', unsafe_allow_html=True)
                 with c2:
-                    st.markdown(f'<div class="metric-container"><div class="metric-label">전세 증감</div><div class="metric-value" style="color: {j_color};">{j_val:+.2f}%</div></div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="metric-container"><div class="metric-label">전주 대비 전세 증감</div><div class="metric-value" style="color: {j_color};">{j_val:+.2f}%</div></div>', unsafe_allow_html=True)
 
                 # 매매 그래프 (진한 핑크 타이틀)
                 st.markdown('<div class="chart-title">매매 지수 트렌드 (최근 4주)</div>', unsafe_allow_html=True)
