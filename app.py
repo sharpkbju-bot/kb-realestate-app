@@ -110,10 +110,13 @@ def load_data():
 def main():
     # 1. 종료 상태 확인
     if st.session_state.get("is_exit"):
-        show_title()  # 타이틀 유지
+        # 타이틀과 문구를 하나의 flex 박스로 묶어 화면 정중앙에 배치
         st.markdown("""
-            <div style='display:flex; flex-direction:column; justify-content:center; align-items:center; height:50vh; text-align:center;'>
-                <h2 style='color:#006400; font-weight:900; white-space:nowrap; letter-spacing:-1px;'>모두 부자됩시다.</h2>
+            <div style='display:flex; flex-direction:column; justify-content:center; align-items:center; height:85vh; text-align:center;'>
+                <div style="margin-bottom: -10px;">
+                    <span style="color:#006400; font-size:clamp(30px, 10vw, 45px); font-weight:900; font-family:'Arial Black'; letter-spacing:-2px;">Dr.J</span><span style="color:#FF4500; font-size:clamp(16px, 5vw, 24px); font-weight:900;">의 부동산</span>
+                </div>
+                <h2 style='color:#006400; font-weight:900; white-space:nowrap; letter-spacing:-1px; margin-top: 10px;'>모두 부자됩시다.</h2>
             </div>
         """, unsafe_allow_html=True)
         components.html("<script>window.close();</script>")
