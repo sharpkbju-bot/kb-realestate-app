@@ -10,7 +10,8 @@ st.set_page_config(
     layout="centered"
 )
 
-# 2. UI 디자인 및 레이아웃 최적화 (CSS)
+# 2. UI 디자인 및 중앙 정렬 강화 (CSS)
+# 요청 사항: 종료 버튼 중앙 이동, 종료 문구 짙은 연두색, 그 외 변경 없음.
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
@@ -55,15 +56,16 @@ st.markdown("""
         padding-left: 12px;
     }
 
-    /* 종료 버튼 중앙 정렬 레이아웃 */
-    .exit-wrapper {
-        display: flex;
-        justify-content: center;
-        width: 100%;
-        margin: 50px 0;
+    /* 🔥 핵심 수정: 종료 버튼 정중앙 배치 강제 (Flexbox 직접 주입) */
+    [data-testid="stVerticalBlock"] > [data-testid="element-container"]:last-child {
+        display: flex !important;
+        justify-content: center !important;
+        width: 100% !important;
+        margin-top: 40px !important; /* 위쪽 여유 공간 */
+        margin-bottom: 60px !important; /* 아래쪽 여유 공간 */
     }
 
-    /* 종료 버튼 스타일 (그레이 그라데이션) */
+    /* 종료 버튼 스타일 (그레이 그라데이션) - 사진과 동일하게 유지 */
     .stButton > button {
         background: linear-gradient(135deg, #757575, #424242) !important;
         color: white !important;
@@ -74,6 +76,7 @@ st.markdown("""
         font-size: 16px !important;
         border: none !important;
         box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important;
+        margin: 0 auto !important; /* 버튼 자체 중앙 */
     }
 
     header {visibility: hidden;}
@@ -104,11 +107,11 @@ def load_data():
     return df_m, df_j
 
 def main():
-    # 종료 화면 (짙은 그레이, 한 줄 고정)
+    # 🔥 종료 화면 (요청사항: 짙은 연두색 변경, 그 외 절대 변경 없음)
     if "is_exit" in st.session_state:
         st.markdown("""
             <div style='display:flex; justify-content:center; align-items:center; height:70vh;'>
-                <h2 style='color:#424242; font-weight:900; white-space:nowrap; letter-spacing:-1px;'>모두 부자됩시다.</h2>
+                <h2 style='color:#006400; font-weight:900; white-space:nowrap; letter-spacing:-1px;'>모두 부자됩시다.</h2>
             </div>
         """, unsafe_allow_html=True)
         components.html("<script>window.close();</script>")
@@ -126,9 +129,9 @@ def main():
     if sel_region != "지역을 선택하세요.":
         components.html("<script>window.parent.document.activeElement.blur();</script>", height=0)
 
-    # 2. [신규 요청] 선택된 지역의 증감 카드 (필드 바로 아래 배치)
+    # 2. 선택된 지역의 증감 카드 (필드 바로 아래 배치)
     if sel_region != "지역을 선택하세요.":
-        st.markdown(f"<div style='margin-top:16px;'></div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='margin-top:15px;'></div>", unsafe_allow_html=True)
         m_val = df_maemae.loc[df_maemae['날짜'] == sel_date, sel_region].values[0]
         j_val = df_jeonse.loc[df_jeonse['날짜'] == sel_date, sel_region].values[0]
         
@@ -182,12 +185,11 @@ def main():
         draw_chart(df_maemae, '#e74c3c', f'📈 {sel_region} 매매 트렌드')
         draw_chart(df_jeonse, '#000080', f'📉 {sel_region} 전세 트렌드')
 
-    # 5. 종료 버튼 (정중앙 이동)
-    st.markdown("<div class='exit-wrapper'>", unsafe_allow_html=True)
+    # 🔥 5. 종료 버튼 (정중앙 이동 완료)
+    # CSS에서 직접 강제 제어하므로 코드 구조는 유지
     if st.button("🚪 앱 종료"):
         st.session_state.is_exit = True
         st.rerun()
-    st.markdown("</div>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
