@@ -65,7 +65,9 @@ st.markdown("""
     }
     
     .summary-label { color: #555; font-size: 14px; font-weight: 700; margin-bottom: 5px; }
-    .summary-date { color: #aaa; font-size: 11px; margin-bottom: 10px; }
+    
+    /* 수정 사항: 기준 날짜 컬러를 진한 퍼플로 변경 */
+    .summary-date { color: #800080; font-size: 11px; margin-bottom: 10px; font-weight: 700; }
 
     /* 랭킹 섹션 카드화 */
     .ranking-container {
@@ -101,9 +103,11 @@ st.markdown("""
     .rank-j .rank-num { color: #000080; }
     .rank-j .rank-val { color: #000080; }
 
+    /* 수정 사항: 그래프 제목 컬러를 진한 그린으로 변경 */
     .chart-title {
         font-size: 19px; font-weight: 800; margin: 10px 0 15px 0;
         padding-left: 5px;
+        color: #006400;
     }
 
     /* 버튼 스타일 */
@@ -185,7 +189,6 @@ def main():
     date_list = sorted(df_maemae['날짜'].unique().tolist())
     region_list = sorted([col for col in df_maemae.columns if col != '날짜'])
 
-    # 입력 섹션 (CSS에 의해 카드로 감싸짐)
     sel_date = st.selectbox("📅 날짜 선택", date_list, index=len(date_list)-1)
     sel_region = st.selectbox("🔍 지역 검색 및 선택", options=["지역을 입력하세요."] + region_list, index=0)
 
@@ -199,7 +202,6 @@ def main():
         m_color = "#e74c3c" if m_val > 0 else "#000080" if m_val < 0 else "#333"
         j_color = "#e74c3c" if j_val > 0 else "#000080" if j_val < 0 else "#333"
         
-        # 증감 정보 카드
         st.markdown(f'''
             <div class="content-card">
                 <div class="summary-label">📍 {sel_region} 매매 증감</div>
@@ -215,25 +217,31 @@ def main():
 
         start_idx = max(0, curr_idx - 3)
         def draw_chart(df, line_color, title):
-            # 차트를 담는 카드 시작
             st.markdown('<div class="content-card">', unsafe_allow_html=True)
             st.markdown(f'<div class="chart-title">{title}</div>', unsafe_allow_html=True)
             sub_df = df.iloc[start_idx : curr_idx + 1]
             fig = px.line(sub_df, x='날짜', y=sel_region, markers=True)
+            
+            # 수정 사항: 그래프 내부 텍스트 및 축 눈금 컬러를 진한 그린으로 설정
             fig.update_traces(line_color=line_color, line_width=4, marker=dict(size=10, color='white', line=dict(width=2, color=line_color)))
             fig.add_scatter(x=[sel_date], y=[sub_df.loc[sub_df['날짜']==sel_date, sel_region].values[0]], 
                             mode='markers', marker=dict(size=14, color='#00FF00', line=dict(width=3, color='white')), showlegend=False)
-            fig.update_layout(height=240, margin=dict(l=10,r=10,t=10,b=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True), hovermode=False)
+            fig.update_layout(
+                height=240, margin=dict(l=10,r=10,t=10,b=10), 
+                paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
+                xaxis=dict(fixedrange=True, tickfont=dict(color='#006400', weight='bold')), 
+                yaxis=dict(fixedrange=True, tickfont=dict(color='#006400', weight='bold')), 
+                hovermode=False
+            )
             st.plotly_chart(fig, use_container_width=True, config={'staticPlot': True})
-            st.markdown('</div>', unsafe_allow_html=True) # 카드 끝
+            st.markdown('</div>', unsafe_allow_html=True)
 
         draw_chart(df_maemae, '#e74c3c', f'📈 {sel_region} 매매 트렌드')
         draw_chart(df_jeonse, '#000080', f'📉 {sel_region} 전세 트렌드')
         
         st.markdown("<br>", unsafe_allow_html=True)
 
-    # 랭킹 섹션 (하나의 큰 카드 안에 랭킹 배치)
-    # 1. 주간 매매
+    # 랭킹 섹션 (카드 배경 유지)
     st.markdown('<div class="ranking-container">', unsafe_allow_html=True)
     st.markdown('<div class="chart-title" style="color:#FF69B4;">🔥 주간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
     m_w_row = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
@@ -242,7 +250,6 @@ def main():
         st.markdown(f'<div class="rank-card rank-m"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 2. 월간 매매
     if curr_idx >= 3:
         st.markdown('<div class="ranking-container">', unsafe_allow_html=True)
         st.markdown('<div class="chart-title" style="color:#FF69B4;">📅 월간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
@@ -252,7 +259,6 @@ def main():
             st.markdown(f'<div class="rank-card rank-m"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # 3. 주간 전세
     st.markdown('<div class="ranking-container">', unsafe_allow_html=True)
     st.markdown('<div class="chart-title" style="color:#4169E1;">💧 주간 전세 상승 TOP 10</div>', unsafe_allow_html=True)
     j_w_row = df_jeonse[df_jeonse['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
@@ -261,7 +267,6 @@ def main():
         st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 4. 월간 전세
     if curr_idx >= 3:
         st.markdown('<div class="ranking-container">', unsafe_allow_html=True)
         st.markdown('<div class="chart-title" style="color:#4169E1;">📅 월간 전세 상승 TOP 10</div>', unsafe_allow_html=True)
