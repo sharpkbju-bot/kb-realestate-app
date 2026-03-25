@@ -8,8 +8,8 @@ st.set_page_config(page_title="주간 아파트 시황 조회", layout="wide")
 def load_data():
     # 파일명은 실제 깃허브에 올린 이름과 일치해야 합니다.
     # 여기서는 편의상 변경된 이름을 기준으로 작성했습니다.
-    df_m = pd.read_csv('maemae.csv')
-    df_j = pd.read_csv('jeonse.csv')
+    df_m = pd.read_csv('maemae.csv', encoding='cp949')
+    df_j = pd.read_csv('jeonse.csv', encoding='cp949')
     
     # 날짜 컬럼을 문자열로 변환하여 선택 박스에서 잘 보이게 함
     df_m['날짜'] = df_m['날짜'].astype(str)
