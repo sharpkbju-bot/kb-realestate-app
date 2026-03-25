@@ -13,7 +13,7 @@ st.set_page_config(
 # 2. UI 디자인 및 중앙 정렬 (CSS)
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700;900&family=Dancing+Script:wght@400;700&display=swap');
     html, body, [class*="css"] { font-family: 'Noto+Sans+KR', sans-serif; }
 
     /* 타이틀 */
@@ -21,7 +21,7 @@ st.markdown("""
     .brand-name { color: #006400; font-size: clamp(30px, 10vw, 45px); font-weight: 900; font-family: 'Arial Black'; letter-spacing: -2px; }
     .brand-suffix { color: #FF4500; font-size: clamp(16px, 5vw, 24px); font-weight: 900; }
 
-    /* 입력 필드(날짜/지역) 글자 굵게 처리 */
+    /* 입력 필드 글자 굵게 처리 */
     div[data-baseweb="select"] span {
         font-weight: 700 !important;
     }
@@ -64,7 +64,7 @@ st.markdown("""
         padding-left: 12px;
     }
 
-    /* 버튼 중앙 정렬 및 크기 최적화 */
+    /* 버튼 중앙 정렬 */
     div.stButton {
         text-align: center;
         margin: 40px 0;
@@ -84,21 +84,35 @@ st.markdown("""
         display: inline-block !important;
     }
 
-    /* 종료 화면 중앙 정렬 컨테이너 */
+    /* 종료 화면 중앙 정렬 및 텍스트 스타일 */
     .exit-container {
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        height: 75vh; /* 화면의 약 3/4 지점을 중앙으로 설정 */
+        height: 70vh;
         text-align: center;
+    }
+    .exit-msg {
+        color: #006400;
+        font-weight: 900;
+        font-size: 24px;
+        white-space: nowrap;
+        letter-spacing: -1px;
+        margin-top: 30px;
+        margin-bottom: 10px;
+    }
+    .created-by {
+        font-family: 'Dancing Script', cursive;
+        color: #888;
+        font-size: 18px;
+        margin-top: 5px;
     }
 
     header {visibility: hidden;}
     </style>
     """, unsafe_allow_html=True)
 
-# 공통 타이틀 함수
 def show_title():
     st.markdown("""
         <div class="title-container">
@@ -126,27 +140,23 @@ def load_data():
     return df_m, df_j
 
 def main():
-    # 1. 종료 상태 확인 (타이틀 포함 정중앙 배치)
     if st.session_state.get("is_exit"):
         st.markdown('<div class="exit-container">', unsafe_allow_html=True)
         show_title()
         st.markdown("""
-            <h2 style='color:#006400; font-weight:900; white-space:nowrap; letter-spacing:-1px; margin-top:30px;'>
-                모두 부자됩시다.
-            </h2>
+            <div class="exit-msg">모두 부자됩시다.</div>
+            <div class="created-by">Created by Ju Kyung Bae</div>
         """, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
         components.html("<script>window.close();</script>")
         st.stop()
 
-    # 일반 실행 시 타이틀 표시
     show_title()
 
     df_maemae, df_jeonse = load_data()
     date_list = sorted(df_maemae['날짜'].unique().tolist())
     region_list = sorted([col for col in df_maemae.columns if col != '날짜'])
 
-    # 입력 필드 (Bold 스타일 적용됨)
     sel_date = st.selectbox("📅 날짜 선택", date_list, index=len(date_list)-1)
     sel_region = st.selectbox("🔍 지역 검색 및 선택", options=["지역을 입력하세요."] + region_list, index=0)
 
@@ -184,12 +194,11 @@ def main():
             fig.update_layout(height=220, margin=dict(l=10,r=10,t=10,b=10), xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True), hovermode=False)
             st.plotly_chart(fig, use_container_width=True, config={'staticPlot': True})
 
-        draw_chart(df_maemae, '#e74c3c', f'📈 {sel_region} 매매 트렌드 (4주 시황)')
-        draw_chart(df_jeonse, '#000080', f'📉 {sel_region} 전세 트렌드 (4주 시황)')
+        draw_chart(df_maemae, '#e74c3c', f'📈 {sel_region} 매매 트렌드 (4주)')
+        draw_chart(df_jeonse, '#000080', f'📉 {sel_region} 전세 트렌드 (4주)')
         
         st.markdown("<hr>", unsafe_allow_html=True)
 
-    # 랭킹 섹션
     st.markdown('<div class="chart-title" style="color:#FF69B4; border-left:6px solid #FF69B4;">🔥 주간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
     m_w_row = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_mw = m_w_row[m_w_row > 0].sort_values(ascending=False).head(10)
@@ -216,7 +225,6 @@ def main():
         for i, (name, val) in enumerate(top_jm.items()):
             st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 3. 종료 버튼
     if st.button("🚪 앱 종료"):
         st.session_state.is_exit = True
         st.rerun()
