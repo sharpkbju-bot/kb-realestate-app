@@ -37,7 +37,9 @@ set_bg_from_local('bg.jpg')
 # 2. UI 디자인 및 스타일 설정 (CSS)
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
+    /* 기본 폰트 및 필기체 폰트(Dancing Script) 불러오기 */
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700;900&family=Dancing+Script:wght@700&display=swap');
+    
     html, body, [class*="css"] { font-family: 'Noto+Sans+KR', sans-serif; }
 
     /* 타이틀 스타일 */
@@ -112,11 +114,21 @@ st.markdown("""
         box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important; border: none !important;
     }
 
+    /* 종료 화면 스타일 */
     .exit-wrapper {
         position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
         width: 100%; text-align: center; z-index: 9999;
     }
-    .exit-msg { color: #006400; font-weight: 900; font-size: 32px; margin-top: 20px; }
+    .exit-msg { color: #006400; font-weight: 900; font-size: 32px; margin-top: 20px; margin-bottom: 5px; }
+    
+    /* [수정 사항] Created by 필기체 스타일 정의 */
+    .created-by { 
+        font-family: 'Dancing Script', cursive; /* 멋진 필기체 */
+        color: #006400; /* 진한 그린 */
+        font-size: 24px; /* 적절한 크기 */
+        font-weight: 700;
+        margin-top: 0px;
+    }
 
     [data-testid="stPlotlyChart"] { background-color: transparent !important; }
     header {visibility: hidden;}
@@ -144,12 +156,14 @@ def load_data():
 
 def main():
     if st.session_state.get("is_exit"):
+        # [수정 사항] 종료 화면에 필기체 문구 추가
         st.markdown(f"""
             <div class="exit-wrapper">
                 <div class="title-container">
                     <span class="brand-name">Dr.J</span><span class="brand-suffix">의 부동산</span>
                 </div>
-                <div class="exit-msg">모두 부자됩시다.<br><br>Created by Ju Kyung Bae</div>
+                <div class="exit-msg">모두 부자됩시다.</div>
+                <div class="created-by">Created by Ju Kyung Bae</div>
             </div>
         """, unsafe_allow_html=True)
         components.html("<script>window.close();</script>")
@@ -193,7 +207,7 @@ def main():
             fig = px.line(sub_df, x='날짜', y=sel_region, markers=True)
             fig.update_traces(line_color=line_color, line_width=4, marker=dict(size=10, color='white', line=dict(width=2, color=line_color)))
             
-            # [수정 사항] 그래프 내부의 축 레이블(지역명, 날짜) 컬러를 진한 파란색(#000080)으로 설정
+            # 그래프 내부의 축 레이블(지역명, 날짜) 컬러 진한 파란색(#000080)
             fig.update_layout(
                 height=220, 
                 margin=dict(l=10,r=10,t=10,b=10), 
@@ -201,16 +215,16 @@ def main():
                 plot_bgcolor='rgba(0,0,0,0)', 
                 hovermode=False, 
                 dragmode=False, 
-                font=dict(color='#000080', size=12), # 전체 폰트 컬러
+                font=dict(color='#000080', size=12),
                 xaxis=dict(
                     fixedrange=True, 
-                    tickfont=dict(color='#000080', weight='bold'), # x축(날짜) 컬러
+                    tickfont=dict(color='#000080', weight='bold'),
                     title=dict(font=dict(color='#000080'))
                 ),
                 yaxis=dict(
                     fixedrange=True, 
-                    tickfont=dict(color='#000080', weight='bold'), # y축(지역명) 컬러
-                    title=dict(text="", font=dict(color='#000080')) # y축 제목은 생략하거나 컬러 지정
+                    tickfont=dict(color='#000080', weight='bold'),
+                    title=dict(text="", font=dict(color='#000080'))
                 )
             )
             
