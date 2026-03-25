@@ -13,13 +13,20 @@ st.set_page_config(
 # 2. UI 디자인 및 중앙 정렬 (CSS)
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700;900&family=Great+Vibes&display=swap');
     html, body, [class*="css"] { font-family: 'Noto+Sans+KR', sans-serif; }
 
     /* 타이틀 */
     .title-container { padding: 30px 0 15px 0; text-align: center; }
     .brand-name { color: #006400; font-size: clamp(30px, 10vw, 45px); font-weight: 900; font-family: 'Arial Black'; letter-spacing: -2px; }
     .brand-suffix { color: #FF4500; font-size: clamp(16px, 5vw, 24px); font-weight: 900; }
+
+    /* 필드명 스타일 수정 (Bold, 진한 그린색) */
+    .stSelectbox label {
+        color: #006400 !important;
+        font-weight: 900 !important;
+        font-size: 16px !important;
+    }
 
     /* 매매/전세 증감 카드 */
     .summary-card {
@@ -110,13 +117,13 @@ def load_data():
 def main():
     # 1. 종료 상태 확인
     if st.session_state.get("is_exit"):
-        # 타이틀과 문구를 하나의 flex 박스로 묶어 화면 정중앙에 배치
         st.markdown("""
             <div style='display:flex; flex-direction:column; justify-content:center; align-items:center; height:85vh; text-align:center;'>
                 <div style="margin-bottom: -10px;">
                     <span style="color:#006400; font-size:clamp(30px, 10vw, 45px); font-weight:900; font-family:'Arial Black'; letter-spacing:-2px;">Dr.J</span><span style="color:#FF4500; font-size:clamp(16px, 5vw, 24px); font-weight:900;">의 부동산</span>
                 </div>
                 <h2 style='color:#006400; font-weight:900; white-space:nowrap; letter-spacing:-1px; margin-top: 10px;'>모두 부자됩시다.</h2>
+                <p style='font-family:"Great Vibes", cursive; color:#555; font-size:20px; margin-top:20px;'>Created by Ju kyung bae</p>
             </div>
         """, unsafe_allow_html=True)
         components.html("<script>window.close();</script>")
