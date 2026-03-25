@@ -104,11 +104,11 @@ def load_data():
     return df_m, df_j
 
 def main():
-    # 1. 종료 상태 확인 (최상단)
+    # 1. 종료 상태 확인 및 화면 구성
     if st.session_state.get("is_exit"):
         st.markdown("""
-            <div style='display:flex; flex-direction:column; justify-content:center; align-items:center; height:80vh; text-align:center;'>
-                <h2 style='color:#006400; font-weight:900; white-space:nowrap; letter-spacing:-1px; margin:0;'>모두 부자됩시다.</h2>
+            <div style='display:flex; flex-direction:column; justify-content:center; align-items:center; height:60vh; text-align:center;'>
+                <h2 style='color:#006400; font-weight:900; white-space:nowrap; letter-spacing:-1px; margin-top:20px;'>모두 부자됩시다.</h2>
             </div>
         """, unsafe_allow_html=True)
         components.html("<script>window.close();</script>")
@@ -187,7 +187,7 @@ def main():
         for i, (name, val) in enumerate(top_jm.items()):
             st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 3. 종료 버튼 (로직 단순화하여 확실한 동작 보장)
+    # 3. 종료 버튼
     if st.button("🚪 앱 종료"):
         st.session_state.is_exit = True
         st.rerun()
