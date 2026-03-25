@@ -114,7 +114,6 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 타이틀 출력 함수
 def show_title():
     st.markdown("""
         <div class="title-container">
@@ -142,7 +141,6 @@ def load_data():
     return df_m, df_j
 
 def main():
-    # 1. 종료 상태 확인
     if st.session_state.get("is_exit"):
         st.markdown(f"""
             <div class="exit-wrapper">
@@ -162,22 +160,29 @@ def main():
     date_list = sorted(df_maemae['날짜'].unique().tolist())
     region_list = sorted([col for col in df_maemae.columns if col != '날짜'])
 
-    # 입력 필드
     sel_date = st.selectbox("📅 날짜 선택", date_list, index=len(date_list)-1)
     sel_region = st.selectbox("🔍 지역 검색 및 선택", options=["지역을 입력하세요."] + region_list, index=0)
 
-    # --- 커서 위치를 첫 번째로 이동시키는 스크립트 ---
+    # --- 커서 제어 스크립트 강화 ---
     if sel_region == "지역을 입력하세요.":
         components.html("""
             <script>
-            var inputs = window.parent.document.querySelectorAll('input[role="combobox"]');
-            inputs.forEach(function(input) {
-                input.addEventListener('focus', function() {
-                    setTimeout(function() {
-                        input.setSelectionRange(0, 0);
-                    }, 1);
+            const setCursorAtStart = () => {
+                const inputs = window.parent.document.querySelectorAll('input[role="combobox"]');
+                inputs.forEach(input => {
+                    // 클릭하거나 포커스될 때 커서를 0으로 강제 이동
+                    input.onfocus = () => {
+                        setTimeout(() => input.setSelectionRange(0, 0), 10);
+                    };
+                    input.onclick = () => {
+                        setTimeout(() => input.setSelectionRange(0, 0), 10);
+                    };
                 });
-            });
+            };
+            // 초기 로드 시 실행
+            setCursorAtStart();
+            // 입력창이 다시 렌더링될 수 있으므로 주기적으로 체크 (필요시)
+            setTimeout(setCursorAtStart, 500);
             </script>
         """, height=0)
 
@@ -215,12 +220,12 @@ def main():
             fig.update_layout(height=220, margin=dict(l=10,r=10,t=10,b=10), xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True), hovermode=False)
             st.plotly_chart(fig, use_container_width=True, config={'staticPlot': True})
 
-        draw_chart(df_maemae, '#e74c3c', f'📈 {sel_region} 매매 트렌드 (4주 시황)')
-        draw_chart(df_jeonse, '#000080', f'📉 {sel_region} 전세 트렌드 (4주 시황)')
+        draw_chart(df_maemae, '#e74c3c', f'📈 {sel_region} 매매 트렌드 (4주)')
+        draw_chart(df_jeonse, '#000080', f'📉 {sel_region} 전세 트렌드 (4주)')
         
         st.markdown("<hr>", unsafe_allow_html=True)
 
-    # 랭킹 섹션
+    # 랭킹 섹션 (기존 로직 유지)
     st.markdown('<div class="chart-title" style="color:#FF69B4; border-left:6px solid #FF69B4;">🔥 주간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
     m_w_row = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_mw = m_w_row[m_w_row > 0].sort_values(ascending=False).head(10)
