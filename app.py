@@ -106,7 +106,7 @@ def main():
     if "is_exit" in st.session_state:
         st.markdown("""
             <div style='display:flex; justify-content:center; align-items:center; height:70vh;'>
-                <h2 style='color:#006400; font-weight:900; white-space:nowrap; letter-spacing:-1px;'>모두 부자됩시다.</h2>
+                <h2 style='color:#006400; font-weight:900; white-space:nowrap; letter-spacing:-1px;'>모두 부자됩시다.<br><br><br>Dr.J</h2>
             </div>
         """, unsafe_allow_html=True)
         components.html("<script>window.close();</script>")
@@ -117,25 +117,25 @@ def main():
     region_list = sorted([col for col in df_maemae.columns if col != '날짜'])
 
     sel_date = st.selectbox("📅 날짜 선택", date_list, index=len(date_list)-1)
-    sel_region = st.selectbox("🔍 지역 검색 및 선택", options=["지역을 선택하세요"] + region_list, index=0)
+    sel_region = st.selectbox("🔍 지역 검색 및 선택", options=["지역을 입력하세요."] + region_list, index=0)
 
-    if sel_region != "지역을 선택하세요":
+    if sel_region != "지역을 입력하세요.":
         components.html("<script>window.parent.document.activeElement.blur();</script>", height=0)
 
     # 1. 선택 지역 증감 카드 (필드 바로 아래)
-    if sel_region != "지역을 선택하세요":
+    if sel_region != "지역을 입력하세요.":
         m_val = df_maemae.loc[df_maemae['날짜'] == sel_date, sel_region].values[0]
         j_val = df_jeonse.loc[df_jeonse['날짜'] == sel_date, sel_region].values[0]
         m_color = "#e74c3c" if m_val > 0 else "#000080" if m_val < 0 else "#333"
         j_color = "#e74c3c" if j_val > 0 else "#000080" if j_val < 0 else "#333"
         st.markdown(f'''
             <div class="summary-card">
-                <div class="summary-label">📍 {sel_region} 매매 증감</div>
+                <div class="summary-label">📍 {sel_region} 전주 대비 매매 증감</div>
                 <div class="summary-date">기준: {sel_date}</div>
                 <div style="color:{m_color}; font-size:28px; font-weight:900;">{m_val:+.2f}%</div>
             </div>
             <div class="summary-card">
-                <div class="summary-label">📍 {sel_region} 전세 증감</div>
+                <div class="summary-label">📍 {sel_region} 전주 대비 전세 증감</div>
                 <div class="summary-date">기준: {sel_date}</div>
                 <div style="color:{j_color}; font-size:28px; font-weight:900;">{j_val:+.2f}%</div>
             </div>
@@ -171,7 +171,7 @@ def main():
             st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
     # 3. [복원] 상세 그래프 트렌드 섹션
-    if sel_region != "지역을 선택하세요":
+    if sel_region != "지역을 입력하세요.":
         st.markdown("<hr>", unsafe_allow_html=True)
         start_idx = max(0, curr_idx - 3)
         
