@@ -31,7 +31,7 @@ def set_bg_from_local(image_file):
             unsafe_allow_html=True
         )
 
-# 배경화면 적용 (bg.jpg 파일이 app.py와 같은 폴더에 있어야 함)
+# 배경화면 적용 (파일명: bg.jpg)
 set_bg_from_local('bg.jpg')
 
 # 2. UI 디자인 및 스타일 설정 (CSS)
@@ -45,35 +45,24 @@ st.markdown("""
     .brand-name { color: #006400; font-size: clamp(30px, 10vw, 45px); font-weight: 900; font-family: 'Arial Black'; letter-spacing: -2px; }
     .brand-suffix { color: #FF4500; font-size: clamp(16px, 5vw, 24px); font-weight: 900; }
 
-    /* 입력 필드(날짜/지역) 글자 900 Bold 처리 */
-    div[data-baseweb="select"] * {
-        font-weight: 900 !important;
-        font-size: 16px !important;
-    }
-    label[data-testid="stWidgetLabel"] p {
-        font-weight: 900 !important;
-        font-size: 17px !important;
-    }
+    /* 입력 필드 글자 900 Bold */
+    div[data-baseweb="select"] * { font-weight: 900 !important; font-size: 16px !important; }
+    label[data-testid="stWidgetLabel"] p { font-weight: 900 !important; font-size: 17px !important; }
 
-    /* 카드 공통 스타일 (반투명 처리) */
-    .summary-card, .rank-card {
-        background: rgba(255, 255, 255, 0.92) !important;
-    }
+    /* 카드 공통 스타일 (반투명) */
+    .summary-card, .rank-card { background: rgba(255, 255, 255, 0.92) !important; }
 
-    /* 매매/전세 요약 카드 */
+    /* 요약 카드 */
     .summary-card {
-        border-radius: 18px; padding: 20px; 
-        text-align: center; margin-bottom: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        border: 1px solid #f0f0f0;
+        border-radius: 18px; padding: 20px; text-align: center; margin-bottom: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #f0f0f0;
     }
-    .summary-label { color: #666; font-size: 13px; font-weight: 700; margin-bottom: 5px; }
 
-    /* 랭킹 카드 - 그림자 효과 대폭 강화 (Deep Shadow) */
+    /* 랭킹 카드 - 그림자 대폭 강화 */
     .rank-card {
-        padding: 12px 15px; border-radius: 12px;
-        margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.4) !important; 
+        padding: 12px 15px; border-radius: 12px; margin-bottom: 12px;
+        display: flex; align-items: center; justify-content: space-between;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.4) !important; 
         border: 1px solid rgba(0,0,0,0.1);
     }
     
@@ -90,37 +79,23 @@ st.markdown("""
     .rank-j .rank-num { color: #000080; }
     .rank-j .rank-val { color: #000080; }
 
-    .chart-title {
-        font-size: 18px; font-weight: 800; margin: 25px 0 10px 0;
-        padding-left: 12px; color: #333;
-    }
+    .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #333; }
 
-    /* 앱 종료 버튼 스타일 및 중앙 정렬 */
+    /* 종료 버튼 및 화면 정중앙 배치 */
     div.stButton { display: flex; justify-content: center; margin: 40px 0; }
     div.stButton > button {
         background: linear-gradient(135deg, #757575, #424242) !important;
-        color: white !important;
-        border-radius: 25px !important;
-        width: 180px !important;
-        height: 50px !important;
-        font-weight: 900 !important;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
-        border: none !important;
+        color: white !important; border-radius: 25px !important;
+        width: 180px !important; height: 50px !important; font-weight: 900 !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important; border: none !important;
     }
 
-    /* 종료 화면 정중앙 강제 배치 */
     .exit-wrapper {
-        position: fixed;
-        top: 50%; left: 50%;
-        transform: translate(-50%, -50%);
+        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
         width: 100%; text-align: center; z-index: 9999;
     }
-    .exit-msg {
-        color: #006400; font-weight: 900; font-size: 32px;
-        margin-top: 20px; white-space: nowrap;
-    }
+    .exit-msg { color: #006400; font-weight: 900; font-size: 32px; margin-top: 20px; }
 
-    /* 그래프 주변 빈 박스 제거 */
     [data-testid="stPlotlyChart"] { background-color: transparent !important; }
     header {visibility: hidden;}
     </style>
@@ -146,7 +121,6 @@ def load_data():
     return df_m, df_j
 
 def main():
-    # 종료 화면 로직
     if st.session_state.get("is_exit"):
         st.markdown(f"""
             <div class="exit-wrapper">
@@ -159,21 +133,20 @@ def main():
         components.html("<script>window.close();</script>")
         st.stop()
 
-    # 상단 타이틀
     st.markdown('<div class="title-container"><span class="brand-name">Dr.J</span><span class="brand-suffix">의 부동산</span></div>', unsafe_allow_html=True)
 
     df_maemae, df_jeonse = load_data()
     date_list = sorted(df_maemae['날짜'].unique().tolist())
     region_list = sorted([col for col in df_maemae.columns if col != '날짜'])
 
-    # 입력 섹션 (Bold 적용)
     sel_date = st.selectbox("📅 날짜 선택", date_list, index=len(date_list)-1)
     sel_region = st.selectbox("🔍 지역 검색 및 선택", options=["지역을 입력하세요."] + region_list, index=0)
+
+    curr_idx = date_list.index(sel_date)
 
     if sel_region != "지역을 입력하세요.":
         components.html("<script>window.parent.document.activeElement.blur();</script>", height=0)
         
-        curr_idx = date_list.index(sel_date)
         m_val = df_maemae.loc[df_maemae['날짜'] == sel_date, sel_region].values[0]
         j_val = df_jeonse.loc[df_jeonse['날짜'] == sel_date, sel_region].values[0]
         
@@ -182,16 +155,15 @@ def main():
         
         st.markdown(f'''
             <div class="summary-card">
-                <div class="summary-label">📍 {sel_region} 매매 증감</div>
+                <div class="summary-label">📍 {sel_region} 매매 증감 ({sel_date})</div>
                 <div style="color:{m_color}; font-size:28px; font-weight:900;">{m_val:+.2f}%</div>
             </div>
             <div class="summary-card">
-                <div class="summary-label">📍 {sel_region} 전세 증감</div>
+                <div class="summary-label">📍 {sel_region} 전세 증감 ({sel_date})</div>
                 <div style="color:{j_color}; font-size:28px; font-weight:900;">{j_val:+.2f}%</div>
             </div>
         ''', unsafe_allow_html=True)
 
-        # 트렌드 그래프
         start_idx = max(0, curr_idx - 3)
         def draw_chart(df, line_color, title):
             st.markdown(f'<div class="chart-title">{title}</div>', unsafe_allow_html=True)
@@ -205,20 +177,36 @@ def main():
         draw_chart(df_jeonse, '#000080', f'📉 {sel_region} 전세 트렌드 (4주)')
         st.markdown("<hr>", unsafe_allow_html=True)
 
-    # 랭킹 섹션 (강력한 그림자 적용)
-    st.markdown('<div class="chart-title" style="color:#FF69B4; border-left:6px solid #FF69B4;">🔥 주간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
+    # 1. 주간 매매 TOP 10
+    st.markdown('<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500;">🔥 주간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
     m_w_row = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_mw = m_w_row[m_w_row > 0].sort_values(ascending=False).head(10)
     for i, (name, val) in enumerate(top_mw.items()):
         st.markdown(f'<div class="rank-card rank-m"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    st.markdown('<div class="chart-title" style="color:#4169E1; border-left:6px solid #4169E1;">💧 주간 전세 상승 TOP 10</div>', unsafe_allow_html=True)
+    # 2. 월간 매매 TOP 10
+    if curr_idx >= 3:
+        st.markdown('<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500;">📅 월간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
+        m_m_sum = df_maemae.iloc[curr_idx-3 : curr_idx+1].drop(columns=['날짜']).sum()
+        top_mm = m_m_sum[m_m_sum > 0].sort_values(ascending=False).head(10)
+        for i, (name, val) in enumerate(top_mm.items()):
+            st.markdown(f'<div class="rank-card rank-m"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
+
+    # 3. 주간 전세 TOP 10
+    st.markdown('<div class="chart-title" style="color:#000080; border-left:6px solid #000080;">💧 주간 전세 상승 TOP 10</div>', unsafe_allow_html=True)
     j_w_row = df_jeonse[df_jeonse['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_jw = j_w_row[j_w_row > 0].sort_values(ascending=False).head(10)
     for i, (name, val) in enumerate(top_jw.items()):
         st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 종료 버튼
+    # 4. 월간 전세 TOP 10
+    if curr_idx >= 3:
+        st.markdown('<div class="chart-title" style="color:#000080; border-left:6px solid #000080;">📅 월간 전세 상승 TOP 10</div>', unsafe_allow_html=True)
+        j_m_sum = df_jeonse.iloc[curr_idx-3 : curr_idx+1].drop(columns=['날짜']).sum()
+        top_jm = j_m_sum[j_m_sum > 0].sort_values(ascending=False).head(10)
+        for i, (name, val) in enumerate(top_jm.items()):
+            st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
+
     if st.button("🚪 앱 종료"):
         st.session_state.is_exit = True
         st.rerun()
