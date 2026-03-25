@@ -84,7 +84,7 @@ def load_data():
 def main():
     # 종료 버튼 클릭 시 처리
     if "is_finished" in st.session_state:
-        st.markdown("<div style='text-align:center; margin-top:50px;'><h2 style='color:#FF4500;'>앱 이용이 종료되었습니다.</h2><p>브라우저 창을 닫아주세요.</p></div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align:center; margin-top:50px;'><h2 style='color:#FF4500;'>모두 부자됩시다.</h2><p>브라우저 창을 닫아주세요.</p></div>", unsafe_allow_html=True)
         st.stop()
 
     df_maemae, df_jeonse = load_data()
