@@ -10,7 +10,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# 2. 다크모드 대응 및 모바일 레이아웃 고정 (CSS)
+# 2. 버튼 중앙 배치 및 감각적 디자인 (CSS)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
@@ -21,42 +21,62 @@ st.markdown("""
     .brand-name { color: #006400; font-size: clamp(30px, 10vw, 45px); font-weight: 900; font-family: 'Arial Black'; letter-spacing: -2px; }
     .brand-suffix { color: #FF4500; font-size: clamp(16px, 5vw, 24px); font-weight: 900; }
 
-    /* 랭킹 카드 - 배경이 검정일 때도 글자가 보이도록 배경과 글자색 지정 */
+    /* 랭킹 카드 */
     .rank-card {
-        background-color: #ffffff; padding: 12px 15px; border-radius: 10px;
+        background-color: #ffffff; padding: 12px 15px; border-radius: 12px;
         margin-bottom: 8px; border-left: 6px solid #FF4500;
         display: flex; align-items: center; justify-content: space-between;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
-    .rank-info { display: flex; align-items: center; gap: 8px; color: #333333 !important; }
+    .rank-info { display: flex; align-items: center; gap: 8px; color: #333 !important; }
     .rank-num { font-weight: 900; color: #FF4500; font-size: 16px; }
-    .rank-name { font-weight: 700; font-size: 16px; color: #333333 !important; }
+    .rank-name { font-weight: 700; font-size: 16px; color: #333 !important; }
     .rank-val { font-weight: 900; color: #e74c3c; font-size: 15px; }
 
     /* 매매/전세 수치 카드 */
     .metric-box {
-        background: #ffffff; border: 1px solid #f0f0f0; border-radius: 15px;
-        padding: 18px; text-align: center; margin-bottom: 15px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        background: #ffffff; border: 1px solid #f0f0f0; border-radius: 18px;
+        padding: 20px; text-align: center; margin-bottom: 15px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
-    .metric-date { font-size: 12px; color: #666; margin-bottom: 5px; }
 
-    /* 하단 버튼 영역 - 무조건 가로 나란히 */
-    [data-testid="stHorizontalBlock"] {
+    /* 하단 버튼 영역 - 정중앙 정렬 및 짤림 방지 */
+    div[data-testid="stHorizontalBlock"] {
         display: flex !important;
         flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        gap: 10px !important;
+        justify-content: center !important; /* 중앙 정렬 */
+        align-items: center !important;
+        gap: 15px !important; /* 버튼 사이 간격 */
+        width: 100% !important;
+        margin: 30px auto !important;
     }
     
+    div[data-testid="column"] {
+        flex: 0 1 auto !important; /* 컬럼이 화면 끝까지 늘어나는 것 방지 */
+        min-width: 140px !important; /* 최소 너비 확보 */
+    }
+
+    /* 감각적인 버튼 스타일 */
     .stButton > button {
-        border-radius: 12px !important; height: 54px !important;
-        font-weight: 900 !important; font-size: 16px !important; border: none !important;
+        border-radius: 25px !important; /* 둥근 캡슐 모양 */
+        height: 54px !important;
+        font-weight: 900 !important;
+        font-size: 16px !important;
+        border: none !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important; /* 입체감 */
+        transition: all 0.2s ease;
     }
-    
-    /* 버튼 컬러 */
-    div[data-testid="column"]:nth-child(1) button { background-color: #D1E9F6 !important; color: #004080 !important; }
-    div[data-testid="column"]:nth-child(2) button { background-color: #D1F2D1 !important; color: #006400 !important; }
+
+    /* 초기화 버튼 (감각적인 파스텔 블루) */
+    div[data-testid="column"]:nth-child(1) button {
+        background: linear-gradient(135deg, #6dd5ed, #2193b0) !important;
+        color: white !important;
+    }
+    /* 종료 버튼 (감각적인 선셋 오렌지) */
+    div[data-testid="column"]:nth-child(2) button {
+        background: linear-gradient(135deg, #ff9966, #ff5e62) !important;
+        color: white !important;
+    }
 
     .chart-title {
         font-size: 18px; font-weight: 800; margin: 35px 0 15px 0;
@@ -92,7 +112,7 @@ def load_data():
 
 def main():
     if "is_exit" in st.session_state:
-        st.markdown("<div style='text-align:center; padding:50px;'><h1 style='color:#FF4500;'>모두 부자됩시다.</h1></div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align:center; padding:100px 20px;'><h1 style='color:#FF4500; font-size:40px;'>모두 부자됩시다.</h1></div>", unsafe_allow_html=True)
         components.html("<script>window.close();</script>")
         st.stop()
 
@@ -103,18 +123,18 @@ def main():
     if "reset_count" not in st.session_state:
         st.session_state.reset_count = 0
 
-    # 입력 필드
+    # 입력부
     sel_date = st.selectbox("📅 날짜 선택", date_list, index=len(date_list)-1, key=f"d_{st.session_state.reset_count}")
     sel_region = st.selectbox("🔍 지역 검색 및 선택", options=["지역을 선택하세요"] + region_list, index=0, key=f"r_{st.session_state.reset_count}")
 
-    # 주간 랭킹 (1위 관악구 형식)
+    # 주간 랭킹
     st.markdown('<div class="chart-title">🔥 주간 상승 TOP 10</div>', unsafe_allow_html=True)
     w_row = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_w = w_row[w_row > 0].sort_values(ascending=False).head(10)
     for i, (name, val) in enumerate(top_w.items()):
         st.markdown(f'<div class="rank-card"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 월간 랭킹 (누락 복원 및 1위 형식)
+    # 월간 랭킹
     st.markdown('<div class="chart-title">📅 월간 상승 TOP 10 (4주 누적)</div>', unsafe_allow_html=True)
     curr_idx = date_list.index(sel_date)
     if curr_idx >= 3:
@@ -123,7 +143,7 @@ def main():
         for i, (name, val) in enumerate(top_m.items()):
             st.markdown(f'<div class="rank-card"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 개별 분석
+    # 개별 분석 섹션
     if sel_region != "지역을 선택하세요":
         st.markdown("<hr>", unsafe_allow_html=True)
         st.markdown(f"#### 📍 {sel_region} 분석", unsafe_allow_html=True)
@@ -146,7 +166,7 @@ def main():
             </div>
         ''', unsafe_allow_html=True)
 
-        # 그래프 (그린 포인트)
+        # 그래프
         start_idx = max(0, curr_idx - 3)
         def draw_chart(df, line_color, title):
             st.markdown(f'<div class="chart-title">{title}</div>', unsafe_allow_html=True)
@@ -161,8 +181,8 @@ def main():
         draw_chart(df_maemae, '#e74c3c', '📈 매매 지수 트렌드 (4주)')
         draw_chart(df_jeonse, '#000080', '📉 전세 지수 트렌드 (4주)')
 
-    # 하단 버튼 (중앙 가로 나란히)
-    st.markdown("<div style='margin-top:30px;'></div>", unsafe_allow_html=True)
+    # --- 하단 버튼 (정중앙 고정 및 세련된 컬러) ---
+    st.markdown("<div style='margin-bottom:50px;'></div>", unsafe_allow_html=True)
     b_col1, b_col2 = st.columns(2)
     with b_col1:
         if st.button("🔄 초기화"):
