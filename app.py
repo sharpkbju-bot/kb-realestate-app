@@ -55,51 +55,46 @@ st.markdown("""
         color: #006400 !important; 
     }
 
-    /* 요약 카드 (기존 유지) */
+    /* 요약 카드 */
     .summary-card { 
         background: rgba(255, 255, 255, 0.92) !important;
         border-radius: 18px; padding: 20px; text-align: center; margin-bottom: 12px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #f0f0f0;
     }
 
-    /* [수정 사항] 요약 카드 내부 라벨 컬러 진한 파란(#000080)으로 변경 */
+    /* 요약 카드 내부 라벨 컬러 진한 파란(#000080) */
     .summary-label {
         font-weight: 900;
         color: #000080 !important;
     }
 
-    /* [수정 사항] 랭킹 카드 - 세련된 퍼플 그라데이션 배경 및 더욱 강력한 그림자 */
+    /* 랭킹 카드 - 세련된 퍼플 그라데이션 및 강력한 그림자 */
     .rank-card {
         padding: 12px 15px; border-radius: 12px; margin-bottom: 12px;
         display: flex; align-items: center; justify-content: space-between;
-        
-        /* 세련된 퍼플 그라데이션 배경 */
         background: linear-gradient(135deg, rgba(243, 229, 245, 0.95), rgba(225, 190, 231, 0.95)) !important;
-        
-        /* 그림자 대폭 강화 및 내부 그림자 추가 */
         box-shadow: 0 15px 35px rgba(0,0,0,0.5) !important, inset 0 2px 5px rgba(255,255,255,0.5) !important; 
-        border: 1px solid rgba(103, 58, 183, 0.2); /* 은은한 퍼플 보더 */
+        border: 1px solid rgba(103, 58, 183, 0.2);
     }
     
     .rank-info { display: flex; align-items: center; gap: 8px; }
     
-    /* 랭킹 카드 내부의 모든 글자 퍼플(#4a148c) (기존 유지) */
+    /* 랭킹 카드 내부의 모든 글자 퍼플(#4a148c) */
     .rank-num, .rank-name, .rank-val {
-        color: #4a148c !important; /* 짙은 퍼플 */
+        color: #4a148c !important;
     }
     
     .rank-num { font-weight: 900; font-size: 16px; }
     .rank-name { font-weight: 900; font-size: 16px; }
     .rank-val { font-weight: 900; font-size: 15px; }
     
-    /* 기존 매매/전세 구분 보더는 유지하되 글자색은 퍼플로 통합 */
     .rank-m { border-left: 7px solid #FF4500; }
     .rank-j { border-left: 7px solid #000080; }
 
-    /* [수정 사항] 그래프 제목 컬러 진한 파란(#000080)으로 변경 */
-    .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #000080; }
+    /* [수정 사항] 트렌드 차트 제목 컬러 진한 그린(#006400) */
+    .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #006400; }
 
-    /* 종료 버튼 및 화면 정중앙 배치 */
+    /* 종료 버튼 */
     div.stButton { display: flex; justify-content: center; margin: 40px 0; }
     div.stButton > button {
         background: linear-gradient(135deg, #757575, #424242) !important;
@@ -189,14 +184,12 @@ def main():
             fig = px.line(sub_df, x='날짜', y=sel_region, markers=True)
             fig.update_traces(line_color=line_color, line_width=4, marker=dict(size=10, color='white', line=dict(width=2, color=line_color)))
             
-            # [수정 사항] 그래프 폰트 컬러 진한 파란(#000080)으로 변경 및 hovermode 고정
             fig.update_layout(height=220, margin=dict(l=10,r=10,t=10,b=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
                               hovermode=False, dragmode=False, 
                               font=dict(color='#000080'),
                               xaxis=dict(fixedrange=True, tickfont=dict(color='#000080')),
                               yaxis=dict(fixedrange=True, tickfont=dict(color='#000080')))
             
-            # [수정 사항] 그래프 터치 및 드래그 비활성화 (고정)
             st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False, 'scrollZoom': False})
 
         draw_chart(df_maemae, '#e74c3c', f'📈 {sel_region} 매매 트렌드 (4주)')
@@ -218,16 +211,16 @@ def main():
         for i, (name, val) in enumerate(top_mm.items()):
             st.markdown(f'<div class="rank-card rank-m"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 3. 주간 전세 TOP 10
-    st.markdown('<div class="chart-title" style="color:#000080; border-left:6px solid #000080;">💧 주간 전세 상승 TOP 10</div>', unsafe_allow_html=True)
+    # 3. [수정 사항] 주간 전세 TOP 10 제목 컬러 진한 핑크(#FF1493)
+    st.markdown('<div class="chart-title" style="color:#FF1493; border-left:6px solid #FF1493;">💧 주간 전세 상승 TOP 10</div>', unsafe_allow_html=True)
     j_w_row = df_jeonse[df_jeonse['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_jw = j_w_row[j_w_row > 0].sort_values(ascending=False).head(10)
     for i, (name, val) in enumerate(top_jw.items()):
         st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 4. 월간 전세 TOP 10
+    # 4. [수정 사항] 월간 전세 TOP 10 제목 컬러 진한 핑크(#FF1493)
     if curr_idx >= 3:
-        st.markdown('<div class="chart-title" style="color:#000080; border-left:6px solid #000080;">📅 월간 전세 상승 TOP 10</div>', unsafe_allow_html=True)
+        st.markdown('<div class="chart-title" style="color:#FF1493; border-left:6px solid #FF1493;">📅 월간 전세 상승 TOP 10</div>', unsafe_allow_html=True)
         j_m_sum = df_jeonse.iloc[curr_idx-3 : curr_idx+1].drop(columns=['날짜']).sum()
         top_jm = j_m_sum[j_m_sum > 0].sort_values(ascending=False).head(10)
         for i, (name, val) in enumerate(top_jm.items()):
