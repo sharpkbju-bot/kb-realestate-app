@@ -128,7 +128,7 @@ def main():
 
     # 2. [신규 요청] 선택된 지역의 증감 카드 (필드 바로 아래 배치)
     if sel_region != "지역을 선택하세요.":
-        st.markdown(f"<div style='margin-top:20px;'></div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='margin-top:16px;'></div>", unsafe_allow_html=True)
         m_val = df_maemae.loc[df_maemae['날짜'] == sel_date, sel_region].values[0]
         j_val = df_jeonse.loc[df_jeonse['날짜'] == sel_date, sel_region].values[0]
         
