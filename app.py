@@ -1,64 +1,125 @@
 import streamlit as st
 import pandas as pd
 
-# 페이지 설정
-st.set_page_config(page_title="주간 아파트 시황 조회", layout="wide")
+# 1. 페이지 설정 및 디자인 커스텀
+st.set_page_config(page_title="경배의 주간 아파트 시황", layout="centered")
+
+# CSS를 이용한 디자인 세련되게 다듬기
+st.markdown("""
+    <style>
+    .main {
+        background-color: #f8f9fa;
+    }
+    div.stButton > button:first-child {
+        background-color: #007bff;
+        color: white;
+    }
+    /* 카드 디자인 최적화 */
+    .metric-container {
+        background-color: white;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        border: 1px solid #eee;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    .metric-label {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 5px;
+    }
+    .metric-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+    }
+    /* 여백 최소화 */
+    .block-container {
+        padding-top: 2rem !important;
+        padding-bottom: 0rem !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 @st.cache_data
 def load_data():
-    # 파일명은 실제 깃허브에 올린 이름과 일치해야 합니다.
-    # 여기서는 편의상 변경된 이름을 기준으로 작성했습니다.
-    df_m = pd.read_csv('maemae.csv', encoding='cp949')
-    df_j = pd.read_csv('jeonse.csv', encoding='cp949')
+    # 인코딩 오류 방지를 위해 cp949 적용 (필요시 utf-8로 변경)
+    try:
+        df_m = pd.read_csv('maemae.csv', encoding='cp949')
+        df_j = pd.read_csv('jeonse.csv', encoding='cp949')
+    except:
+        df_m = pd.read_csv('maemae.csv', encoding='utf-8')
+        df_j = pd.read_csv('jeonse.csv', encoding='utf-8')
     
-    # 날짜 컬럼을 문자열로 변환하여 선택 박스에서 잘 보이게 함
     df_m['날짜'] = df_m['날짜'].astype(str)
     df_j['날짜'] = df_j['날짜'].astype(str)
-    
     return df_m, df_j
 
-st.title("🏘️ 주간 아파트 매매/전세 증감 조회")
-st.markdown("매주 업데이트되는 엑셀 데이터를 기반으로 지역별 시황을 확인하세요.")
+def main():
+    st.title("🏘️ 아파트 주간 시황")
+    
+    try:
+        df_maemae, df_jeonse = load_data()
+        
+        # --- 상단 선택 영역 (사이드바 대신 메인 화면) ---
+        col_date, col_search = st.columns([1, 1.5])
+        
+        with col_date:
+            date_list = df_maemae['날짜'].unique().tolist()
+            selected_date = st.selectbox("📅 날짜 선택", date_list, index=len(date_list)-1)
 
-try:
-    df_maemae, df_jeonse = load_data()
+        # '날짜' 컬럼을 제외한 모든 지역명 리스트 추출
+        region_list = [col for col in df_maemae.columns if col != '날짜']
 
-    # 사이드바: 날짜 선택
-    st.sidebar.header("조회 조건 설정")
-    date_list = df_maemae['날짜'].unique().tolist()
-    selected_date = st.sidebar.selectbox("📅 확인하고 싶은 날짜", date_list, index=len(date_list)-1)
+        with col_search:
+            # 두 글자 이상 입력 시 드롭다운에서 선택할 수 있도록 함
+            selected_region = st.selectbox(
+                "🔍 지역 검색 및 선택",
+                options=["지역을 선택하세요"] + region_list,
+                help="두 글자 이상 입력하여 지역을 찾으세요."
+            )
 
-    # 메인 화면: 지역 검색
-    search_query = st.text_input("🔍 검색할 지역명을 입력하세요 (예: 광명, 노원구, 연수구)", "")
+        st.divider()
 
-    if search_query:
-        # 해당 날짜의 데이터만 추출
-        m_row = df_maemae[df_maemae['날짜'] == selected_date]
-        j_row = df_jeonse[df_jeonse['날짜'] == selected_date]
+        # --- 결과 표시 영역 ---
+        if selected_region != "지역을 선택하세요":
+            # 데이터 추출
+            m_val = df_maemae.loc[df_maemae['날짜'] == selected_date, selected_region].values[0]
+            j_val = df_jeonse.loc[df_jeonse['날짜'] == selected_date, selected_region].values[0]
 
-        # 입력한 검색어가 포함된 컬럼(지역) 찾기
-        matched_cols = [col for col in df_maemae.columns if search_query in col]
-
-        if matched_cols:
-            st.subheader(f"📍 '{search_query}' 검색 결과 ({selected_date} 기준)")
+            st.subheader(f"📍 {selected_region} 시황 ({selected_date})")
             
-            for col in matched_cols:
-                m_val = m_row[col].values[0]
-                j_val = j_row[col].values[0]
+            # 카드 디자인 (여백 최적화)
+            c1, c2 = st.columns(2)
+            
+            with c1:
+                st.markdown(f"""
+                    <div class="metric-container">
+                        <div class="metric-label">매매 증감률</div>
+                        <div class="metric-value" style="color: {'#e74c3c' if m_val > 0 else '#3498db' if m_val < 0 else '#333'};">
+                            {m_val:+.3f}%
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
                 
-                with st.expander(f"🏠 {col} 시황 확인", expanded=True):
-                    c1, c2 = st.columns(2)
-                    c1.metric("매매 증감률", f"{m_val:.3f}%")
-                    c2.metric("전세 증감률", f"{j_val:.3f}%")
+            with c2:
+                st.markdown(f"""
+                    <div class="metric-container">
+                        <div class="metric-label">전세 증감률</div>
+                        <div class="metric-value" style="color: {'#e74c3c' if j_val > 0 else '#3498db' if j_val < 0 else '#333'};">
+                            {j_val:+.3f}%
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
+
+            # 트렌드 확인을 위한 간단한 안내
+            st.info(f"선택하신 {selected_region}의 해당 주간 변동폭입니다.")
         else:
-            st.error("해당하는 지역명을 찾을 수 없습니다. 다시 입력해주세요.")
-    else:
-        st.info("왼쪽에서 날짜를 선택하고, 위 입력창에 지역명을 입력하여 조회를 시작하세요.")
+            st.write("위의 검색창에서 지역을 선택하면 상세 데이터가 나타납니다.")
 
-except FileNotFoundError:
-    st.error("데이터 파일을 찾을 수 없습니다. 'maemae.csv'와 'jeonse.csv' 파일이 저장소에 있는지 확인해주세요.")
-except Exception as e:
-    st.error(f"오류가 발생했습니다: {e}")
+    except Exception as e:
+        st.error(f"데이터를 불러오는 중 오류가 발생했습니다: {e}")
 
-# 하단 안내
-st.caption("데이터 출처: KB부동산 (업로드하신 엑셀 파일 기반)")
+if __name__ == "__main__":
+    main()
