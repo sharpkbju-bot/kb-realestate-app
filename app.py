@@ -78,10 +78,14 @@ st.markdown("""
 
     header {visibility: hidden;}
     </style>
-    
-    <div class="title-container">
-        <span class="brand-name">Dr.J</span><span class="brand-suffix">의 부동산</span>
-    </div>
+    """, unsafe_allow_html=True)
+
+# 공통 타이틀 함수
+def show_title():
+    st.markdown("""
+        <div class="title-container">
+            <span class="brand-name">Dr.J</span><span class="brand-suffix">의 부동산</span>
+        </div>
     """, unsafe_allow_html=True)
 
 @st.cache_data
@@ -104,15 +108,19 @@ def load_data():
     return df_m, df_j
 
 def main():
-    # 1. 종료 상태 확인 및 화면 구성
+    # 1. 종료 상태 확인
     if st.session_state.get("is_exit"):
+        show_title()  # 타이틀 유지
         st.markdown("""
-            <div style='display:flex; flex-direction:column; justify-content:center; align-items:center; height:60vh; text-align:center;'>
-                <h2 style='color:#006400; font-weight:900; white-space:nowrap; letter-spacing:-1px; margin-top:20px;'>모두 부자됩시다.</h2>
+            <div style='display:flex; flex-direction:column; justify-content:center; align-items:center; height:50vh; text-align:center;'>
+                <h2 style='color:#006400; font-weight:900; white-space:nowrap; letter-spacing:-1px;'>모두 부자됩시다.</h2>
             </div>
         """, unsafe_allow_html=True)
         components.html("<script>window.close();</script>")
         st.stop()
+
+    # 일반 실행 시 타이틀 표시
+    show_title()
 
     df_maemae, df_jeonse = load_data()
     date_list = sorted(df_maemae['날짜'].unique().tolist())
