@@ -91,8 +91,8 @@ st.markdown("""
     .rank-m { border-left: 7px solid #FF4500; }
     .rank-j { border-left: 7px solid #000080; }
 
-    /* [수정 사항] 주간/월간 전세 상승 TOP 10 카드 내 지역명 컬러 청녹색(#008080)으로 변경 */
-    .rank-j .rank-name {
+    /* [수정 사항] 주간/월간 전세 상승 TOP 10 카드 내 지역명 및 상승률 컬러 청녹색(#008080)으로 변경 */
+    .rank-j .rank-name, .rank-j .rank-val {
         color: #008080 !important;
     }
 
