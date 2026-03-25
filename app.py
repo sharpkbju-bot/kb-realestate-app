@@ -33,11 +33,14 @@ st.markdown("""
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
     html, body, [class*="css"] { font-family: 'Noto+Sans+KR', sans-serif; }
 
+    /* 최상단 앵커 포인트 */
+    #top-anchor { position: absolute; top: 0; }
+
     .title-container { width: 100%; padding: 30px 0 15px 0; text-align: center; }
     .brand-name { color: #006400; font-size: clamp(30px, 10vw, 45px); font-weight: 900; font-family: 'Arial Black'; letter-spacing: -2px; }
     .brand-suffix { color: #FF4500; font-size: clamp(16px, 5vw, 24px); font-weight: 900; }
 
-    /* 입력 필드 스타일 */
+    /* 입력 필드 Bold 처리 */
     div[data-baseweb="select"] * { font-weight: 900 !important; font-size: 16px !important; }
     label[data-testid="stWidgetLabel"] p { font-weight: 900 !important; font-size: 17px !important; }
 
@@ -48,26 +51,31 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #f0f0f0;
     }
 
-    /* 랭킹 버튼 - 사진처럼 태그 안 나오게 수정 */
-    div.stButton > button {
+    /* 랭킹 버튼 - 사이즈 복원 및 강력한 그림자 */
+    div.stButton > button[key^="btn_"] {
         background: rgba(255, 255, 255, 0.92) !important;
         border-radius: 12px !important;
-        padding: 10px 15px !important;
+        padding: 18px 20px !important; /* 패딩을 늘려 사이즈 복원 */
         width: 100% !important;
+        min-height: 65px !important;   /* 최소 높이 설정 */
         border: 1px solid rgba(0,0,0,0.1) !important;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.3) !important;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.4) !important; /* 강력한 그림자 복원 */
         color: #111 !important;
         font-weight: 900 !important;
+        font-size: 17px !important;    /* 폰트 크기 유지 */
         text-align: left !important;
+        display: block !important;
+        margin-bottom: 5px !important;
     }
 
     .chart-title { font-size: 19px; font-weight: 900; margin: 25px 0 10px 0; padding-left: 12px; color: #333; }
 
-    /* 종료 버튼 */
+    /* 종료 버튼 전용 컨테이너 */
     .exit-btn-container .stButton > button {
         background: linear-gradient(135deg, #757575, #424242) !important;
         color: white !important; border-radius: 25px !important;
         width: 180px !important; height: 50px !important;
+        font-size: 16px !important;
     }
 
     /* 종료 화면 */
@@ -78,6 +86,7 @@ st.markdown("""
 
     header {visibility: hidden;}
     [data-testid="stPlotlyChart"] { background-color: transparent !important; }
+    hr { border: 0; height: 1px; background: rgba(0,0,0,0.1); margin: 30px 0; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -97,6 +106,9 @@ def load_data():
     return df_m, df_j
 
 def main():
+    # 최상단으로 스크롤하기 위한 앵커 태그
+    st.markdown('<div id="top-anchor"></div>', unsafe_allow_html=True)
+
     if st.session_state.get("is_exit"):
         st.markdown(f"""
             <div class="exit-wrapper">
@@ -154,7 +166,7 @@ def main():
         draw_chart(df_jeonse, '#000080', f'📉 {sel_region} 전세 트렌드')
         st.markdown("<hr>", unsafe_allow_html=True)
 
-    # 랭킹 표시 함수 (태그 노출 방지)
+    # 랭킹 표시 함수 (사이즈 복원 및 자동 스크롤 추가)
     def render_rank(df, date_idx, title, color, is_monthly=False):
         st.markdown(f'<div class="chart-title" style="color:{color}; border-left:6px solid {color};">{title}</div>', unsafe_allow_html=True)
         if is_monthly:
@@ -164,10 +176,16 @@ def main():
         
         top_10 = data[data > 0].sort_values(ascending=False).head(10)
         for i, (name, val) in enumerate(top_10.items()):
-            # 버튼 텍스트에서 HTML 제거하고 깔끔하게 표시
+            # 버튼 라벨 구성 (HTML 태그 노출 방지)
             btn_label = f"{i+1}위  |  {name}  |  +{val:.2f}%"
             if st.button(btn_label, key=f"btn_{title}_{name}"):
                 st.session_state.clicked_region = name
+                # 자바스크립트를 이용해 최상단 앵커로 스크롤 이동
+                components.html("""
+                    <script>
+                        window.parent.document.getElementById('top-anchor').scrollIntoView({behavior: 'smooth'});
+                    </script>
+                """, height=0)
                 st.rerun()
 
     curr_idx = date_list.index(sel_date)
