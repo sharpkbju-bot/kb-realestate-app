@@ -106,7 +106,7 @@ def main():
     if "is_exit" in st.session_state:
         st.markdown("""
             <div style='display:flex; justify-content:center; align-items:center; height:70vh;'>
-                <h2 style='color:#006400; font-weight:900; white-space:nowrap; letter-spacing:-1px;'>모두 부자됩시다.<br><br><br>Dr.J</h2>
+                <h2 style='color:#006400; font-weight:900; white-space:nowrap; letter-spacing:-1px;'>모두 부자됩시다.</h2>
             </div>
         """, unsafe_allow_html=True)
         components.html("<script>window.close();</script>")
@@ -122,28 +122,46 @@ def main():
     if sel_region != "지역을 입력하세요.":
         components.html("<script>window.parent.document.activeElement.blur();</script>", height=0)
 
-    # 1. 선택 지역 증감 카드 (필드 바로 아래)
+    # --- 핵심 수정: 상세 분석 섹션(카드+그래프)을 입력 필드 바로 아래로 이동 ---
+    curr_idx = date_list.index(sel_date)
     if sel_region != "지역을 입력하세요.":
         m_val = df_maemae.loc[df_maemae['날짜'] == sel_date, sel_region].values[0]
         j_val = df_jeonse.loc[df_jeonse['날짜'] == sel_date, sel_region].values[0]
         m_color = "#e74c3c" if m_val > 0 else "#000080" if m_val < 0 else "#333"
         j_color = "#e74c3c" if j_val > 0 else "#000080" if j_val < 0 else "#333"
+        
+        # 증감 카드
         st.markdown(f'''
             <div class="summary-card">
-                <div class="summary-label">📍 {sel_region} 전주 대비 매매 증감</div>
+                <div class="summary-label">📍 {sel_region} 매매 증감</div>
                 <div class="summary-date">기준: {sel_date}</div>
                 <div style="color:{m_color}; font-size:28px; font-weight:900;">{m_val:+.2f}%</div>
             </div>
             <div class="summary-card">
-                <div class="summary-label">📍 {sel_region} 전주 대비 전세 증감</div>
+                <div class="summary-label">📍 {sel_region} 전세 증감</div>
                 <div class="summary-date">기준: {sel_date}</div>
                 <div style="color:{j_color}; font-size:28px; font-weight:900;">{j_val:+.2f}%</div>
             </div>
         ''', unsafe_allow_html=True)
 
-    # 2. 랭킹 섹션
-    curr_idx = date_list.index(sel_date)
+        # 그래프 트렌드 (카드 바로 아래 배치)
+        start_idx = max(0, curr_idx - 3)
+        def draw_chart(df, line_color, title):
+            st.markdown(f'<div class="chart-title">{title}</div>', unsafe_allow_html=True)
+            sub_df = df.iloc[start_idx : curr_idx + 1]
+            fig = px.line(sub_df, x='날짜', y=sel_region, markers=True)
+            fig.update_traces(line_color=line_color, line_width=4, marker=dict(size=10, color='white', line=dict(width=2, color=line_color)))
+            fig.add_scatter(x=[sel_date], y=[sub_df.loc[sub_df['날짜']==sel_date, sel_region].values[0]], 
+                            mode='markers', marker=dict(size=14, color='#00FF00', line=dict(width=3, color='white')), showlegend=False)
+            fig.update_layout(height=220, margin=dict(l=10,r=10,t=10,b=10), xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True), hovermode=False)
+            st.plotly_chart(fig, use_container_width=True, config={'staticPlot': True})
 
+        draw_chart(df_maemae, '#e74c3c', f'📈 {sel_region} 매매 트렌드 (4주)')
+        draw_chart(df_jeonse, '#000080', f'📉 {sel_region} 전세 트렌드 (4주)')
+        
+        st.markdown("<hr>", unsafe_allow_html=True)
+
+    # 2. 랭킹 섹션 (상세 분석 아래로 이동)
     st.markdown('<div class="chart-title" style="color:#FF69B4; border-left:6px solid #FF69B4;">🔥 주간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
     m_w_row = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_mw = m_w_row[m_w_row > 0].sort_values(ascending=False).head(10)
@@ -170,25 +188,7 @@ def main():
         for i, (name, val) in enumerate(top_jm.items()):
             st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 3. [복원] 상세 그래프 트렌드 섹션
-    if sel_region != "지역을 입력하세요.":
-        st.markdown("<hr>", unsafe_allow_html=True)
-        start_idx = max(0, curr_idx - 3)
-        
-        def draw_chart(df, line_color, title):
-            st.markdown(f'<div class="chart-title">{title}</div>', unsafe_allow_html=True)
-            sub_df = df.iloc[start_idx : curr_idx + 1]
-            fig = px.line(sub_df, x='날짜', y=sel_region, markers=True)
-            fig.update_traces(line_color=line_color, line_width=4, marker=dict(size=10, color='white', line=dict(width=2, color=line_color)))
-            fig.add_scatter(x=[sel_date], y=[sub_df.loc[sub_df['날짜']==sel_date, sel_region].values[0]], 
-                            mode='markers', marker=dict(size=14, color='#00FF00', line=dict(width=3, color='white')), showlegend=False)
-            fig.update_layout(height=220, margin=dict(l=10,r=10,t=10,b=10), xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True), hovermode=False)
-            st.plotly_chart(fig, use_container_width=True, config={'staticPlot': True})
-
-        draw_chart(df_maemae, '#e74c3c', f'📈 {sel_region} 매매 트렌드 (4주)')
-        draw_chart(df_jeonse, '#000080', f'📉 {sel_region} 전세 트렌드 (4주)')
-
-    # 4. 종료 버튼 (중앙 배치)
+    # 3. 종료 버튼 (중앙 배치 유지)
     if st.button("🚪 앱 종료"):
         st.session_state.is_exit = True
         st.rerun()
