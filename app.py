@@ -8,7 +8,7 @@ import os
 # 1. 페이지 설정
 st.set_page_config(page_title="Dr.J의 부동산", page_icon="🏠", layout="centered")
 
-# 세션 상태 및 쿼리 파라미터 처리 (스크롤 및 지역 연동)
+# 세션 상태 초기화
 if "clicked_region" not in st.session_state:
     st.session_state.clicked_region = "지역을 입력하세요."
 
@@ -27,54 +27,63 @@ def set_bg_from_local(image_file):
 
 set_bg_from_local('bg.jpg')
 
-# 2. UI 스타일 설정 (CSS)
+# 2. 스타일 설정 (CSS)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
-    html, body, [class*="css"] { font-family: 'Noto+Sans+KR', sans-serif; scroll-behavior: smooth; }
+    html, body, [class*="css"] { font-family: 'Noto+Sans+KR', sans-serif; }
 
-    /* 타이틀 및 상단 여백 */
+    /* 최상단 앵커 */
+    #top-anchor { position: absolute; top: 0; height: 0; }
+
     .title-container { width: 100%; padding: 30px 0 15px 0; text-align: center; }
     .brand-name { color: #006400; font-size: clamp(30px, 10vw, 45px); font-weight: 900; font-family: 'Arial Black'; letter-spacing: -2px; }
     .brand-suffix { color: #FF4500; font-size: clamp(16px, 5vw, 24px); font-weight: 900; }
 
-    /* 검색 필드와 동일한 너비의 카드 스타일 */
+    /* 입력 필드 Bold */
+    div[data-baseweb="select"] * { font-weight: 900 !important; font-size: 16px !important; }
+    label[data-testid="stWidgetLabel"] p { font-weight: 900 !important; font-size: 17px !important; }
+
+    /* 상세 정보 카드 */
+    .summary-card {
+        background: rgba(255, 255, 255, 0.92) !important;
+        border-radius: 18px; padding: 20px; text-align: center; margin-bottom: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #f0f0f0;
+    }
+
+    /* 랭킹 버튼 - 검색창 너비와 동일하게 100% 확장 및 강력한 그림자 */
     div.stButton > button[key^="btn_"] {
         background: rgba(255, 255, 255, 0.95) !important;
         border-radius: 12px !important;
         padding: 20px !important;
-        width: 100% !important; /* 화면에 꽉 차게 설정 */
+        width: 100% !important; /* 화면에 꽉 차게 */
         min-height: 70px !important;
         border: 1px solid rgba(0,0,0,0.1) !important;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.4) !important; /* 강력한 그림자 */
+        box-shadow: 0 12px 30px rgba(0,0,0,0.4) !important; /* 강력한 그림자 */
         color: #111 !important;
         font-weight: 900 !important;
         font-size: 18px !important;
         text-align: left !important;
-        margin-bottom: 10px !important;
-        display: flex !important;
-        align-items: center !important;
+        margin-bottom: 8px !important;
     }
 
-    /* 요약 카드 디자인 */
-    .summary-card {
-        background: rgba(255, 255, 255, 0.92) !important;
-        border-radius: 18px; padding: 25px; text-align: center; margin-bottom: 15px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #f0f0f0;
-    }
+    .chart-title { font-size: 20px; font-weight: 900; margin: 25px 0 10px 0; padding-left: 12px; color: #333; }
 
-    .chart-title { font-size: 20px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #333; }
-
-    /* 종료 버튼 전용 */
+    /* 종료 버튼 */
     .exit-btn-container .stButton > button {
         background: linear-gradient(135deg, #757575, #424242) !important;
         color: white !important; border-radius: 25px !important;
-        width: 200px !important; height: 55px !important; font-size: 16px !important;
+        width: 180px !important; height: 50px !important;
+    }
+
+    .exit-wrapper {
+        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        width: 100%; text-align: center; z-index: 9999;
     }
 
     header {visibility: hidden;}
     [data-testid="stPlotlyChart"] { background-color: transparent !important; }
-    hr { border: 0; height: 1px; background: rgba(0,0,0,0.1); margin: 35px 0; }
+    hr { border: 0; height: 1px; background: rgba(0,0,0,0.1); margin: 30px 0; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -86,15 +95,26 @@ def load_data():
     except:
         df_m = pd.read_csv('maemae.csv', encoding='utf-8')
         df_j = pd.read_csv('jeonse.csv', encoding='utf-8')
+    
+    # '날짜' 열 제외하고 수치형 강제 변환 (에러 방지)
+    for df in [df_m, df_j]:
+        for col in df.columns:
+            if col != '날짜':
+                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+
     common_cols = ['날짜'] + sorted(list(set(df_m.columns) & set(df_j.columns) - {'날짜'}))
     return df_m[common_cols], df_j[common_cols]
 
 def main():
-    # 최상단 앵커 (스크롤용)
-    st.markdown('<div id="top"></div>', unsafe_allow_html=True)
+    # 상단 이동용 앵커
+    st.markdown('<div id="top-anchor"></div>', unsafe_allow_html=True)
 
     if st.session_state.get("is_exit"):
-        st.markdown("""<div style='text-align:center; margin-top:40vh;'><h1 style='color:#006400; font-weight:900;'>모두 부자됩시다.</h1></div>""", unsafe_allow_html=True)
+        st.markdown(f"""
+            <div class="exit-wrapper">
+                <div class="title-container"><span class="brand-name">Dr.J</span><span class="brand-suffix">의 부동산</span></div>
+                <h1 style="color:#006400; font-weight:900; margin-top:30px;">모두 부자됩시다.</h1>
+            </div>""", unsafe_allow_html=True)
         components.html("<script>window.close();</script>")
         st.stop()
 
@@ -106,7 +126,6 @@ def main():
 
     sel_date = st.selectbox("📅 날짜 선택", date_list, index=len(date_list)-1)
     
-    # 세션 상태 연동 지역 선택
     if st.session_state.clicked_region in region_list:
         default_idx = region_list.index(st.session_state.clicked_region) + 1
     else:
@@ -117,20 +136,20 @@ def main():
     if sel_region != "지역을 입력하세요.":
         st.session_state.clicked_region = sel_region
         curr_idx = date_list.index(sel_date)
-        
         m_val = df_maemae.loc[df_maemae['날짜'] == sel_date, sel_region].values[0]
         j_val = df_jeonse.loc[df_jeonse['날짜'] == sel_date, sel_region].values[0]
+        
         m_color = "#e74c3c" if m_val > 0 else "#000080" if m_val < 0 else "#333"
         j_color = "#e74c3c" if j_val > 0 else "#000080" if j_val < 0 else "#333"
         
         st.markdown(f'''
             <div class="summary-card">
-                <div style="color:#666; font-size:14px; font-weight:700; margin-bottom:5px;">📍 {sel_region} 매매 증감 ({sel_date})</div>
-                <div style="color:{m_color}; font-size:32px; font-weight:900;">{m_val:+.2f}%</div>
+                <div style="color:#666; font-size:14px; font-weight:700;">📍 {sel_region} 매매 증감 ({sel_date})</div>
+                <div style="color:{m_color}; font-size:28px; font-weight:900;">{m_val:+.2f}%</div>
             </div>
             <div class="summary-card">
-                <div style="color:#666; font-size:14px; font-weight:700; margin-bottom:5px;">📍 {sel_region} 전세 증감 ({sel_date})</div>
-                <div style="color:{j_color}; font-size:32px; font-weight:900;">{j_val:+.2f}%</div>
+                <div style="color:#666; font-size:14px; font-weight:700;">📍 {sel_region} 전세 증감 ({sel_date})</div>
+                <div style="color:{j_color}; font-size:28px; font-weight:900;">{j_val:+.2f}%</div>
             </div>''', unsafe_allow_html=True)
 
         start_idx = max(0, curr_idx - 3)
@@ -138,32 +157,34 @@ def main():
             st.markdown(f'<div class="chart-title">{title}</div>', unsafe_allow_html=True)
             sub_df = df.iloc[start_idx : curr_idx + 1]
             fig = px.line(sub_df, x='날짜', y=sel_region, markers=True)
-            fig.update_traces(line_color=color, line_width=4, marker=dict(size=12, color='white', line=dict(width=3, color=color)))
-            fig.update_layout(height=240, margin=dict(l=10,r=10,t=10,b=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', hovermode=False)
+            fig.update_traces(line_color=color, line_width=4, marker=dict(size=10, color='white', line=dict(width=2, color=color)))
+            fig.update_layout(height=220, margin=dict(l=10,r=10,t=10,b=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', hovermode=False)
             st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
         draw_chart(df_maemae, '#e74c3c', f'📈 {sel_region} 매매 트렌드')
         draw_chart(df_jeonse, '#000080', f'📉 {sel_region} 전세 트렌드')
         st.markdown("<hr>", unsafe_allow_html=True)
 
-    # 랭킹 렌더링 함수 (너비 확장 및 강제 상단 스크롤 자바스크립트 추가)
+    # 랭킹 함수 (에러 방지 로직 및 상단 이동 JS 보강)
     def render_rank(df, date_idx, title, color, is_monthly=False):
         st.markdown(f'<div class="chart-title" style="color:{color}; border-left:6px solid {color};">{title}</div>', unsafe_allow_html=True)
+        
+        # 수치 데이터만 선택하여 비교 에러 방지
+        numeric_df = df.drop(columns=['날짜'])
         if is_monthly:
-            data = df.iloc[date_idx-3 : date_idx+1].drop(columns=['날짜']).sum()
+            data = numeric_df.iloc[max(0, date_idx-3) : date_idx+1].sum()
         else:
-            data = df[df['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
+            data = numeric_df.iloc[date_idx]
         
         top_10 = data[data > 0].sort_values(ascending=False).head(10)
         for i, (name, val) in enumerate(top_10.items()):
-            label = f"{i+1}위  |  {name}  |  +{val:.2f}%"
-            # 버튼 클릭 시 세션 업데이트 및 스크롤 명령 실행
-            if st.button(label, key=f"btn_{title}_{name}"):
+            btn_label = f"{i+1}위  |  {name}  |  +{val:.2f}%"
+            if st.button(btn_label, key=f"btn_{title}_{name}"):
                 st.session_state.clicked_region = name
-                # 자바스크립트를 이용해 부모 창의 'top' ID 위치로 즉시 이동
-                components.html(f"""
+                # 부모 창(Streamlit 메인)의 최상단으로 스크롤 강제 이동
+                components.html("""
                     <script>
-                        window.parent.document.getElementById('top').scrollIntoView();
+                        window.parent.document.querySelector('section.main').scrollTo(0, 0);
                     </script>
                 """, height=0)
                 st.rerun()
@@ -177,8 +198,8 @@ def main():
     if curr_idx >= 3:
         render_rank(df_jeonse, curr_idx, "📅 월간 전세 상승 TOP 10", "#000080", True)
 
-    st.markdown('<div class="exit-btn-container" style="text-align:center; margin-top:50px; margin-bottom:100px;">', unsafe_allow_html=True)
-    if st.button("🚪 앱 종료", key="exit_btn_main"):
+    st.markdown('<div class="exit-btn-container" style="text-align:center; margin-top:40px;">', unsafe_allow_html=True)
+    if st.button("🚪 앱 종료", key="exit_f"):
         st.session_state.is_exit = True
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
