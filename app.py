@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# 1. 페이지 설정: 이 설정이 PWA 설치 시 앱의 이름과 아이콘을 결정합니다.
+# 1. 페이지 설정 (PWA 설치 이름 결정)
 st.set_page_config(
     page_title="Dr.J의 부동산", 
     page_icon="🏠",
@@ -18,7 +18,7 @@ st.markdown("""
         font-family: 'Noto+Sans+KR', sans-serif;
     }
 
-    /* 타이틀 영역: Dr.J 강조 및 한 줄 정렬 */
+    /* 타이틀 영역: Dr.J 브랜드 강조 */
     .title-container {
         padding: 40px 0 20px 0;
         text-align: center;
@@ -35,15 +35,16 @@ st.markdown("""
     
     .brand-name {
         color: #006400; /* 짙은 그린 */
-        font-size: clamp(32px, 10vw, 48px); /* Dr.J를 매우 크게 설정 */
+        font-size: clamp(36px, 12vw, 52px); /* Dr.J를 압도적으로 크게 */
         font-weight: 900;
         font-family: 'Arial Black', sans-serif;
         line-height: 1;
+        letter-spacing: -2px;
     }
     
     .brand-suffix {
         color: #333;
-        font-size: clamp(18px, 5vw, 26px); /* '의 부동산'은 상대적으로 작게 */
+        font-size: clamp(18px, 5vw, 26px);
         font-weight: 700;
     }
 
@@ -51,6 +52,7 @@ st.markdown("""
     .selected-region-text {
         color: #DB7093;
         font-weight: 700;
+        font-size: 1.1em;
     }
 
     /* 수치 카드 디자인 */
@@ -66,7 +68,7 @@ st.markdown("""
     .metric-label { font-size: 14px; color: #888; margin-bottom: 5px; }
     .metric-value { font-size: 28px; font-weight: 700; }
 
-    /* 불필요한 기본 요소 숨기기 */
+    /* 기본 요소 숨기기 */
     header {visibility: hidden;}
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
@@ -79,7 +81,7 @@ st.markdown("""
     .chart-title {
         font-size: 16px;
         font-weight: 700;
-        margin: 30px 0 10px 0;
+        margin: 35px 0 10px 0;
         color: #444;
         border-left: 5px solid #006400;
         padding-left: 12px;
@@ -96,8 +98,9 @@ st.markdown("""
 
 @st.cache_data
 def load_data():
-    # 파일명은 깃허브 저장소와 일치해야 함
+    # 파일명은 실제 깃허브 저장소 파일명과 일치해야 합니다.
     try:
+        # 업로드된 파일명 형식 대응
         df_m = pd.read_csv('maemae.csv', encoding='cp949')
         df_j = pd.read_csv('jeonse.csv', encoding='cp949')
     except:
@@ -109,7 +112,6 @@ def load_data():
     return df_m, df_j
 
 def create_chart(df, region, date, color):
-    # 날짜 기준 최근 4주 데이터 필터링
     df_sorted = df.sort_values(by='날짜')
     idx_list = df_sorted.index[df_sorted['날짜'] == date].tolist()
     if not idx_list: return None
@@ -143,41 +145,46 @@ def main():
 
         region_list = [col for col in df_maemae.columns if col != '날짜']
         with col_search:
-            selected_region = st.selectbox("🔍 지역 검색 및 선택", options=["지역을 입력하세요"] + region_list)
+            # 드롭다운 초기 상태 설정
+            selected_region = st.selectbox("🔍 지역 검색 및 선택", options=["지역을 입력하세요."] + region_list)
 
         st.markdown("<div style='margin: 15px 0;'></div>", unsafe_allow_html=True)
 
+        # '지역을 입력하세요'가 선택된 상태에서는 에러 메시지 대신 안내 문구 출력
         if selected_region != "지역을 입력하세요.":
-            m_val = df_maemae.loc[df_maemae['날짜'] == selected_date, selected_region].values[0]
-            j_val = df_jeonse.loc[df_jeonse['날짜'] == selected_date, selected_region].values[0]
+            # 데이터 추출 시 에러 방지용 체크
+            if selected_region in df_maemae.columns:
+                m_val = df_maemae.loc[df_maemae['날짜'] == selected_date, selected_region].values[0]
+                j_val = df_jeonse.loc[df_jeonse['날짜'] == selected_date, selected_region].values[0]
 
-            st.markdown(f"#### 📍 <span class='selected-region-text'>{selected_region}</span> 시황", unsafe_allow_html=True)
-            
-            # 수치 카드 레이아웃
-            c1, c2 = st.columns(2)
-            # 상승(빨강), 하락(네이비 #000080), 보합(#333)
-            m_color = "#e74c3c" if m_val > 0 else "#000080" if m_val < 0 else "#333"
-            j_color = "#e74c3c" if j_val > 0 else "#000080" if j_val < 0 else "#333"
+                st.markdown(f"#### 📍 <span class='selected-region-text'>{selected_region}</span> 시황", unsafe_allow_html=True)
+                
+                c1, c2 = st.columns(2)
+                # 상승(빨강), 하락(네이비), 보합(#333) - 소수점 2자리 적용
+                m_color = "#e74c3c" if m_val > 0 else "#000080" if m_val < 0 else "#333"
+                j_color = "#e74c3c" if j_val > 0 else "#000080" if j_val < 0 else "#333"
 
-            with c1:
-                st.markdown(f'<div class="metric-container"><div class="metric-label">매매 증감</div><div class="metric-value" style="color: {m_color};">{m_val:+.2f}%</div></div>', unsafe_allow_html=True)
-            with c2:
-                st.markdown(f'<div class="metric-container"><div class="metric-label">전세 증감</div><div class="metric-value" style="color: {j_color};">{j_val:+.2f}%</div></div>', unsafe_allow_html=True)
+                with c1:
+                    st.markdown(f'<div class="metric-container"><div class="metric-label">매매 증감</div><div class="metric-value" style="color: {m_color};">{m_val:+.2f}%</div></div>', unsafe_allow_html=True)
+                with c2:
+                    st.markdown(f'<div class="metric-container"><div class="metric-label">전세 증감</div><div class="metric-value" style="color: {j_color};">{j_val:+.2f}%</div></div>', unsafe_allow_html=True)
 
-            # 트렌드 그래프
-            st.markdown('<div class="chart-title">매매 지수 트렌드 (최근 4주)</div>', unsafe_allow_html=True)
-            fig_m = create_chart(df_maemae, selected_region, selected_date, "#e74c3c")
-            if fig_m: st.plotly_chart(fig_m, use_container_width=True, config={'displayModeBar': False})
+                # 그래프 영역
+                st.markdown('<div class="chart-title">매매 지수 트렌드 (최근 4주)</div>', unsafe_allow_html=True)
+                fig_m = create_chart(df_maemae, selected_region, selected_date, "#e74c3c")
+                if fig_m: st.plotly_chart(fig_m, use_container_width=True, config={'displayModeBar': False})
 
-            st.markdown('<div class="chart-title">전세 지수 트렌드 (최근 4주)</div>', unsafe_allow_html=True)
-            fig_j = create_chart(df_jeonse, selected_region, selected_date, "#000080")
-            if fig_j: st.plotly_chart(fig_j, use_container_width=True, config={'displayModeBar': False})
-
+                st.markdown('<div class="chart-title">전세 지수 트렌드 (최근 4주)</div>', unsafe_allow_html=True)
+                fig_j = create_chart(df_jeonse, selected_region, selected_date, "#000080")
+                if fig_j: st.plotly_chart(fig_j, use_container_width=True, config={'displayModeBar': False})
+            else:
+                st.warning("해당 지역의 데이터를 찾을 수 없습니다.")
         else:
+            # 앱 초기 실행 시 보이는 화면
             st.info("조회할 지역명을 입력하거나 리스트에서 선택해 주세요.")
 
     except Exception as e:
-        st.error(f"데이터 로드 중 오류가 발생했습니다. 파일명과 형식을 확인해주세요. ({e})")
+        st.error(f"데이터 로드 중 오류가 발생했습니다. (에러내용: {e})")
 
 if __name__ == "__main__":
     main()
