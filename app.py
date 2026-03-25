@@ -10,7 +10,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# 2. 모바일 강제 가로 배치 및 디자인 (CSS)
+# 2. 다크모드 대응 및 모바일 레이아웃 고정 (CSS)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
@@ -21,55 +21,46 @@ st.markdown("""
     .brand-name { color: #006400; font-size: clamp(30px, 10vw, 45px); font-weight: 900; font-family: 'Arial Black'; letter-spacing: -2px; }
     .brand-suffix { color: #FF4500; font-size: clamp(16px, 5vw, 24px); font-weight: 900; }
 
-    /* 랭킹 카드 */
+    /* 랭킹 카드 - 배경이 검정일 때도 글자가 보이도록 배경과 글자색 지정 */
     .rank-card {
-        background-color: #fffaf0; padding: 12px 15px; border-radius: 10px;
+        background-color: #ffffff; padding: 12px 15px; border-radius: 10px;
         margin-bottom: 8px; border-left: 6px solid #FF4500;
         display: flex; align-items: center; justify-content: space-between;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
+    .rank-info { display: flex; align-items: center; gap: 8px; color: #333333 !important; }
+    .rank-num { font-weight: 900; color: #FF4500; font-size: 16px; }
+    .rank-name { font-weight: 700; font-size: 16px; color: #333333 !important; }
+    .rank-val { font-weight: 900; color: #e74c3c; font-size: 15px; }
 
-    /* 매매/전세 수치 카드 (날짜 표시 추가 버전) */
+    /* 매매/전세 수치 카드 */
     .metric-box {
-        background: white; border: 1px solid #f0f0f0; border-radius: 15px;
+        background: #ffffff; border: 1px solid #f0f0f0; border-radius: 15px;
         padding: 18px; text-align: center; margin-bottom: 15px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
-    .metric-date { font-size: 12px; color: #888; margin-bottom: 5px; font-weight: 500; }
+    .metric-date { font-size: 12px; color: #666; margin-bottom: 5px; }
 
-    /* 하단 버튼 영역 - 핵심: 모바일에서 무조건 가로 나란히 배치 */
-    .footer-buttons {
+    /* 하단 버튼 영역 - 무조건 가로 나란히 */
+    [data-testid="stHorizontalBlock"] {
         display: flex !important;
         flex-direction: row !important;
-        justify-content: center !important;
+        flex-wrap: nowrap !important;
         gap: 10px !important;
-        width: 100% !important;
-        margin-top: 30px;
-        padding-bottom: 40px;
     }
     
-    /* 버튼 스타일 직접 지정 */
-    .footer-buttons > div { flex: 1; }
     .stButton > button {
-        width: 100% !important;
-        border-radius: 12px !important;
-        height: 54px !important;
-        font-weight: 900 !important;
-        font-size: 16px !important;
-        border: none !important;
+        border-radius: 12px !important; height: 54px !important;
+        font-weight: 900 !important; font-size: 16px !important; border: none !important;
     }
-
-    /* 초기화 버튼 (연한 파랑) */
-    div[data-testid="column"]:nth-child(1) button {
-        background-color: #D1E9F6 !important; color: #004080 !important;
-    }
-    /* 종료 버튼 (연한 그린) */
-    div[data-testid="column"]:nth-child(2) button {
-        background-color: #D1F2D1 !important; color: #006400 !important;
-    }
+    
+    /* 버튼 컬러 */
+    div[data-testid="column"]:nth-child(1) button { background-color: #D1E9F6 !important; color: #004080 !important; }
+    div[data-testid="column"]:nth-child(2) button { background-color: #D1F2D1 !important; color: #006400 !important; }
 
     .chart-title {
         font-size: 18px; font-weight: 800; margin: 35px 0 15px 0;
-        color: #C71585; border-left: 6px solid #C71585; padding-left: 12px;
+        color: #FF69B4; border-left: 6px solid #FF69B4; padding-left: 12px;
     }
 
     header {visibility: hidden;}
@@ -101,7 +92,7 @@ def load_data():
 
 def main():
     if "is_exit" in st.session_state:
-        st.markdown("<div style='text-align:center; padding:50px;'><h2>이용해주셔서 감사합니다.</h2></div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align:center; padding:50px;'><h1 style='color:#FF4500;'>모두 부자됩시다.</h1></div>", unsafe_allow_html=True)
         components.html("<script>window.close();</script>")
         st.stop()
 
@@ -112,44 +103,50 @@ def main():
     if "reset_count" not in st.session_state:
         st.session_state.reset_count = 0
 
-    # 입력 필드 (위아래 배치)
+    # 입력 필드
     sel_date = st.selectbox("📅 날짜 선택", date_list, index=len(date_list)-1, key=f"d_{st.session_state.reset_count}")
     sel_region = st.selectbox("🔍 지역 검색 및 선택", options=["지역을 선택하세요"] + region_list, index=0, key=f"r_{st.session_state.reset_count}")
 
-    # 주간 랭킹
+    # 주간 랭킹 (1위 관악구 형식)
     st.markdown('<div class="chart-title">🔥 주간 상승 TOP 10</div>', unsafe_allow_html=True)
     w_row = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_w = w_row[w_row > 0].sort_values(ascending=False).head(10)
     for i, (name, val) in enumerate(top_w.items()):
-        st.markdown(f'<div class="rank-card"><div class="rank-info"><span class="rank-num">{i+1}</span><span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="rank-card"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 개별 지역 상세 (날짜 표시 추가)
+    # 월간 랭킹 (누락 복원 및 1위 형식)
+    st.markdown('<div class="chart-title">📅 월간 상승 TOP 10 (4주 누적)</div>', unsafe_allow_html=True)
+    curr_idx = date_list.index(sel_date)
+    if curr_idx >= 3:
+        m_sum = df_maemae.iloc[curr_idx-3 : curr_idx+1].drop(columns=['날짜']).sum()
+        top_m = m_sum[m_sum > 0].sort_values(ascending=False).head(10)
+        for i, (name, val) in enumerate(top_m.items()):
+            st.markdown(f'<div class="rank-card"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
+
+    # 개별 분석
     if sel_region != "지역을 선택하세요":
         st.markdown("<hr>", unsafe_allow_html=True)
-        st.markdown(f"#### 📍 {sel_region} 분석 ({sel_date})", unsafe_allow_html=True)
+        st.markdown(f"#### 📍 {sel_region} 분석", unsafe_allow_html=True)
         
-        curr_idx = date_list.index(sel_date)
         m_val = df_maemae.loc[df_maemae['날짜'] == sel_date, sel_region].values[0]
         j_val = df_jeonse.loc[df_jeonse['날짜'] == sel_date, sel_region].values[0]
-
         m_color = "#e74c3c" if m_val > 0 else "#000080" if m_val < 0 else "#333"
         j_color = "#e74c3c" if j_val > 0 else "#000080" if j_val < 0 else "#333"
 
-        # 카드 내부에 선택 날짜 명시
         st.markdown(f'''
             <div class="metric-box">
-                <div class="metric-date">기준일: {sel_date}</div>
+                <div class="metric-date">기준: {sel_date}</div>
                 <div style="color:#4B0082; font-weight:800; font-size:14px;">매매 증감</div>
                 <div style="color:{m_color}; font-size:26px; font-weight:900;">{m_val:+.2f}%</div>
             </div>
             <div class="metric-box">
-                <div class="metric-date">기준일: {sel_date}</div>
+                <div class="metric-date">기준: {sel_date}</div>
                 <div style="color:#4B0082; font-weight:800; font-size:14px;">전세 증감</div>
                 <div style="color:{j_color}; font-size:26px; font-weight:900;">{j_val:+.2f}%</div>
             </div>
         ''', unsafe_allow_html=True)
 
-        # 그래프 (그린 포인트 유지)
+        # 그래프 (그린 포인트)
         start_idx = max(0, curr_idx - 3)
         def draw_chart(df, line_color, title):
             st.markdown(f'<div class="chart-title">{title}</div>', unsafe_allow_html=True)
@@ -164,15 +161,14 @@ def main():
         draw_chart(df_maemae, '#e74c3c', '📈 매매 지수 트렌드 (4주)')
         draw_chart(df_jeonse, '#000080', '📉 전세 지수 트렌드 (4주)')
 
-    # --- 하단 버튼 (모바일 강제 가로 배치) ---
+    # 하단 버튼 (중앙 가로 나란히)
     st.markdown("<div style='margin-top:30px;'></div>", unsafe_allow_html=True)
-    # Streamlit의 columns가 모바일에서 수직으로 쌓이는 것을 막기 위해 별도 CSS 적용
-    btn_col1, btn_col2 = st.columns(2)
-    with btn_col1:
+    b_col1, b_col2 = st.columns(2)
+    with b_col1:
         if st.button("🔄 초기화"):
             st.session_state.reset_count += 1
             st.rerun()
-    with btn_col2:
+    with b_col2:
         if st.button("🚪 종료"):
             st.session_state.is_exit = True
             st.rerun()
