@@ -158,7 +158,7 @@ def main():
             </div>
         """, unsafe_allow_html=True)
         components.html("<script>window.close();</script>")
-        st.stop()
+        st.stop() 
 
     show_title()
 
