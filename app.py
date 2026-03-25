@@ -13,7 +13,7 @@ st.set_page_config(
 # 2. UI 디자인 및 중앙 정렬 (CSS)
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700;900&family=Great+Vibes&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
     html, body, [class*="css"] { font-family: 'Noto+Sans+KR', sans-serif; }
 
     /* 타이틀 */
@@ -21,9 +21,11 @@ st.markdown("""
     .brand-name { color: #006400; font-size: clamp(30px, 10vw, 45px); font-weight: 900; font-family: 'Arial Black'; letter-spacing: -2px; }
     .brand-suffix { color: #FF4500; font-size: clamp(16px, 5vw, 24px); font-weight: 900; }
 
-    /* 필드명 스타일 수정 (Bold, 진한 그린색) */
-    .stSelectbox label {
-        color: #006400 !important;
+    /* 입력 필드(날짜/지역) 글자 굵게 처리 */
+    div[data-baseweb="select"] span {
+        font-weight: 700 !important;
+    }
+    label[data-testid="stWidgetLabel"] p {
         font-weight: 900 !important;
         font-size: 16px !important;
     }
@@ -67,7 +69,6 @@ st.markdown("""
         text-align: center;
         margin: 40px 0;
     }
-
     div.stButton > button {
         background: linear-gradient(135deg, #757575, #424242) !important;
         color: white !important;
@@ -81,6 +82,16 @@ st.markdown("""
         border: none !important;
         box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important;
         display: inline-block !important;
+    }
+
+    /* 종료 화면 중앙 정렬 컨테이너 */
+    .exit-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 75vh; /* 화면의 약 3/4 지점을 중앙으로 설정 */
+        text-align: center;
     }
 
     header {visibility: hidden;}
@@ -115,17 +126,16 @@ def load_data():
     return df_m, df_j
 
 def main():
-    # 1. 종료 상태 확인
+    # 1. 종료 상태 확인 (타이틀 포함 정중앙 배치)
     if st.session_state.get("is_exit"):
+        st.markdown('<div class="exit-container">', unsafe_allow_html=True)
+        show_title()
         st.markdown("""
-            <div style='display:flex; flex-direction:column; justify-content:center; align-items:center; height:85vh; text-align:center;'>
-                <div style="margin-bottom: -10px;">
-                    <span style="color:#006400; font-size:clamp(30px, 10vw, 45px); font-weight:900; font-family:'Arial Black'; letter-spacing:-2px;">Dr.J</span><span style="color:#FF4500; font-size:clamp(16px, 5vw, 24px); font-weight:900;">의 부동산</span>
-                </div>
-                <h2 style='color:#006400; font-weight:900; white-space:nowrap; letter-spacing:-1px; margin-top: 10px;'>모두 부자됩시다.</h2>
-                <p style='font-family:"Great Vibes", cursive; color:#555; font-size:20px; margin-top:20px;'>Created by Ju kyung bae</p>
-            </div>
+            <h2 style='color:#006400; font-weight:900; white-space:nowrap; letter-spacing:-1px; margin-top:30px;'>
+                모두 부자됩시다.
+            </h2>
         """, unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
         components.html("<script>window.close();</script>")
         st.stop()
 
@@ -136,6 +146,7 @@ def main():
     date_list = sorted(df_maemae['날짜'].unique().tolist())
     region_list = sorted([col for col in df_maemae.columns if col != '날짜'])
 
+    # 입력 필드 (Bold 스타일 적용됨)
     sel_date = st.selectbox("📅 날짜 선택", date_list, index=len(date_list)-1)
     sel_region = st.selectbox("🔍 지역 검색 및 선택", options=["지역을 입력하세요."] + region_list, index=0)
 
