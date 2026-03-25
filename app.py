@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px 
+import plotly.express as px
 import streamlit.components.v1 as components
 
 # 1. 페이지 설정
@@ -21,13 +21,13 @@ st.markdown("""
     .brand-name { color: #006400; font-size: clamp(30px, 10vw, 45px); font-weight: 900; font-family: 'Arial Black'; letter-spacing: -2px; }
     .brand-suffix { color: #FF4500; font-size: clamp(16px, 5vw, 24px); font-weight: 900; }
 
-    /* 입력 필드(날짜/지역) 글자 굵게 처리 및 커서 숨기기 */
+    /* 입력 필드(날짜/지역) 글자 크기 통일 및 굵게 처리 */
     div[data-baseweb="select"] * {
         font-weight: 900 !important;
-        font-size: 16px !important;
+        font-size: 16px !important;  /* 두 필드 모두 16px로 통일 */
     }
     
-    /* 핵심 수정: 입력 필드 내부의 커서(caret)를 투명하게 설정 */
+    /* 입력 필드 내부의 커서(caret)를 투명하게 설정 */
     div[data-baseweb="select"] input {
         caret-color: transparent !important;
     }
@@ -158,7 +158,7 @@ def main():
             </div>
         """, unsafe_allow_html=True)
         components.html("<script>window.close();</script>")
-        st.stop() 
+        st.stop()
 
     show_title()
 
@@ -169,7 +169,6 @@ def main():
     sel_date = st.selectbox("📅 날짜 선택", date_list, index=len(date_list)-1)
     sel_region = st.selectbox("🔍 지역 검색 및 선택", options=["지역을 입력하세요."] + region_list, index=0)
 
-    # 지역 선택 시 포커스 해제 로직만 유지
     if sel_region != "지역을 입력하세요.":
         components.html("<script>window.parent.document.activeElement.blur();</script>", height=0)
 
@@ -204,8 +203,8 @@ def main():
             fig.update_layout(height=220, margin=dict(l=10,r=10,t=10,b=10), xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True), hovermode=False)
             st.plotly_chart(fig, use_container_width=True, config={'staticPlot': True})
 
-        draw_chart(df_maemae, '#e74c3c', f'📈 {sel_region} 매매 트렌드 (4주)')
-        draw_chart(df_jeonse, '#000080', f'📉 {sel_region} 전세 트렌드 (4주)')
+        draw_chart(df_maemae, '#e74c3c', f'📈 {sel_region} 매매 트렌드 (4주 시황)')
+        draw_chart(df_jeonse, '#000080', f'📉 {sel_region} 전세 트렌드 (4주 시황)')
         
         st.markdown("<hr>", unsafe_allow_html=True)
 
