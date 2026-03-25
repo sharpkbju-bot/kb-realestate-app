@@ -4,7 +4,7 @@ import pandas as pd
 # 1. 페이지 설정
 st.set_page_config(page_title="경배의 아파트 주간 시황", layout="centered")
 
-# 2. 세련된 폰트 및 디자인 커스텀 (CSS)
+# 2. 디자인 및 레이아웃 수정 (CSS)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700&display=swap');
@@ -13,52 +13,68 @@ st.markdown("""
         font-family: 'Noto+Sans+KR', sans-serif;
     }
 
-    /* 타이틀 디자인: 한 줄 표시 및 컬러 포인트 */
-    .main-title {
-        font-size: 28px;
-        font-weight: 700;
+    /* 타이틀 영역: 잘림 방지를 위해 padding과 크기 최적화 */
+    .title-container {
+        padding: 40px 0 20px 0; /* 상단 여백을 충분히 주어 잘림 방지 */
         text-align: center;
-        margin-bottom: 25px;
-        white-space: nowrap; /* 줄바꿈 방지 */
-        letter-spacing: -1px;
+        width: 100%;
     }
+    
+    .main-title {
+        font-size: clamp(20px, 6vw, 28px); /* 화면 크기에 따라 글자 크기 자동 조절 */
+        font-weight: 700;
+        white-space: nowrap; /* 한 줄 유지 */
+        overflow: visible; /* 글자가 잘리지 않도록 설정 */
+        letter-spacing: -1px;
+        display: inline-block;
+    }
+    
     .brand-name {
-        color: #006400; /* 짙은 그린 컬러 */
+        color: #006400; /* 짙은 그린 */
     }
 
-    /* 카드 디자인 최적화 */
+    /* 카드 디자인 */
     .metric-container {
         background-color: white;
-        padding: 12px;
+        padding: 15px;
         border-radius: 12px;
         box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         border: 1px solid #f0f0f0;
         text-align: center;
+        margin-top: 10px;
     }
+    
     .metric-label {
         font-size: 13px;
         color: #888;
         margin-bottom: 2px;
     }
+    
     .metric-value {
         font-size: 22px;
         font-weight: 700;
     }
+
+    /* Streamlit 기본 헤더 숨기기 (공간 확보) */
+    header {visibility: hidden;}
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
     
-    /* 여백 조정 */
+    /* 전체 컨테이너 여백 조정 */
     .block-container {
-        padding-top: 2.5rem !important;
+        padding-top: 1rem !important;
     }
     </style>
     
-    <div class="main-title">
-        <span class="brand-name">경배</span>의 아파트 주간 시황
+    <div class="title-container">
+        <div class="main-title">
+            <span class="brand-name">경배</span>의 아파트 주간 시황
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
 @st.cache_data
 def load_data():
-    # 파일명은 이전과 동일하게 유지 (maemae.csv, jeonse.csv)
     try:
         df_m = pd.read_csv('maemae.csv', encoding='cp949')
         df_j = pd.read_csv('jeonse.csv', encoding='cp949')
@@ -74,7 +90,7 @@ def main():
     try:
         df_maemae, df_jeonse = load_data()
         
-        # 상단 선택 영역
+        # 입력 영역 레이아웃
         col_date, col_search = st.columns([1, 1.5])
         
         with col_date:
@@ -84,25 +100,21 @@ def main():
         region_list = [col for col in df_maemae.columns if col != '날짜']
 
         with col_search:
-            # "지역을 선택하세요" -> "지역을 입력하세요"로 수정
             selected_region = st.selectbox(
                 "🔍 지역 검색 및 선택",
-                options=["지역을 입력하세요"] + region_list,
-                label_visibility="visible"
+                options=["지역을 입력하세요"] + region_list
             )
 
-        st.markdown("<div style='margin: 10px 0;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='margin: 15px 0;'></div>", unsafe_allow_html=True)
 
-        # 결과 표시
         if selected_region != "지역을 입력하세요":
             m_val = df_maemae.loc[df_maemae['날짜'] == selected_date, selected_region].values[0]
             j_val = df_jeonse.loc[df_jeonse['날짜'] == selected_date, selected_region].values[0]
 
-            st.markdown(f"#### 📍 {selected_region} ({selected_date})")
+            st.markdown(f"#### 📍 {selected_region}")
             
+            # 카드 표시
             c1, c2 = st.columns(2)
-            
-            # 수치 색상 결정 (상승: 빨강, 하락: 파랑, 보합: 검정)
             m_color = "#e74c3c" if m_val > 0 else "#3498db" if m_val < 0 else "#333"
             j_color = "#e74c3c" if j_val > 0 else "#3498db" if j_val < 0 else "#333"
 
@@ -122,7 +134,7 @@ def main():
                     </div>
                 """, unsafe_allow_html=True)
         else:
-            st.info("조회할 지역명을 입력하거나 선택해 주세요.")
+            st.info("조회할 지역명을 입력하거나 리스트에서 선택해 주세요.")
 
     except Exception as e:
         st.error(f"데이터 로드 오류: {e}")
