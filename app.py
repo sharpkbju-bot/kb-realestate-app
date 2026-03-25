@@ -65,7 +65,7 @@ st.markdown("""
         padding-left: 12px;
     }
 
-    /* 버튼 중앙 정렬 및 크기 최적화 */
+    /* 버튼 중앙 정렬 */
     div.stButton {
         text-align: center;
         margin: 40px 0;
@@ -86,7 +86,7 @@ st.markdown("""
         box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important;
     }
 
-    /* 종료 화면 - 어떠한 환경에서도 완벽 중앙 정렬 */
+    /* 종료 화면 정중앙 배치 */
     .exit-wrapper {
         position: fixed;
         top: 50%;
@@ -114,7 +114,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 타이틀 출력 함수 (중앙 정렬 보장)
+# 타이틀 출력 함수
 def show_title():
     st.markdown("""
         <div class="title-container">
@@ -142,7 +142,7 @@ def load_data():
     return df_m, df_j
 
 def main():
-    # 1. 종료 상태 확인 (화면 정중앙 강제 배치)
+    # 1. 종료 상태 확인
     if st.session_state.get("is_exit"):
         st.markdown(f"""
             <div class="exit-wrapper">
@@ -162,9 +162,24 @@ def main():
     date_list = sorted(df_maemae['날짜'].unique().tolist())
     region_list = sorted([col for col in df_maemae.columns if col != '날짜'])
 
-    # 입력 필드 (Bold 900 적용)
+    # 입력 필드
     sel_date = st.selectbox("📅 날짜 선택", date_list, index=len(date_list)-1)
     sel_region = st.selectbox("🔍 지역 검색 및 선택", options=["지역을 입력하세요."] + region_list, index=0)
+
+    # --- 커서 위치를 첫 번째로 이동시키는 스크립트 ---
+    if sel_region == "지역을 입력하세요.":
+        components.html("""
+            <script>
+            var inputs = window.parent.document.querySelectorAll('input[role="combobox"]');
+            inputs.forEach(function(input) {
+                input.addEventListener('focus', function() {
+                    setTimeout(function() {
+                        input.setSelectionRange(0, 0);
+                    }, 1);
+                });
+            });
+            </script>
+        """, height=0)
 
     if sel_region != "지역을 입력하세요.":
         components.html("<script>window.parent.document.activeElement.blur();</script>", height=0)
