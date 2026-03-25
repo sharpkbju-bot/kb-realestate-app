@@ -2,14 +2,14 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# 1. 페이지 설정
+# 1. 페이지 설정 (앱 설치 이름 및 아이콘)
 st.set_page_config(
     page_title="Dr.J의 부동산", 
     page_icon="🏠",
     layout="centered"
 )
 
-# 2. 디자인 고도화 (CSS)
+# 2. 디자인 및 레이아웃 수정 (CSS)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
@@ -34,7 +34,7 @@ st.markdown("""
     }
     
     .brand-name {
-        color: #006400; /* 짙은 그린 */
+        color: #006400;
         font-size: clamp(40px, 14vw, 56px);
         font-weight: 900;
         font-family: 'Arial Black', sans-serif;
@@ -43,14 +43,14 @@ st.markdown("""
     }
     
     .brand-suffix {
-        color: #FF4500; /* 진한 주황색 (OrangeRed) */
+        color: #FF4500; /* 진한 주황색 */
         font-size: clamp(20px, 6vw, 30px);
         font-weight: 900;
     }
 
     /* 순위 카드 디자인 */
     .rank-card {
-        background-color: #fffaf0; /* 연한 오렌지 배경 */
+        background-color: #fffaf0;
         padding: 12px 15px;
         border-radius: 12px;
         margin-bottom: 8px;
@@ -65,18 +65,37 @@ st.markdown("""
     .rank-name { font-weight: 700; color: #333; flex-grow: 1; }
     .rank-val { font-weight: 900; color: #e74c3c; }
 
-    /* 기존 스타일 유지 */
+    /* 수치 카드 디자인 */
     .metric-container {
-        background-color: white; padding: 22px; border-radius: 18px;
-        box-shadow: 0 12px 30px rgba(0,0,0,0.06); border: 1px solid #f0f0f0;
-        text-align: center; margin-bottom: 15px;
+        background-color: white;
+        padding: 22px;
+        border-radius: 18px;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+        border: 1px solid #f0f0f0;
+        text-align: center;
+        margin-bottom: 15px;
     }
+    
     .metric-label { font-size: 15px; color: #4B0082; font-weight: 800; margin-bottom: 8px; }
+    .metric-value { font-size: 30px; font-weight: 700; }
+
+    /* 그래프 섹션 타이틀 */
     .chart-title {
-        font-size: 18px; font-weight: 800; margin: 40px 0 15px 0;
-        color: #C71585; border-left: 6px solid #C71585; padding-left: 14px;
+        font-size: 18px;
+        font-weight: 800;
+        margin: 40px 0 15px 0;
+        color: #C71585; /* 진한 핑크 */
+        border-left: 6px solid #C71585;
+        padding-left: 14px;
     }
+
+    /* 컬럼 간격 조절 */
+    [data-testid="column"] { padding: 0 10px !important; }
+
     header {visibility: hidden;}
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    .block-container { padding-top: 0.5rem !important; }
     .static-chart { pointer-events: none !important; }
     </style>
     
@@ -96,6 +115,12 @@ def load_data():
     except:
         df_m = pd.read_csv('maemae.csv', encoding='utf-8')
         df_j = pd.read_csv('jeonse.csv', encoding='utf-8')
+    
+    # 날짜 컬럼을 제외한 모든 컬럼을 숫자형으로 변환 (에러 발생 시 NaN 처리)
+    cols_to_convert = [c for c in df_m.columns if c != '날짜']
+    df_m[cols_to_convert] = df_m[cols_to_convert].apply(pd.to_numeric, errors='coerce').fillna(0)
+    df_j[cols_to_convert] = df_j[cols_to_convert].apply(pd.to_numeric, errors='coerce').fillna(0)
+    
     df_m['날짜'] = df_m['날짜'].astype(str)
     df_j['날짜'] = df_j['날짜'].astype(str)
     return df_m, df_j
@@ -104,35 +129,51 @@ def create_chart(df, region, date, color):
     df_sorted = df.sort_values(by='날짜')
     idx_list = df_sorted.index[df_sorted['날짜'] == date].tolist()
     if not idx_list: return None
+    
     idx = idx_list[0]
     start_idx = max(0, idx - 3)
     recent_df = df_sorted.iloc[start_idx : idx + 1]
+    
     fig = px.line(recent_df, x='날짜', y=region, markers=True)
-    fig.update_traces(line_color=color, line_width=4, marker=dict(size=12, line=dict(width=2, color='white')), hoverinfo='skip')
-    fig.update_layout(height=240, margin=dict(l=15, r=15, t=10, b=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
-                      xaxis=dict(showgrid=False, title="", fixedrange=True), yaxis=dict(showgrid=True, gridcolor='#f2f2f2', title="", fixedrange=True), 
-                      hovermode=False, dragmode=False)
+    fig.update_traces(
+        line_color=color, 
+        line_width=4, 
+        marker=dict(size=12, line=dict(width=2, color='white')),
+        hoverinfo='skip'
+    )
+    fig.update_layout(
+        height=240,
+        margin=dict(l=15, r=15, t=10, b=10),
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        xaxis=dict(showgrid=False, title="", tickfont=dict(size=11), fixedrange=True),
+        yaxis=dict(showgrid=True, gridcolor='#f2f2f2', title="", tickfont=dict(size=11), fixedrange=True),
+        hovermode=False,
+        dragmode=False
+    )
     return fig
 
 def main():
     try:
         df_maemae, df_jeonse = load_data()
         
-        # 날짜 및 지역 선택
+        # 상단 입력 컨트롤
         col_date, col_search = st.columns([1, 1.5])
         with col_date:
             date_list = df_maemae['날짜'].unique().tolist()
             selected_date = st.selectbox("📅 날짜 선택", date_list, index=len(date_list)-1)
+
         region_list = [col for col in df_maemae.columns if col != '날짜']
         with col_search:
             selected_region = st.selectbox("🔍 지역 검색 및 선택", options=["지역을 입력하세요."] + region_list)
 
-        # --- 🏆 TOP 10 상승 지역 섹션 ---
+        # --- 🔥 TOP 10 상승 지역 섹션 ---
         st.markdown(f'<div class="chart-title">🔥 {selected_date} 주간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
         
-        # 해당 날짜의 매매 증감 데이터만 추출 (날짜 컬럼 제외)
+        # 해당 날짜 행 추출
         current_row = df_maemae[df_maemae['날짜'] == selected_date].drop(columns=['날짜']).iloc[0]
-        # 상승한 지역만 필터링하여 내림차순 정렬
+        
+        # 숫자형 데이터임을 보장한 뒤 정렬 (오류 해결 포인트)
         top_10 = current_row[current_row > 0].sort_values(ascending=False).head(10)
 
         if not top_10.empty:
@@ -145,11 +186,11 @@ def main():
                     </div>
                 """, unsafe_allow_html=True)
         else:
-            st.info("해당 날짜에 상승한 지역이 없습니다.")
+            st.info("상승한 지역이 없습니다.")
 
-        st.markdown("<hr style='border: 0.5px solid #eee; margin: 30px 0;'>", unsafe_allow_html=True)
+        st.markdown("<div style='margin: 30px 0;'></div>", unsafe_allow_html=True)
 
-        # --- 📍 개별 지역 시황 섹션 ---
+        # --- 📍 상세 시황 섹션 ---
         if selected_region != "지역을 입력하세요.":
             if selected_region in df_maemae.columns:
                 m_val = df_maemae.loc[df_maemae['날짜'] == selected_date, selected_region].values[0]
