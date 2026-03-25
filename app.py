@@ -86,7 +86,7 @@ def main():
                 fig_j = create_chart(df_jeonse, selected_region, selected_date, "#000080")
                 if fig_j: st.plotly_chart(fig_j, use_container_width=True, config={'displayModeBar': False})
         else:
-            st.info("상단에서 날짜를 선택하고 지역명을 입력해 주세요.")
+            st.info("날짜 선택 후 지역명을 입력해 주세요.")
     except Exception as e:
         st.error(f"앱 실행 중 오류가 발생했습니다: {e}")
 
