@@ -149,7 +149,7 @@ def main():
                 <div class="title-container">
                     <span class="brand-name">Dr.J</span><span class="brand-suffix">의 부동산</span>
                 </div>
-                <div class="exit-msg">모두 부자됩시다.</div>
+                <div class="exit-msg">모두 부자됩시다.<br><br>Created by Ju Kyung Bae</div>
             </div>
         """, unsafe_allow_html=True)
         components.html("<script>window.close();</script>")
