@@ -21,11 +21,17 @@ st.markdown("""
     .brand-name { color: #006400; font-size: clamp(30px, 10vw, 45px); font-weight: 900; font-family: 'Arial Black'; letter-spacing: -2px; }
     .brand-suffix { color: #FF4500; font-size: clamp(16px, 5vw, 24px); font-weight: 900; }
 
-    /* 입력 필드(날짜/지역) 글자 굵게 처리 강제 */
+    /* 입력 필드(날짜/지역) 글자 굵게 처리 및 커서 숨기기 */
     div[data-baseweb="select"] * {
         font-weight: 900 !important;
         font-size: 16px !important;
     }
+    
+    /* 핵심 수정: 입력 필드 내부의 커서(caret)를 투명하게 설정 */
+    div[data-baseweb="select"] input {
+        caret-color: transparent !important;
+    }
+
     label[data-testid="stWidgetLabel"] p {
         font-weight: 900 !important;
         font-size: 17px !important;
@@ -163,29 +169,7 @@ def main():
     sel_date = st.selectbox("📅 날짜 선택", date_list, index=len(date_list)-1)
     sel_region = st.selectbox("🔍 지역 검색 및 선택", options=["지역을 입력하세요."] + region_list, index=0)
 
-    # --- 커서 제어 스크립트 강화 ---
-    if sel_region == "지역을 입력하세요.":
-        components.html("""
-            <script>
-            const setCursorAtStart = () => {
-                const inputs = window.parent.document.querySelectorAll('input[role="combobox"]');
-                inputs.forEach(input => {
-                    // 클릭하거나 포커스될 때 커서를 0으로 강제 이동
-                    input.onfocus = () => {
-                        setTimeout(() => input.setSelectionRange(0, 0), 10);
-                    };
-                    input.onclick = () => {
-                        setTimeout(() => input.setSelectionRange(0, 0), 10);
-                    };
-                });
-            };
-            // 초기 로드 시 실행
-            setCursorAtStart();
-            // 입력창이 다시 렌더링될 수 있으므로 주기적으로 체크 (필요시)
-            setTimeout(setCursorAtStart, 500);
-            </script>
-        """, height=0)
-
+    # 지역 선택 시 포커스 해제 로직만 유지
     if sel_region != "지역을 입력하세요.":
         components.html("<script>window.parent.document.activeElement.blur();</script>", height=0)
 
@@ -225,7 +209,7 @@ def main():
         
         st.markdown("<hr>", unsafe_allow_html=True)
 
-    # 랭킹 섹션 (기존 로직 유지)
+    # 랭킹 섹션
     st.markdown('<div class="chart-title" style="color:#FF69B4; border-left:6px solid #FF69B4;">🔥 주간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
     m_w_row = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_mw = m_w_row[m_w_row > 0].sort_values(ascending=False).head(10)
