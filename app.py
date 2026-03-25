@@ -88,10 +88,14 @@ st.markdown("""
     .rank-name { font-weight: 900; font-size: 16px; }
     .rank-val { font-weight: 900; font-size: 15px; }
     
+    /* [수정 사항] 주간/월간 매매 상승 TOP 10 카드 내 지역명 및 상승률 컬러 브라운(#8B4513)으로 변경 */
     .rank-m { border-left: 7px solid #FF4500; }
-    .rank-j { border-left: 7px solid #000080; }
+    .rank-m .rank-name, .rank-m .rank-val {
+        color: #8B4513 !important;
+    }
 
-    /* [수정 사항] 주간/월간 전세 상승 TOP 10 카드 내 지역명 및 상승률 컬러 청녹색(#008080)으로 변경 */
+    /* 주간/월간 전세 상승 TOP 10 카드 내 지역명 및 상승률 컬러 청녹색(#008080) 유지 */
+    .rank-j { border-left: 7px solid #000080; }
     .rank-j .rank-name, .rank-j .rank-val {
         color: #008080 !important;
     }
