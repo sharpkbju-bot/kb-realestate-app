@@ -79,7 +79,7 @@ st.markdown("""
     
     .rank-info { display: flex; align-items: center; gap: 8px; }
     
-    /* 랭킹 카드 내부의 모든 글자 퍼플(#4a148c) */
+    /* 랭킹 카드 기본 글자 컬러 퍼플(#4a148c) */
     .rank-num, .rank-name, .rank-val {
         color: #4a148c !important;
     }
@@ -91,7 +91,12 @@ st.markdown("""
     .rank-m { border-left: 7px solid #FF4500; }
     .rank-j { border-left: 7px solid #000080; }
 
-    /* [수정 사항] 트렌드 차트 제목 컬러 진한 그린(#006400) */
+    /* [수정 사항] 주간/월간 전세 상승 TOP 10 카드 내 지역명 컬러 청녹색(#008080)으로 변경 */
+    .rank-j .rank-name {
+        color: #008080 !important;
+    }
+
+    /* 트렌드 차트 제목 컬러 진한 그린(#006400) */
     .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #006400; }
 
     /* 종료 버튼 */
@@ -211,14 +216,14 @@ def main():
         for i, (name, val) in enumerate(top_mm.items()):
             st.markdown(f'<div class="rank-card rank-m"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 3. [수정 사항] 주간 전세 TOP 10 제목 컬러 진한 핑크(#FF1493)
+    # 3. 주간 전세 TOP 10 제목 컬러 진한 핑크(#FF1493)
     st.markdown('<div class="chart-title" style="color:#FF1493; border-left:6px solid #FF1493;">💧 주간 전세 상승 TOP 10</div>', unsafe_allow_html=True)
     j_w_row = df_jeonse[df_jeonse['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_jw = j_w_row[j_w_row > 0].sort_values(ascending=False).head(10)
     for i, (name, val) in enumerate(top_jw.items()):
         st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 4. [수정 사항] 월간 전세 TOP 10 제목 컬러 진한 핑크(#FF1493)
+    # 4. 월간 전세 TOP 10 제목 컬러 진한 핑크(#FF1493)
     if curr_idx >= 3:
         st.markdown('<div class="chart-title" style="color:#FF1493; border-left:6px solid #FF1493;">📅 월간 전세 상승 TOP 10</div>', unsafe_allow_html=True)
         j_m_sum = df_jeonse.iloc[curr_idx-3 : curr_idx+1].drop(columns=['날짜']).sum()
