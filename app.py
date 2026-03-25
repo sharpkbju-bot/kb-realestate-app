@@ -48,42 +48,47 @@ st.markdown("""
     /* 입력 필드 글자 900 Bold */
     div[data-baseweb="select"] * { font-weight: 900 !important; font-size: 16px !important; }
     
-    /* [수정 사항] 입력 필드 라벨 컬러만 진한 그린(#006400)으로 변경 */
+    /* 입력 필드 라벨 컬러 진한 그린(#006400) */
     label[data-testid="stWidgetLabel"] p { 
         font-weight: 900 !important; 
         font-size: 17px !important; 
         color: #006400 !important; 
     }
 
-    /* 카드 공통 스타일 (반투명) */
-    .summary-card, .rank-card { background: rgba(255, 255, 255, 0.92) !important; }
-
-    /* 요약 카드 */
-    .summary-card {
+    /* 요약 카드 (기존 유지) */
+    .summary-card { 
+        background: rgba(255, 255, 255, 0.92) !important;
         border-radius: 18px; padding: 20px; text-align: center; margin-bottom: 12px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #f0f0f0;
     }
 
-    /* 랭킹 카드 - 그림자 대폭 강화 */
+    /* [수정 사항] 랭킹 카드 - 세련된 퍼플 그라데이션 배경 및 강력한 그림자 */
     .rank-card {
         padding: 12px 15px; border-radius: 12px; margin-bottom: 12px;
         display: flex; align-items: center; justify-content: space-between;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.4) !important; 
-        border: 1px solid rgba(0,0,0,0.1);
+        
+        /* 세련된 퍼플 그라데이션 배경 */
+        background: linear-gradient(135deg, rgba(243, 229, 245, 0.95), rgba(225, 190, 231, 0.95)) !important;
+        
+        /* 그림자 대폭 강화 및 내부 그림자 추가 */
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3) !important, inset 0 2px 5px rgba(255,255,255,0.5) !important; 
+        border: 1px solid rgba(103, 58, 183, 0.2); /* 은은한 퍼플 보더 */
     }
     
     .rank-info { display: flex; align-items: center; gap: 8px; }
+    
+    /* [수정 사항] 랭킹 카드 내부의 모든 글자 퍼플(#4a148c)로 변경 */
+    .rank-num, .rank-name, .rank-val {
+        color: #4a148c !important; /* 짙은 퍼플 */
+    }
+    
     .rank-num { font-weight: 900; font-size: 16px; }
-    .rank-name { font-weight: 900; font-size: 16px; color: #111 !important; }
+    .rank-name { font-weight: 900; font-size: 16px; }
     .rank-val { font-weight: 900; font-size: 15px; }
     
+    /* 기존 매매/전세 구분 보더는 유지하되 글자색은 퍼플로 통합 */
     .rank-m { border-left: 7px solid #FF4500; }
-    .rank-m .rank-num { color: #FF4500; }
-    .rank-m .rank-val { color: #e74c3c; }
-    
     .rank-j { border-left: 7px solid #000080; }
-    .rank-j .rank-num { color: #000080; }
-    .rank-j .rank-val { color: #000080; }
 
     .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #333; }
 
