@@ -55,7 +55,7 @@ st.markdown("""
         padding-left: 12px;
     }
 
-    /* 버튼 중앙 정렬 및 크기 조정 수정 */
+    /* 버튼 중앙 정렬 및 크기 최적화 */
     div.stButton {
         text-align: center;
         margin: 40px 0;
@@ -65,10 +65,10 @@ st.markdown("""
         background: linear-gradient(135deg, #757575, #424242) !important;
         color: white !important;
         border-radius: 25px !important;
-        padding: 0 30px !important;  /* 좌우 여백으로 크기 조절 */
-        width: auto !important;       /* 고정 너비 해제하여 여백 최적화 */
+        padding: 0 35px !important;
+        width: auto !important;
         min-width: 140px !important;
-        height: 48px !important;      /* 버튼 높이 살짝 조정 */
+        height: 50px !important;
         font-weight: 900 !important;
         font-size: 16px !important;
         border: none !important;
@@ -104,8 +104,8 @@ def load_data():
     return df_m, df_j
 
 def main():
-    if "is_exit" in st.session_state:
-        # 종료 문구 중앙 정렬 및 여백 최적화
+    # 1. 종료 상태 확인 (최상단)
+    if st.session_state.get("is_exit"):
         st.markdown("""
             <div style='display:flex; flex-direction:column; justify-content:center; align-items:center; height:80vh; text-align:center;'>
                 <h2 style='color:#006400; font-weight:900; white-space:nowrap; letter-spacing:-1px; margin:0;'>모두 부자됩시다.</h2>
@@ -160,6 +160,7 @@ def main():
         
         st.markdown("<hr>", unsafe_allow_html=True)
 
+    # 랭킹 섹션
     st.markdown('<div class="chart-title" style="color:#FF69B4; border-left:6px solid #FF69B4;">🔥 주간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
     m_w_row = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_mw = m_w_row[m_w_row > 0].sort_values(ascending=False).head(10)
@@ -186,9 +187,8 @@ def main():
         for i, (name, val) in enumerate(top_jm.items()):
             st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 3. 종료 버튼 (완전한 중앙 정렬 및 사이즈 최적화)
-    st.button("🚪 앱 종료")
-    if st.session_state.get("🚪 앱 종료") or st.session_state.get("is_exit"):
+    # 3. 종료 버튼 (로직 단순화하여 확실한 동작 보장)
+    if st.button("🚪 앱 종료"):
         st.session_state.is_exit = True
         st.rerun()
 
