@@ -15,9 +15,9 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
     
-    /* 전체 배경에 이미지 적용 */
+    /* [중요] 배경 이미지 설정: 본인의 GitHub 계정명과 저장소 이름으로 수정하세요 */
     .stApp {
-        background-image: url("https://raw.githubusercontent.com/YourGitHubID/YourRepo/main/background.png"); 
+        background-image: url("https://raw.githubusercontent.com/sharpkbju-bot/kb-realestate-app/main/bg.jpg");
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
@@ -26,17 +26,17 @@ st.markdown("""
 
     html, body, [class*="css"] { font-family: 'Noto+Sans+KR', sans-serif; }
 
-    /* 타이틀 */
+    /* 타이틀 영역 */
     .title-container { width: 100%; padding: 30px 0 15px 0; text-align: center; }
     .brand-name { color: #006400; font-size: clamp(30px, 10vw, 45px); font-weight: 900; font-family: 'Arial Black'; letter-spacing: -2px; }
     .brand-suffix { color: #FF4500; font-size: clamp(16px, 5vw, 24px); font-weight: 900; }
 
-    /* 입력 필드 카드화 및 그림자 */
+    /* 입력 섹션 카드 & 그림자 */
     div[data-testid="stVerticalBlock"] > div:has(div[data-baseweb="select"]) {
-        background: rgba(255, 255, 255, 0.85);
+        background: rgba(255, 255, 255, 0.88);
         padding: 20px;
         border-radius: 15px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
         margin-bottom: 20px;
         border: 1px solid rgba(255, 255, 255, 0.3);
     }
@@ -45,26 +45,26 @@ st.markdown("""
     div[data-baseweb="select"] input { caret-color: transparent !important; }
     label[data-testid="stWidgetLabel"] p { font-weight: 900 !important; font-size: 17px !important; color: #333; }
 
-    /* 증감/그래프 카드 스타일 및 그림자 */
+    /* 정보 카드 & 그림자 */
     .content-card {
-        background: rgba(255, 255, 255, 0.85);
+        background: rgba(255, 255, 255, 0.88);
         border-radius: 18px; 
         padding: 25px; 
         text-align: center; 
         margin-bottom: 20px;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
         border: 1px solid rgba(255, 255, 255, 0.3);
     }
     
     .summary-label { color: #555; font-size: 14px; font-weight: 700; margin-bottom: 5px; }
     .summary-date { color: #800080; font-size: 11px; margin-bottom: 10px; font-weight: 700; } /* 진한 퍼플 */
 
-    /* 랭킹 섹션 카드화 및 그림자 */
+    /* 랭킹 섹션 카드 & 그림자 */
     .ranking-container {
-        background: rgba(255, 255, 255, 0.85);
+        background: rgba(255, 255, 255, 0.88);
         padding: 20px;
         border-radius: 20px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
         margin-top: 10px;
         margin-bottom: 30px;
         border: 1px solid rgba(255, 255, 255, 0.3);
@@ -119,9 +119,10 @@ st.markdown("""
         position: fixed; top: 50%; left: 50%;
         transform: translate(-50%, -50%);
         width: 100%; text-align: center; z-index: 9999;
-        background: rgba(255, 255, 255, 0.9);
+        background: rgba(255, 255, 255, 0.95);
         padding: 40px;
         border-radius: 20px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.2);
     }
     .exit-msg { color: #006400; font-weight: 900; font-size: 32px; margin-top: 20px; }
     .exit-credit { color: #888; font-size: 18px; margin-top: 10px; }
