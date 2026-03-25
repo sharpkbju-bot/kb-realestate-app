@@ -16,6 +16,13 @@ st.markdown("""
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
     html, body, [class*="css"] { font-family: 'Noto+Sans+KR', sans-serif; }
 
+    /* 배경 화면 설정 - 파일명이 정확해야 합니다 */
+    .stApp {
+        background-image: url("url_또는_파일경로_입력"); 
+        background-size: cover;
+        background-attachment: fixed;
+    }
+
     /* 타이틀 */
     .title-container { width: 100%; padding: 30px 0 15px 0; text-align: center; }
     .brand-name { color: #006400; font-size: clamp(30px, 10vw, 45px); font-weight: 900; font-family: 'Arial Black'; letter-spacing: -2px; }
@@ -33,20 +40,21 @@ st.markdown("""
 
     /* 매매/전세 증감 카드 */
     .summary-card {
-        background: #ffffff; border-radius: 18px; padding: 20px; 
+        background: rgba(255, 255, 255, 0.9); border-radius: 18px; padding: 20px; 
         text-align: center; margin-bottom: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         border: 1px solid #f0f0f0;
     }
-    .summary-label { color: #666; font-size: 13px; font-weight: 700; margin-bottom: 5px; }
-    .summary-date { color: #999; font-size: 11px; margin-bottom: 8px; }
 
-    /* 랭킹 카드 */
+    /* 랭킹 카드 - 그림자 효과 강화 (0.08 -> 0.2로 상향) */
     .rank-card {
-        background-color: #ffffff; padding: 12px 15px; border-radius: 12px;
-        margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        background-color: rgba(255, 255, 255, 0.95); padding: 12px 15px; border-radius: 12px;
+        margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.2); /* 그림자 농도와 깊이 강화 */
+        transition: transform 0.2s ease;
     }
+    .rank-card:hover { transform: translateY(-2px); } /* 살짝 떠오르는 효과 추가 */
+    
     .rank-info { display: flex; align-items: center; gap: 8px; color: #333 !important; }
     .rank-num { font-weight: 900; font-size: 16px; }
     .rank-name { font-weight: 700; font-size: 16px; color: #333 !important; }
@@ -63,6 +71,7 @@ st.markdown("""
     .chart-title {
         font-size: 18px; font-weight: 800; margin: 25px 0 10px 0;
         padding-left: 12px;
+        color: #333;
     }
 
     /* 버튼 중앙 정렬 */
@@ -80,7 +89,7 @@ st.markdown("""
         font-weight: 900 !important;
         font-size: 16px !important;
         border: none !important;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
     }
 
     /* 종료 화면 절대 중앙 정렬 */
