@@ -143,7 +143,7 @@ def main():
                 </div>
                 <div class="exit-msg">모두 부자됩시다.</div>
                 <div class="created-by">Created by Ju Kyung Bae</div>
-                <div class="asset-info">with 70억 자산가 이승연</div>
+                <div class="asset-info">with<br>70억 자산가 이승연</div>
             </div>
         """, unsafe_allow_html=True)
         components.html("<script>window.close();</script>")
