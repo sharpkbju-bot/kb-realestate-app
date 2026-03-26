@@ -153,6 +153,7 @@ def main():
 
     if sel_region != "지역을 입력하세요.":
         components.html("<script>window.parent.document.activeElement.blur();</script>", height=0)
+        curr_idx = date_list.index(sel_date)
         m_val = df_maemae.loc[df_maemae['날짜'] == sel_date, sel_region].values[0]
         j_val = df_jeonse.loc[df_jeonse['날짜'] == sel_date, sel_region].values[0]
         
@@ -169,6 +170,28 @@ def main():
                 <div style="color:{j_color}; font-size:28px; font-weight:900;">{j_val:+.2f}%</div>
             </div>
         ''', unsafe_allow_html=True)
+
+        # 4주간 트렌드 그래프 추가 부분
+        def draw_trend_chart(df, line_color, title):
+            st.markdown(f'<div class="chart-title">{title}</div>', unsafe_allow_html=True)
+            # 현재 선택일 포함 최근 4주 데이터 추출
+            start_idx = max(0, curr_idx - 3)
+            sub_df = df.iloc[start_idx : curr_idx + 1]
+            
+            fig = px.line(sub_df, x='날짜', y=sel_region, markers=True)
+            fig.update_traces(line_color=line_color, line_width=4, marker=dict(size=10, color='white', line=dict(width=2, color=line_color)))
+            fig.update_layout(
+                height=220, margin=dict(l=10, r=10, t=10, b=10),
+                paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+                font=dict(color='#000080', size=12),
+                xaxis=dict(fixedrange=True, tickfont=dict(color='#000080', weight='bold'), title=None),
+                yaxis=dict(fixedrange=True, tickfont=dict(color='#000080', weight='bold'), title=None)
+            )
+            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+
+        draw_trend_chart(df_maemae, '#e74c3c', f'📈 {sel_region} 매매 트렌드 (4주)')
+        draw_trend_chart(df_jeonse, '#000080', f'📉 {sel_region} 전세 트렌드 (4주)')
+        st.markdown("<hr>", unsafe_allow_html=True)
 
     st.markdown('<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500;">🔥 주간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
     m_w_row = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
