@@ -12,11 +12,33 @@ st.set_page_config(
     layout="centered"
 )
 
-# 세션 상태 초기화
-if "is_exit" not in st.session_state:
-    st.session_state.is_exit = False
+# [수정] URL 파라미터를 통한 종료 로직 (가장 확실한 방법)
+if st.query_params.get("action") == "exit":
+    st.markdown(
+        f"""
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
+        .stApp {{ background-color: white !important; background-image: none !important; }}
+        .exit-wrapper {{ position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; text-align: center; }}
+        .brand-name {{ color: #006400; font-size: 45px; font-weight: 900; font-family: 'Arial Black'; }}
+        .brand-suffix {{ color: #FF4500; font-size: 24px; font-weight: 900; }}
+        .exit-msg {{ color: #006400; font-weight: 900; font-size: 32px; margin-top: 20px; font-family: 'Noto Sans KR'; }}
+        .created-by {{ font-family: 'Dancing Script', cursive !important; color: #000080 !important; font-size: 30px; font-weight: 700; margin-top: 10px; }}
+        .asset-info {{ font-weight: 900; color: #CC9900 !important; font-size: 20px; margin-top: 5px; font-family: 'Noto Sans KR'; }}
+        header {{ visibility: hidden; }}
+        </style>
+        <div class="exit-wrapper">
+            <div class="title-container"><span class="brand-name">Dr.J</span><span class="brand-suffix">의 부동산</span></div>
+            <div class="exit-msg">모두 부자됩시다.</div>
+            <div class="created-by">Created by Ju Kyung Bae</div>
+            <div class="asset-info">with 70억 자산가 이승연</div>
+        </div>
+        """, 
+        unsafe_allow_html=True
+    )
+    st.stop()
 
-# 배경 이미지 주입 함수
+# 배경 이미지 주입
 def set_bg_from_local(image_file):
     if os.path.exists(image_file):
         with open(image_file, "rb") as f:
@@ -48,6 +70,7 @@ st.markdown("""
     .brand-name { color: #006400; font-size: clamp(30px, 10vw, 45px); font-weight: 900; font-family: 'Arial Black'; letter-spacing: -2px; }
     .brand-suffix { color: #FF4500; font-size: clamp(16px, 5vw, 24px); font-weight: 900; }
 
+    /* 입력 필드 스타일 - 높이 46px 기준 */
     div[data-baseweb="select"] * { font-weight: 900 !important; font-size: 16px !important; }
     label[data-testid="stWidgetLabel"] p { font-weight: 900 !important; font-size: 17px !important; color: #006400 !important; }
 
@@ -62,7 +85,7 @@ st.markdown("""
         padding: 12px 15px; border-radius: 12px; margin-bottom: 12px;
         display: flex; align-items: center; justify-content: space-between;
         background: linear-gradient(135deg, rgba(243, 229, 245, 0.95), rgba(225, 190, 231, 0.95)) !important;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.5) !important, inset 0 2px 5px rgba(255,255,255,0.5) !important; 
+        box-shadow: 0 15px 35px rgba(0,0,0,0.5) !important; 
         border: 1px solid rgba(103, 58, 183, 0.2);
     }
     .rank-num { font-weight: 900; font-size: 16px; color: #4a148c !important; }
@@ -75,7 +98,7 @@ st.markdown("""
 
     .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #006400; }
 
-    /* 커스텀 버튼 스타일 (46px 높이) */
+    /* 버튼 스타일 (검색창과 동일한 46px 높이) */
     .custom-btn-group { display: flex; flex-direction: column; width: 100%; margin-top: 20px; }
     .custom-btn {
         width: 100%; height: 46px; border-radius: 12px; font-weight: 900; font-size: 16px; 
@@ -90,22 +113,8 @@ st.markdown("""
     }
     .exit-btn-margin { margin-top: 11px !important; }
 
-    .exit-wrapper { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; text-align: center; z-index: 9999; }
-    .exit-msg { color: #006400; font-weight: 900; font-size: 32px; margin-top: 20px; }
-    .created-by { font-family: 'Dancing Script', cursive !important; color: #000080 !important; font-size: 30px !important; font-weight: 700 !important; margin-top: 10px; }
-    .asset-info { font-weight: 900; color: #FFD700 !important; font-size: 20px !important; margin-top: 5px; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); }
-
     [data-testid="stPlotlyChart"] { background-color: transparent !important; }
     header {visibility: hidden;}
-    
-    /* [중요] 실제 작동 버튼(exit_action)을 흔적도 없이 완전히 숨김 */
-    div[data-testid="stButton"] {
-        position: absolute;
-        visibility: hidden;
-        height: 0;
-        width: 0;
-        overflow: hidden;
-    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -129,17 +138,6 @@ def load_data():
     return df_m, df_j
 
 def main():
-    if st.session_state.is_exit:
-        st.markdown(f"""
-            <div class="exit-wrapper">
-                <div class="title-container"><span class="brand-name">Dr.J</span><span class="brand-suffix">의 부동산</span></div>
-                <div class="exit-msg">모두 부자됩시다.</div>
-                <div class="created-by">Created by Ju Kyung Bae</div>
-                <div class="asset-info">with 70억 자산가 이승연</div>
-            </div>
-        """, unsafe_allow_html=True)
-        st.stop()
-
     st.markdown('<div class="title-container"><span class="brand-name">Dr.J</span><span class="brand-suffix">의 부동산</span></div>', unsafe_allow_html=True)
 
     df_maemae, df_jeonse = load_data()
@@ -188,19 +186,12 @@ def main():
         draw_chart(df_jeonse, '#000080', f'📉 {sel_region} 전세 트렌드 (4주)')
         st.markdown("<hr>", unsafe_allow_html=True)
 
-    # 랭킹 섹션
+    # 랭킹 TOP 10 섹션
     st.markdown('<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500;">🔥 주간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
     m_w_row = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_mw = m_w_row[m_w_row > 0].sort_values(ascending=False).head(10)
     for i, (name, val) in enumerate(top_mw.items()):
         st.markdown(f'<div class="rank-card rank-m"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
-
-    if curr_idx >= 3:
-        st.markdown('<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500;">📅 월간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
-        m_m_sum = df_maemae.iloc[curr_idx-3 : curr_idx+1].drop(columns=['날짜']).sum()
-        top_mm = m_m_sum[m_m_sum > 0].sort_values(ascending=False).head(10)
-        for i, (name, val) in enumerate(top_mm.items()):
-            st.markdown(f'<div class="rank-card rank-m"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
     st.markdown('<div class="chart-title" style="color:#FF1493; border-left:6px solid #FF1493;">💧 주간 전세 상승 TOP 10</div>', unsafe_allow_html=True)
     j_w_row = df_jeonse[df_jeonse['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
@@ -216,15 +207,12 @@ def main():
         </div>
     """, unsafe_allow_html=True)
 
-    # 이 버튼이 실제로 동작하지만 CSS로 완전히 숨겨져 있습니다.
-    st.button("exit_action")
-
-    # JavaScript: 스크린샷 및 종료 버튼 연결
+    # JavaScript: 스크린샷 및 URL 파라미터 제어
     st.markdown(
         """
         <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
         <script>
-        // 1. 스크린샷 로직
+        // 1. 스크린샷
         const scBtn = window.parent.document.getElementById('btn-screenshot');
         if (scBtn) {
             scBtn.onclick = function() {
@@ -237,19 +225,13 @@ def main():
             };
         }
 
-        // 2. 종료 로직 (숨겨진 버튼을 텍스트 기반으로 찾아 클릭)
+        // 2. 종료 (URL 파라미터 직접 조작 - 가장 확실함)
         const exBtn = window.parent.document.getElementById('btn-exit');
         if (exBtn) {
             exBtn.onclick = function() {
-                // 부모 문서(Streamlit 메인 창)의 모든 버튼을 검색
-                const buttons = window.parent.document.querySelectorAll('button');
-                for (let btn of buttons) {
-                    // 버튼 내부 텍스트에 'exit_action'이 포함되어 있으면 클릭
-                    if (btn.innerText.includes('exit_action')) {
-                        btn.click();
-                        break;
-                    }
-                }
+                const url = new URL(window.parent.location.href);
+                url.searchParams.set('action', 'exit');
+                window.parent.location.href = url.href;
             };
         }
         </script>
