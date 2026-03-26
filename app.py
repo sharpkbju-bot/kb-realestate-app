@@ -44,6 +44,7 @@ st.markdown("""
     .brand-name { color: #006400; font-size: clamp(30px, 10vw, 45px); font-weight: 900; font-family: 'Arial Black'; letter-spacing: -2px; }
     .brand-suffix { color: #FF4500; font-size: clamp(16px, 5vw, 24px); font-weight: 900; }
 
+    /* 입력 필드 스타일 */
     div[data-baseweb="select"] * { font-weight: 900 !important; font-size: 16px !important; }
     label[data-testid="stWidgetLabel"] p { font-weight: 900 !important; font-size: 17px !important; color: #006400 !important; }
 
@@ -71,12 +72,12 @@ st.markdown("""
 
     .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #006400; }
 
-    /* [수정] 하단 커스텀 버튼 스타일 (높이를 55px -> 48px로 슬림하게 조정) */
+    /* [수정] 하단 커스텀 버튼 스타일 (입력 필드와 동일한 46px 높이로 조정) */
     .custom-btn-group { display: flex; flex-direction: column; width: 100%; margin-top: 20px; }
     .custom-btn {
         width: 100%; 
-        height: 48px; /* 슬림하게 변경 */
-        border-radius: 12px; font-weight: 900; font-size: 17px; /* 폰트 사이즈 살짝 조정 */
+        height: 46px; /* Streamlit 입력 필드와 동일한 높이 */
+        border-radius: 12px; font-weight: 900; font-size: 16px; 
         color: #87CEEB !important; display: flex; justify-content: center; align-items: center;
         text-decoration: none !important; border: 2px solid rgba(200, 200, 200, 0.6);
         background: linear-gradient(135deg, rgba(60, 60, 60, 0.8), rgba(30, 30, 30, 0.9));
@@ -86,7 +87,7 @@ st.markdown("""
         border-color: rgba(255, 255, 255, 0.8);
         background: linear-gradient(135deg, rgba(80, 80, 80, 0.9), rgba(50, 50, 50, 1));
     }
-    .exit-btn-margin { margin-top: 11px !important; } /* 3mm 간격 유지 */
+    .exit-btn-margin { margin-top: 11px !important; } /* 3mm 간격 */
 
     .exit-wrapper { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; text-align: center; z-index: 9999; }
     .exit-msg { color: #006400; font-weight: 900; font-size: 32px; margin-top: 20px; }
@@ -177,7 +178,7 @@ def main():
         draw_chart(df_jeonse, '#000080', f'📉 {sel_region} 전세 트렌드 (4주)')
         st.markdown("<hr>", unsafe_allow_html=True)
 
-    # 랭킹 섹션 복원
+    # 랭킹 섹션 (매매/전세 고유 컬러 스킴 유지)
     st.markdown('<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500;">🔥 주간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
     m_w_row = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_mw = m_w_row[m_w_row > 0].sort_values(ascending=False).head(10)
@@ -204,7 +205,7 @@ def main():
         for i, (name, val) in enumerate(top_jm.items()):
             st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # [수정] 슬림해진 하단 커스텀 버튼 섹션
+    # [수정] 입력 필드와 사이즈가 동일해진 버튼 섹션
     st.markdown("""
         <div class="custom-btn-group">
             <div id="btn-screenshot" class="custom-btn">📸 화면 스크린샷</div>
