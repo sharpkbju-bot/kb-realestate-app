@@ -34,16 +34,15 @@ def set_bg():
     if os.path.exists('bg.jpg'):
         with open("bg.jpg", "rb") as f:
             encoded = base64.b64encode(f.read()).decode()
-        st.markdown(f"""<style>.stApp {{ background-image: url("data:image/jpg;base64,{encoded}"); background-size: cover; }}</style>""", unsafe_allow_html=True)
+        st.markdown(f"""<style>.stApp {{ background-image: url("data:image/jpg;base64,{encoded}"); background-size: cover; background-attachment: fixed; }}</style>""", unsafe_allow_html=True)
 set_bg()
 
-# 2. 스타일 시트 (모든 요소 강제 고정)
+# 2. 스타일 시트 (디자인 복구 및 고정)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
     * { font-family: 'Noto Sans KR', sans-serif !important; }
 
-    /* 타이틀 */
     .title-container { text-align: center; padding: 20px 0; }
     .brand-name { color: #006400; font-size: 45px; font-weight: 900; }
     .brand-suffix { color: #FF4500; font-size: 24px; font-weight: 900; }
@@ -53,33 +52,39 @@ st.markdown("""
         background: rgba(255, 255, 255, 0.95); border-radius: 15px; padding: 15px; 
         text-align: center; margin-bottom: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
-    .summary-label { font-weight: 900; color: #000080; font-size: 16px; }
 
-    /* 랭킹 카드 */
+    /* [복구] 랭킹 카드 스타일 */
     .rank-card {
         padding: 12px 15px; border-radius: 12px; margin-bottom: 8px;
         display: flex; align-items: center; justify-content: space-between;
         background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-    .rank-m { border-left: 8px solid #FF4500; }
-    .rank-j { border-left: 8px solid #000080; }
     .rank-num { font-weight: 900; color: #4a148c; font-size: 17px; margin-right: 10px; }
-    .rank-name { font-weight: 900; color: #333; font-size: 16px; flex-grow: 1; }
-    .rank-val { font-weight: 900; color: #d35400; font-size: 16px; }
+    
+    /* 매매 랭킹: 브라운 텍스트 */
+    .rank-m { border-left: 8px solid #FF4500 !important; }
+    .rank-m .rank-name, .rank-m .rank-val { color: #8B4513 !important; font-weight: 900; }
 
-    /* 버튼 공통 (100% 폭 & 굵게) */
-    .stButton > button, .screenshot-btn {
+    /* 전세 랭킹: 청록 텍스트 */
+    .rank-j { border-left: 8px solid #000080 !important; }
+    .rank-j .rank-name, .rank-j .rank-val { color: #008080 !important; font-weight: 900; }
+
+    /* 버튼 스타일 (100% 폭 & Bold 강제) */
+    div.stButton > button, .screenshot-btn {
         width: 100% !important; height: 48px !important; border-radius: 12px !important;
         font-weight: 900 !important; font-size: 17px !important; color: #87CEEB !important;
         background: linear-gradient(135deg, #333, #111) !important;
         border: 2px solid #555 !important; cursor: pointer;
+        display: flex !important; align-items: center !important; justify-content: center !important;
     }
-    .screenshot-btn { display: flex; align-items: center; justify-content: center; margin-top: 20px; }
+    div.stButton > button p { font-weight: 900 !important; font-size: 17px !important; }
+    .screenshot-btn { margin-top: 20px; text-decoration: none; }
 
     header { visibility: hidden; }
     </style>
     """, unsafe_allow_html=True)
 
+# 3. 데이터 로딩 (에러 방지 로직 추가)
 @st.cache_data
 def load_data():
     try:
@@ -88,6 +93,13 @@ def load_data():
     except:
         m = pd.read_csv('maemae.csv', encoding='utf-8')
         j = pd.read_csv('jeonse.csv', encoding='utf-8')
+    
+    # [핵심] 날짜 제외 모든 컬럼을 강제로 숫자형으로 변환 (오류 원인 제거)
+    for df in [m, j]:
+        for col in df.columns:
+            if col != '날짜':
+                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0.0)
+    
     m['날짜'] = m['날짜'].astype(str)
     j['날짜'] = j['날짜'].astype(str)
     return m, j
@@ -102,35 +114,42 @@ def main():
     sel_date = st.selectbox("📅 날짜 선택", date_list, index=len(date_list)-1)
     sel_region = st.selectbox("🔍 지역 검색", ["지역을 입력하세요."] + region_list)
 
+    # 지역 선택 시 출력
     if sel_region != "지역을 입력하세요.":
         m_val = df_m.loc[df_m['날짜'] == sel_date, sel_region].values[0]
         j_val = df_j.loc[df_j['날짜'] == sel_date, sel_region].values[0]
 
-        st.markdown(f'<div class="summary-card"><div class="summary-label">📍 {sel_region} 매매 증감</div><div style="color:#e74c3c; font-size:26px; font-weight:900;">{m_val:+.2f}%</div></div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="summary-card"><div class="summary-label">📍 {sel_region} 전세 증감</div><div style="color:#000080; font-size:26px; font-weight:900;">{j_val:+.2f}%</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="summary-card"><div style="font-weight:900; color:#000080;">📍 {sel_region} 매매 증감</div><div style="color:#e74c3c; font-size:26px; font-weight:900;">{m_val:+.2f}%</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="summary-card"><div style="font-weight:900; color:#000080;">📍 {sel_region} 전세 증감</div><div style="color:#000080; font-size:26px; font-weight:900;">{j_val:+.2f}%</div></div>', unsafe_allow_html=True)
 
-        # 그래프 복구
+        # 그래프
         idx = date_list.index(sel_date)
         sub_m = df_m.iloc[max(0, idx-3):idx+1]
         fig = px.line(sub_m, x='날짜', y=sel_region, title=f"📈 {sel_region} 매매 추이")
-        fig.update_layout(height=250, margin=dict(l=10,r=10,t=40,b=10), font=dict(weight='bold'))
+        fig.update_layout(height=250, margin=dict(l=10,r=10,t=40,b=10))
         st.plotly_chart(fig, use_container_width=True)
 
-    # 랭킹 TOP 10
+    # 랭킹 섹션 (데이터 타입 에러 발생 지점 수정 완료)
     st.markdown('<h3 style="color:#FF4500; font-weight:900; margin-top:30px;">🔥 주간 매매 상승 TOP 10</h3>', unsafe_allow_html=True)
-    top_m = df_m[df_m['날짜'] == sel_date].drop(columns=['날짜']).iloc[0].sort_values(ascending=False).head(10)
+    day_m = df_m[df_m['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
+    top_m = day_m[day_m > 0].sort_values(ascending=False).head(10)
     for i, (name, val) in enumerate(top_m.items()):
-        if val > 0:
-            st.markdown(f'<div class="rank-card rank-m"><span class="rank-num">{i+1}위</span><span class="rank-name">{name}</span><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="rank-card rank-m"><span class="rank-num">{i+1}위</span><span class="rank-name">{name}</span><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 버튼
+    st.markdown('<h3 style="color:#000080; font-weight:900; margin-top:30px;">💧 주간 전세 상승 TOP 10</h3>', unsafe_allow_html=True)
+    day_j = df_j[df_j['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
+    top_j = day_j[day_j > 0].sort_values(ascending=False).head(10)
+    for i, (name, val) in enumerate(top_j.items()):
+        st.markdown(f'<div class="rank-card rank-j"><span class="rank-num">{i+1}위</span><span class="rank-name">{name}</span><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
+
+    # 하단 버튼
     st.markdown('<div id="sc-btn" class="screenshot-btn">📸 화면 스크린샷 저장</div>', unsafe_allow_html=True)
     
     if st.button("🚪 앱 종료", use_container_width=True):
         st.session_state.is_exit = True
         st.rerun()
 
-    # 스크린샷 스크립트 (가장 안정적인 다운로드 방식)
+    # 스크린샷 스크립트
     st.markdown("""
         <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
         <script>
@@ -143,7 +162,6 @@ def main():
                     link.href = canvas.toDataURL('image/png');
                     link.download = 'DrJ_RealEstate.png';
                     link.click();
-                    alert('스크린샷이 갤러리(또는 다운로드 폴더)에 저장되었습니다!');
                 });
             };
         }
