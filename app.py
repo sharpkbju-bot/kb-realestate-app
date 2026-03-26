@@ -75,7 +75,7 @@ st.markdown("""
 
     .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #006400; }
 
-    /* 버튼 스타일 (46px 높이) */
+    /* 커스텀 버튼 스타일 (46px 높이) */
     .custom-btn-group { display: flex; flex-direction: column; width: 100%; margin-top: 20px; }
     .custom-btn {
         width: 100%; height: 46px; border-radius: 12px; font-weight: 900; font-size: 16px; 
@@ -98,8 +98,10 @@ st.markdown("""
     [data-testid="stPlotlyChart"] { background-color: transparent !important; }
     header {visibility: hidden;}
     
-    /* 실제 종료를 처리할 숨겨진 버튼 */
-    #hidden_exit_button { display: none; }
+    /* 실제 종료 버튼을 화면에서 완전히 숨김 */
+    div.stButton > button {
+        display: none;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -123,7 +125,7 @@ def load_data():
     return df_m, df_j
 
 def main():
-    # 종료 로직 체크
+    # 종료 화면 처리
     if st.session_state.is_exit:
         st.markdown(f"""
             <div class="exit-wrapper">
@@ -183,7 +185,7 @@ def main():
         draw_chart(df_jeonse, '#000080', f'📉 {sel_region} 전세 트렌드 (4주)')
         st.markdown("<hr>", unsafe_allow_html=True)
 
-    # 랭킹 섹션 (매매: 주황 / 전세: 청록)
+    # 랭킹 섹션
     st.markdown('<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500;">🔥 주간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
     m_w_row = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_mw = m_w_row[m_w_row > 0].sort_values(ascending=False).head(10)
@@ -211,17 +213,16 @@ def main():
         </div>
     """, unsafe_allow_html=True)
 
-    # 🚪 실제 종료를 위한 숨겨진 스트림릿 버튼
-    if st.button("실제 종료", key="hidden_exit_btn", help="이 버튼은 스타일로 숨겨져 있습니다."):
+    # 이 버튼이 실제로 작동하지만 CSS로 완전히 숨겨져 있습니다.
+    if st.button("TRIGGER_EXIT"):
         st.session_state.is_exit = True
         st.rerun()
 
-    # JavaScript: 스크린샷 및 버튼 연동
+    # JavaScript: 스creenshot 및 종료 버튼 연결
     st.markdown(
         """
         <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
         <script>
-        // 1. 스크린샷 로직
         const scBtn = window.parent.document.getElementById('btn-screenshot');
         if (scBtn) {
             scBtn.onclick = function() {
@@ -234,14 +235,13 @@ def main():
             };
         }
 
-        // 2. 종료 로직 (스트림릿 버튼을 프로그램적으로 클릭)
         const exBtn = window.parent.document.getElementById('btn-exit');
         if (exBtn) {
             exBtn.onclick = function() {
-                // 스트림릿 내의 모든 버튼을 찾아 "실제 종료" 텍스트가 있는 것을 클릭
+                // 부모 문서에서 모든 버튼을 찾고, 텍스트가 "TRIGGER_EXIT"인 버튼을 클릭함
                 const buttons = window.parent.document.querySelectorAll('button');
                 for (const btn of buttons) {
-                    if (btn.innerText.includes("실제 종료")) {
+                    if (btn.innerText.includes("TRIGGER_EXIT")) {
                         btn.click();
                         break;
                     }
