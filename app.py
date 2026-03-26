@@ -85,33 +85,45 @@ st.markdown("""
 
     .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #006400; }
 
-    /* [수정 사항] 버튼 컨테이너 및 내부 Streamlit 요소들을 강제로 가로 꽉 차게 설정 */
-    div.stButton { width: 100% !important; }
+    /* 버튼 컨테이너 및 버튼을 랭킹 카드 가로폭에 100% 맞춤 */
+    div.stButton { width: 100% !important; margin: 10px 0 !important; }
     div[data-testid="stVerticalBlock"] > div:has(div.stButton) { width: 100% !important; }
     
     div.stButton > button {
-        color: #87CEEB !important; /* 글자색 하늘색 */
+        color: #87CEEB !important; /* 글자색 하늘색 유지 */
         border-radius: 12px !important; 
         width: 100% !important; 
         max-width: 100% !important; 
         height: 55px !important; 
         font-weight: 900 !important;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important; 
-        border: none !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important; 
         font-size: 18px !important;
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
+        
+        /* [수정 사항] 테두리 라인 추가 */
+        border: 2px solid rgba(200, 200, 200, 0.6) !important; /* 연한 실버 테두리 */
+        
+        /* [수정 사항] 배경 그라데이션 적용 (석재 배경과 어울리는 다크 톤) */
+        background: linear-gradient(135deg, rgba(60, 60, 60, 0.8), rgba(30, 30, 30, 0.9)) !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    /* 호버 시 테두리와 배경 살짝 강조 */
+    div.stButton > button:hover {
+        border-color: rgba(255, 255, 255, 0.8) !important;
+        background: linear-gradient(135deg, rgba(80, 80, 80, 0.9), rgba(50, 50, 50, 1)) !important;
     }
 
-    /* 스크린샷 버튼 배경색 (연한 그린) */
-    div.stButton.screenshot-btn > button {
-        background-color: #90EE90 !important;
+    /* 스크린샷 버튼 전용 호버 효과 (연한 그린 틴트) */
+    div.stButton.screenshot-btn > button:hover {
+        box-shadow: 0 0 15px rgba(144, 238, 144, 0.5) !important;
     }
 
-    /* 종료 버튼 배경색 (연한 퍼플) */
-    div.stButton.exit-btn > button {
-        background-color: #E6E6FA !important;
+    /* 종료 버튼 전용 호버 효과 (연한 퍼플 틴트) */
+    div.stButton.exit-btn > button:hover {
+        box-shadow: 0 0 15px rgba(230, 230, 250, 0.5) !important;
     }
 
     .exit-wrapper {
@@ -252,6 +264,7 @@ def main():
             st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
     # --- 하단 버튼 섹션 ---
+    # 각 버튼 div에 클래스 추가
     st.markdown('<div class="stButton screenshot-btn">', unsafe_allow_html=True)
     st.button("📸 화면 스크린샷", key="screenshot_trigger")
     st.markdown('</div>', unsafe_allow_html=True)
