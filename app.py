@@ -12,7 +12,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# 배경 이미지를 Base64로 변환하여 주입하는 함수
+# 배경 이미지 주입 함수
 def set_bg_from_local(image_file):
     if os.path.exists(image_file):
         with open(image_file, "rb") as f:
@@ -40,16 +40,13 @@ st.markdown("""
     
     html, body, [class*="css"] { font-family: 'Noto+Sans+KR', sans-serif; }
 
-    /* 타이틀 스타일 */
     .title-container { width: 100%; padding: 30px 0 15px 0; text-align: center; }
     .brand-name { color: #006400; font-size: clamp(30px, 10vw, 45px); font-weight: 900; font-family: 'Arial Black'; letter-spacing: -2px; }
     .brand-suffix { color: #FF4500; font-size: clamp(16px, 5vw, 24px); font-weight: 900; }
 
-    /* 입력 필드 스타일 */
     div[data-baseweb="select"] * { font-weight: 900 !important; font-size: 16px !important; }
     label[data-testid="stWidgetLabel"] p { font-weight: 900 !important; font-size: 17px !important; color: #006400 !important; }
 
-    /* 요약 카드 */
     .summary-card { 
         background: rgba(255, 255, 255, 0.92) !important;
         border-radius: 18px; padding: 20px; text-align: center; margin-bottom: 12px;
@@ -57,7 +54,6 @@ st.markdown("""
     }
     .summary-label { font-weight: 900; color: #000080 !important; }
 
-    /* 랭킹 카드 및 글자 색상 스타일 */
     .rank-card {
         padding: 12px 15px; border-radius: 12px; margin-bottom: 12px;
         display: flex; align-items: center; justify-content: space-between;
@@ -65,25 +61,22 @@ st.markdown("""
         box-shadow: 0 15px 35px rgba(0,0,0,0.5) !important, inset 0 2px 5px rgba(255,255,255,0.5) !important; 
         border: 1px solid rgba(103, 58, 183, 0.2);
     }
-    .rank-info { display: flex; align-items: center; gap: 8px; }
     .rank-num { font-weight: 900; font-size: 16px; color: #4a148c !important; }
-    .rank-name { font-weight: 900; font-size: 16px; }
-    .rank-val { font-weight: 900; font-size: 15px; }
+    .rank-name, .rank-val { font-weight: 900; font-size: 16px; }
     
-    /* 매매 섹션 컬러 (주황/갈색) */
     .rank-m { border-left: 7px solid #FF4500; }
     .rank-m .rank-name, .rank-m .rank-val { color: #8B4513 !important; }
-
-    /* 전세 섹션 컬러 (청록) */
     .rank-j { border-left: 7px solid #000080; }
     .rank-j .rank-name, .rank-j .rank-val { color: #008080 !important; }
 
     .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #006400; }
 
-    /* 하단 커스텀 버튼 스타일 (Full Width + 3mm 간격) */
+    /* [수정] 하단 커스텀 버튼 스타일 (높이를 55px -> 48px로 슬림하게 조정) */
     .custom-btn-group { display: flex; flex-direction: column; width: 100%; margin-top: 20px; }
     .custom-btn {
-        width: 100%; height: 55px; border-radius: 12px; font-weight: 900; font-size: 18px;
+        width: 100%; 
+        height: 48px; /* 슬림하게 변경 */
+        border-radius: 12px; font-weight: 900; font-size: 17px; /* 폰트 사이즈 살짝 조정 */
         color: #87CEEB !important; display: flex; justify-content: center; align-items: center;
         text-decoration: none !important; border: 2px solid rgba(200, 200, 200, 0.6);
         background: linear-gradient(135deg, rgba(60, 60, 60, 0.8), rgba(30, 30, 30, 0.9));
@@ -93,7 +86,7 @@ st.markdown("""
         border-color: rgba(255, 255, 255, 0.8);
         background: linear-gradient(135deg, rgba(80, 80, 80, 0.9), rgba(50, 50, 50, 1));
     }
-    .exit-btn-margin { margin-top: 11px !important; } /* 3mm 간격 */
+    .exit-btn-margin { margin-top: 11px !important; } /* 3mm 간격 유지 */
 
     .exit-wrapper { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; text-align: center; z-index: 9999; }
     .exit-msg { color: #006400; font-weight: 900; font-size: 32px; margin-top: 20px; }
@@ -172,24 +165,11 @@ def main():
             sub_df = df.iloc[start_idx : curr_idx + 1]
             fig = px.line(sub_df, x='날짜', y=sel_region, markers=True)
             fig.update_traces(line_color=line_color, line_width=4, marker=dict(size=10, color='white', line=dict(width=2, color=line_color)))
-            
-            # [수정 사항] 그래프 내부의 x축(날짜)과 y축(지역명) 라벨 컬러를 짙은 남색(#000080)으로 설정
             fig.update_layout(
-                height=220, 
-                margin=dict(l=10,r=10,t=10,b=10), 
-                paper_bgcolor='rgba(0,0,0,0)', 
-                plot_bgcolor='rgba(0,0,0,0)', 
+                height=220, margin=dict(l=10,r=10,t=10,b=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
                 font=dict(color='#000080', size=12),
-                xaxis=dict(
-                    fixedrange=True, 
-                    tickfont=dict(color='#000080', weight='bold'),
-                    title=dict(font=dict(color='#000080')) # x축 라벨("날짜") 컬러 설정
-                ),
-                yaxis=dict(
-                    fixedrange=True, 
-                    tickfont=dict(color='#000080', weight='bold'),
-                    title=dict(text="", font=dict(color='#000080')) # y축 라벨(지역명) 컬러 설정
-                )
+                xaxis=dict(fixedrange=True, tickfont=dict(color='#000080', weight='bold'), title=dict(font=dict(color='#000080'))),
+                yaxis=dict(fixedrange=True, tickfont=dict(color='#000080', weight='bold'), title=dict(text="", font=dict(color='#000080')))
             )
             st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
@@ -197,7 +177,7 @@ def main():
         draw_chart(df_jeonse, '#000080', f'📉 {sel_region} 전세 트렌드 (4주)')
         st.markdown("<hr>", unsafe_allow_html=True)
 
-    # 랭킹 섹션 복원 (매매: 주황/전세: 청록 컬러 스킴 유지)
+    # 랭킹 섹션 복원
     st.markdown('<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500;">🔥 주간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
     m_w_row = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_mw = m_w_row[m_w_row > 0].sort_values(ascending=False).head(10)
@@ -224,7 +204,7 @@ def main():
         for i, (name, val) in enumerate(top_jm.items()):
             st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 하단 커스텀 버튼 섹션 (기존 코드 유지)
+    # [수정] 슬림해진 하단 커스텀 버튼 섹션
     st.markdown("""
         <div class="custom-btn-group">
             <div id="btn-screenshot" class="custom-btn">📸 화면 스크린샷</div>
