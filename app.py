@@ -37,8 +37,8 @@ set_bg_from_local('bg.jpg')
 # 2. UI 디자인 및 스타일 설정 (CSS)
 st.markdown("""
     <style>
-    /* 기본 폰트 및 필기체 폰트(Dancing Script) 불러오기 */
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700;900&family=Dancing+Script:wght@700&display=swap');
+    /* 폰트 불러오기 최상단 배치 */
+    @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
     
     html, body, [class*="css"] { font-family: 'Noto+Sans+KR', sans-serif; }
 
@@ -70,7 +70,7 @@ st.markdown("""
         color: #000080 !important;
     }
 
-    /* 랭킹 카드 - 세련된 퍼플 그라데이션 및 강력한 그림자 */
+    /* 랭킹 카드 */
     .rank-card {
         padding: 12px 15px; border-radius: 12px; margin-bottom: 12px;
         display: flex; align-items: center; justify-content: space-between;
@@ -80,27 +80,18 @@ st.markdown("""
     }
     
     .rank-info { display: flex; align-items: center; gap: 8px; }
-    
-    /* 랭킹 카드 기본 글자 컬러 퍼플(#4a148c) */
-    .rank-num, .rank-name, .rank-val {
-        color: #4a148c !important;
-    }
-    
+    .rank-num, .rank-name, .rank-val { color: #4a148c !important; }
     .rank-num { font-weight: 900; font-size: 16px; }
     .rank-name { font-weight: 900; font-size: 16px; }
     .rank-val { font-weight: 900; font-size: 15px; }
     
-    /* 매매 상승 TOP 10 카드 내 지역명 및 상승률 컬러 브라운(#8B4513) */
+    /* 매매 카드 내 지역명/수치 브라운(#8B4513) */
     .rank-m { border-left: 7px solid #FF4500; }
-    .rank-m .rank-name, .rank-m .rank-val {
-        color: #8B4513 !important;
-    }
+    .rank-m .rank-name, .rank-m .rank-val { color: #8B4513 !important; }
 
-    /* 전세 상승 TOP 10 카드 내 지역명 및 상승률 컬러 청녹색(#008080) */
+    /* 전세 카드 내 지역명/수치 청녹색(#008080) */
     .rank-j { border-left: 7px solid #000080; }
-    .rank-j .rank-name, .rank-j .rank-val {
-        color: #008080 !important;
-    }
+    .rank-j .rank-name, .rank-j .rank-val { color: #008080 !important; }
 
     /* 트렌드 차트 제목 컬러 진한 그린(#006400) */
     .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #006400; }
@@ -119,15 +110,15 @@ st.markdown("""
         position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
         width: 100%; text-align: center; z-index: 9999;
     }
-    .exit-msg { color: #006400; font-weight: 900; font-size: 32px; margin-top: 20px; margin-bottom: 5px; }
+    .exit-msg { color: #006400; font-weight: 900; font-size: 32px; margin-top: 20px; }
     
-    /* [수정 사항] Created by 필기체 스타일 정의 */
+    /* [수정 보완] 필기체 강제 적용 스타일 */
     .created-by { 
-        font-family: 'Dancing Script', cursive; /* 멋진 필기체 */
-        color: #006400; /* 진한 그린 */
-        font-size: 24px; /* 적절한 크기 */
-        font-weight: 700;
-        margin-top: 0px;
+        font-family: 'Dancing Script', 'Brush Script MT', cursive !important;
+        color: #006400 !important;
+        font-size: 30px !important; 
+        font-weight: 700 !important;
+        margin-top: 10px;
     }
 
     [data-testid="stPlotlyChart"] { background-color: transparent !important; }
@@ -156,7 +147,6 @@ def load_data():
 
 def main():
     if st.session_state.get("is_exit"):
-        # [수정 사항] 종료 화면에 필기체 문구 추가
         st.markdown(f"""
             <div class="exit-wrapper">
                 <div class="title-container">
@@ -207,7 +197,6 @@ def main():
             fig = px.line(sub_df, x='날짜', y=sel_region, markers=True)
             fig.update_traces(line_color=line_color, line_width=4, marker=dict(size=10, color='white', line=dict(width=2, color=line_color)))
             
-            # 그래프 내부의 축 레이블(지역명, 날짜) 컬러 진한 파란색(#000080)
             fig.update_layout(
                 height=220, 
                 margin=dict(l=10,r=10,t=10,b=10), 
