@@ -146,7 +146,7 @@ def main():
     sel_date = st.selectbox("📅 날짜 선택", date_list, index=len(date_list)-1)
     sel_region = st.selectbox("🔍 지역 검색 및 선택", options=["지역을 입력하세요."] + region_list, index=0)
 
-    # --- 1. 지역 상세 정보 및 그래프 섹션 ---
+    # 1. 지역 상세 및 그래프 (지역 선택 시에만 출력)
     if sel_region != "지역을 입력하세요.":
         components.html("<script>window.parent.document.activeElement.blur();</script>", height=0)
         curr_idx = date_list.index(sel_date)
@@ -172,63 +172,47 @@ def main():
         sub_df_m = df_maemae.iloc[start_idx : curr_idx + 1]
         sub_df_j = df_jeonse.iloc[start_idx : curr_idx + 1]
 
-        # 그래프 폰트 진하게(900) 설정 유지
-        chart_font_style = dict(size=12, color='#000080', family='Noto Sans KR', weight=900)
+        # 그래프 설정 (진하게 900)
+        chart_font = dict(size=12, color='#000080', family='Noto Sans KR', weight=900)
 
         st.markdown(f'<div class="chart-title">📈 {sel_region} 매매 트렌드 (4주)</div>', unsafe_allow_html=True)
         fig_m = px.line(sub_df_m, x='날짜', y=sel_region, markers=True)
         fig_m.update_traces(line_color='#e74c3c', line_width=4, marker=dict(size=10, color='white', line=dict(width=2, color='#e74c3c')))
-        fig_m.update_layout(
-            height=220, margin=dict(l=10, r=10, t=10, b=10),
-            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-            xaxis=dict(title=None, tickfont=chart_font_style),
-            yaxis=dict(title=None, tickfont=chart_font_style)
-        )
+        fig_m.update_layout(height=220, margin=dict(l=10, r=10, t=10, b=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', xaxis=dict(title=None, tickfont=chart_font), yaxis=dict(title=None, tickfont=chart_font))
         st.plotly_chart(fig_m, use_container_width=True, config={'displayModeBar': False})
 
         st.markdown(f'<div class="chart-title">📉 {sel_region} 전세 트렌드 (4주)</div>', unsafe_allow_html=True)
         fig_j = px.line(sub_df_j, x='날짜', y=sel_region, markers=True)
         fig_j.update_traces(line_color='#000080', line_width=4, marker=dict(size=10, color='white', line=dict(width=2, color='#000080')))
-        fig_j.update_layout(
-            height=220, margin=dict(l=10, r=10, t=10, b=10),
-            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-            xaxis=dict(title=None, tickfont=chart_font_style),
-            yaxis=dict(title=None, tickfont=chart_font_style)
-        )
+        fig_j.update_layout(height=220, margin=dict(l=10, r=10, t=10, b=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', xaxis=dict(title=None, tickfont=chart_font), yaxis=dict(title=None, tickfont=chart_font))
         st.plotly_chart(fig_j, use_container_width=True, config={'displayModeBar': False})
         
-        st.markdown("<hr style='border: 1px solid rgba(0,100,0,0.1);'>", unsafe_allow_html=True)
+        st.markdown("<hr style='border: 1px solid rgba(0,100,0,0.1); margin: 25px 0;'>", unsafe_allow_html=True)
 
-    # --- 2. 월간/주간 랭킹 TOP 10 섹션 (보강됨) ---
-    st.markdown('<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500;">🔥 월간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
+    # 2. 주간 랭킹 TOP 10 (항상 출력)
+    # 매매 랭킹
+    st.markdown(f'<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500;">🔥 주간 매매 상승 TOP 10 ({sel_date})</div>', unsafe_allow_html=True)
+    m_data = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
+    top_m = m_data[m_data > 0].sort_values(ascending=False).head(10)
     
-    # 해당 날짜 행 추출 후 안전하게 처리
-    m_target_df = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜'])
-    if not m_target_df.empty:
-        m_row = m_target_df.iloc[0]
-        # 값이 0보다 큰 지역만 정렬하여 상위 10개 추출
-        top_m = m_row[m_row > 0].sort_values(ascending=False).head(10)
-        
-        if not top_m.empty:
-            for i, (name, val) in enumerate(top_m.items()):
-                st.markdown(f'<div class="rank-card rank-m"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
-        else:
-            st.info("해당 날짜에 상승한 지역이 없습니다.")
+    if not top_m.empty:
+        for i, (name, val) in enumerate(top_m.items()):
+            st.markdown(f'<div class="rank-card rank-m"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
+    else:
+        st.write("상승 지역 데이터가 없습니다.")
 
-    st.markdown('<div class="chart-title" style="color:#000080; border-left:6px solid #000080;">💧 월간 전세 상승 TOP 10</div>', unsafe_allow_html=True)
+    # 전세 랭킹
+    st.markdown(f'<div class="chart-title" style="color:#000080; border-left:6px solid #000080;">💧 주간 전세 상승 TOP 10 ({sel_date})</div>', unsafe_allow_html=True)
+    j_data = df_jeonse[df_jeonse['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
+    top_j = j_data[j_data > 0].sort_values(ascending=False).head(10)
     
-    j_target_df = df_jeonse[df_jeonse['날짜'] == sel_date].drop(columns=['날짜'])
-    if not j_target_df.empty:
-        j_row = j_target_df.iloc[0]
-        top_j = j_row[j_row > 0].sort_values(ascending=False).head(10)
-        
-        if not top_j.empty:
-            for i, (name, val) in enumerate(top_j.items()):
-                st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
-        else:
-            st.info("해당 날짜에 상승한 지역이 없습니다.")
+    if not top_j.empty:
+        for i, (name, val) in enumerate(top_j.items()):
+            st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
+    else:
+        st.write("상승 지역 데이터가 없습니다.")
 
-    # --- 3. 하단 기능 버튼 ---
+    # 3. 버튼 및 스크립트
     st.markdown('<div id="btn-screenshot" class="screenshot-btn">📸 화면 스크린샷</div>', unsafe_allow_html=True)
     
     if st.button("🚪 앱 종료", key="exit_trigger", use_container_width=True):
