@@ -54,13 +54,12 @@ set_bg_from_local('bg.jpg')
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
-    html, body, [class*="css"] { font-family: 'Noto+Sans+KR', sans-serif; }
+    html, body, [class*="css"] { font-family: 'Noto Sans KR', sans-serif; }
 
     .title-container { width: 100%; padding: 30px 0 15px 0; text-align: center; }
     .brand-name { color: #006400; font-size: clamp(30px, 10vw, 45px); font-weight: 900; font-family: 'Arial Black'; letter-spacing: -2px; }
     .brand-suffix { color: #FF4500; font-size: clamp(16px, 5vw, 24px); font-weight: 900; }
 
-    /* 날짜/지역 선택 필드 글자색/굵기 고정 */
     div[data-baseweb="select"] * { font-weight: 900 !important; font-size: 16px !important; color: #006400 !important; }
     label[data-testid="stWidgetLabel"] p { font-weight: 900 !important; font-size: 17px !important; color: #006400 !important; }
 
@@ -71,7 +70,6 @@ st.markdown("""
     }
     .summary-label { font-weight: 900; color: #000080 !important; }
 
-    /* [복구] 랭킹 카드 스타일 및 글자색 고정 */
     .rank-card {
         padding: 12px 15px; border-radius: 12px; margin-bottom: 12px;
         display: flex; align-items: center; justify-content: space-between;
@@ -79,25 +77,27 @@ st.markdown("""
         box-shadow: 0 15px 35px rgba(0,0,0,0.5) !important;
     }
     .rank-num { font-weight: 900 !important; font-size: 16px !important; color: #4a148c !important; }
-    
     .rank-m { border-left: 7px solid #FF4500 !important; }
     .rank-m .rank-name, .rank-m .rank-val { color: #8B4513 !important; font-weight: 900 !important; }
-
     .rank-j { border-left: 7px solid #000080 !important; }
     .rank-j .rank-name, .rank-j .rank-val { color: #008080 !important; font-weight: 900 !important; }
 
     .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #006400; }
 
-    /* [최종 해결] 종료 버튼 사이즈 100% 강제 고정 */
+    /* [집중 수정] 종료 버튼 글자 Bold 강제 적용 및 사이즈 고정 */
     div.stButton { width: 100% !important; }
     div.stButton > button {
         width: 100% !important; 
         min-width: 100% !important;
         height: 46px !important; 
         border-radius: 12px !important;
+        
+        /* 글자 스타일 강제 주입 */
         font-weight: 900 !important; 
+        font-family: 'Noto Sans KR', sans-serif !important;
         font-size: 16px !important; 
         color: #87CEEB !important;
+        
         background: linear-gradient(135deg, rgba(60, 60, 60, 0.8), rgba(30, 30, 30, 0.9)) !important;
         border: 2px solid rgba(200, 200, 200, 0.6) !important;
         box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
@@ -105,6 +105,12 @@ st.markdown("""
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
+    }
+    
+    /* 버튼 내부 텍스트 요소까지 한번 더 타겟팅 */
+    div.stButton > button p {
+        font-weight: 900 !important;
+        font-size: 16px !important;
     }
 
     .screenshot-btn {
@@ -164,7 +170,6 @@ def main():
             </div>
         ''', unsafe_allow_html=True)
 
-    # 랭킹 TOP 10 섹션
     st.markdown('<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500;">🔥 주간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
     m_w_row = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_mw = m_w_row[m_w_row > 0].sort_values(ascending=False).head(10)
@@ -180,11 +185,12 @@ def main():
     # 하단 버튼 그룹
     st.markdown('<div id="btn-screenshot" class="screenshot-btn">📸 화면 스크린샷</div>', unsafe_allow_html=True)
     
+    # use_container_width=True 옵션과 CSS 시너지 효과
     if st.button("🚪 앱 종료", key="exit_trigger", use_container_width=True):
         st.session_state.is_exit = True
         st.rerun()
 
-    # JavaScript: 스크린샷 기능
+    # JavaScript: 스크린샷
     st.markdown("""
         <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
         <script>
