@@ -12,6 +12,10 @@ st.set_page_config(
     layout="centered"
 )
 
+# 세션 상태 초기화
+if "is_exit" not in st.session_state:
+    st.session_state.is_exit = False
+
 # 배경 이미지 주입 함수
 def set_bg_from_local(image_file):
     if os.path.exists(image_file):
@@ -44,7 +48,6 @@ st.markdown("""
     .brand-name { color: #006400; font-size: clamp(30px, 10vw, 45px); font-weight: 900; font-family: 'Arial Black'; letter-spacing: -2px; }
     .brand-suffix { color: #FF4500; font-size: clamp(16px, 5vw, 24px); font-weight: 900; }
 
-    /* 입력 필드 스타일 */
     div[data-baseweb="select"] * { font-weight: 900 !important; font-size: 16px !important; }
     label[data-testid="stWidgetLabel"] p { font-weight: 900 !important; font-size: 17px !important; color: #006400 !important; }
 
@@ -72,12 +75,10 @@ st.markdown("""
 
     .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #006400; }
 
-    /* [수정] 하단 커스텀 버튼 스타일 (입력 필드와 동일한 46px 높이로 조정) */
+    /* 버튼 스타일 (46px 높이) */
     .custom-btn-group { display: flex; flex-direction: column; width: 100%; margin-top: 20px; }
     .custom-btn {
-        width: 100%; 
-        height: 46px; /* Streamlit 입력 필드와 동일한 높이 */
-        border-radius: 12px; font-weight: 900; font-size: 16px; 
+        width: 100%; height: 46px; border-radius: 12px; font-weight: 900; font-size: 16px; 
         color: #87CEEB !important; display: flex; justify-content: center; align-items: center;
         text-decoration: none !important; border: 2px solid rgba(200, 200, 200, 0.6);
         background: linear-gradient(135deg, rgba(60, 60, 60, 0.8), rgba(30, 30, 30, 0.9));
@@ -87,7 +88,7 @@ st.markdown("""
         border-color: rgba(255, 255, 255, 0.8);
         background: linear-gradient(135deg, rgba(80, 80, 80, 0.9), rgba(50, 50, 50, 1));
     }
-    .exit-btn-margin { margin-top: 11px !important; } /* 3mm 간격 */
+    .exit-btn-margin { margin-top: 11px !important; }
 
     .exit-wrapper { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; text-align: center; z-index: 9999; }
     .exit-msg { color: #006400; font-weight: 900; font-size: 32px; margin-top: 20px; }
@@ -96,6 +97,9 @@ st.markdown("""
 
     [data-testid="stPlotlyChart"] { background-color: transparent !important; }
     header {visibility: hidden;}
+    
+    /* 실제 종료를 처리할 숨겨진 버튼 */
+    #hidden_exit_button { display: none; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -119,7 +123,8 @@ def load_data():
     return df_m, df_j
 
 def main():
-    if st.session_state.get("is_exit"):
+    # 종료 로직 체크
+    if st.session_state.is_exit:
         st.markdown(f"""
             <div class="exit-wrapper">
                 <div class="title-container"><span class="brand-name">Dr.J</span><span class="brand-suffix">의 부동산</span></div>
@@ -178,7 +183,7 @@ def main():
         draw_chart(df_jeonse, '#000080', f'📉 {sel_region} 전세 트렌드 (4주)')
         st.markdown("<hr>", unsafe_allow_html=True)
 
-    # 랭킹 섹션 (매매/전세 고유 컬러 스킴 유지)
+    # 랭킹 섹션 (매매: 주황 / 전세: 청록)
     st.markdown('<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500;">🔥 주간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
     m_w_row = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_mw = m_w_row[m_w_row > 0].sort_values(ascending=False).head(10)
@@ -198,14 +203,7 @@ def main():
     for i, (name, val) in enumerate(top_jw.items()):
         st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    if curr_idx >= 3:
-        st.markdown('<div class="chart-title" style="color:#FF1493; border-left:6px solid #FF1493;">📅 월간 전세 상승 TOP 10</div>', unsafe_allow_html=True)
-        j_m_sum = df_jeonse.iloc[curr_idx-3 : curr_idx+1].drop(columns=['날짜']).sum()
-        top_jm = j_m_sum[j_m_sum > 0].sort_values(ascending=False).head(10)
-        for i, (name, val) in enumerate(top_jm.items()):
-            st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
-
-    # [수정] 입력 필드와 사이즈가 동일해진 버튼 섹션
+    # 하단 버튼 그룹
     st.markdown("""
         <div class="custom-btn-group">
             <div id="btn-screenshot" class="custom-btn">📸 화면 스크린샷</div>
@@ -213,15 +211,17 @@ def main():
         </div>
     """, unsafe_allow_html=True)
 
-    if st.query_params.get("action") == "exit":
+    # 🚪 실제 종료를 위한 숨겨진 스트림릿 버튼
+    if st.button("실제 종료", key="hidden_exit_btn", help="이 버튼은 스타일로 숨겨져 있습니다."):
         st.session_state.is_exit = True
-        st.query_params.clear()
         st.rerun()
 
+    # JavaScript: 스크린샷 및 버튼 연동
     st.markdown(
         """
         <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
         <script>
+        // 1. 스크린샷 로직
         const scBtn = window.parent.document.getElementById('btn-screenshot');
         if (scBtn) {
             scBtn.onclick = function() {
@@ -233,12 +233,19 @@ def main():
                 });
             };
         }
+
+        // 2. 종료 로직 (스트림릿 버튼을 프로그램적으로 클릭)
         const exBtn = window.parent.document.getElementById('btn-exit');
         if (exBtn) {
             exBtn.onclick = function() {
-                const url = new URL(window.parent.location);
-                url.searchParams.set('action', 'exit');
-                window.parent.location.href = url.href;
+                // 스트림릿 내의 모든 버튼을 찾아 "실제 종료" 텍스트가 있는 것을 클릭
+                const buttons = window.parent.document.querySelectorAll('button');
+                for (const btn of buttons) {
+                    if (btn.innerText.includes("실제 종료")) {
+                        btn.click();
+                        break;
+                    }
+                }
             };
         }
         </script>
