@@ -84,12 +84,18 @@ st.markdown("""
 
     .chart-title { font-size: 19px; font-weight: 900; margin: 35px 0 15px 0; padding-left: 12px; color: #006400; border-bottom: 2px solid rgba(0,100,0,0.1); padding-bottom: 5px; }
 
+    /* 버튼 및 버튼 내부 텍스트 굵게 설정 */
     div.stButton > button {
         width: 100% !important; height: 46px !important; border-radius: 12px !important;
         font-weight: 900 !important; font-size: 16px !important; color: #87CEEB !important;
         background: linear-gradient(135deg, rgba(60, 60, 60, 0.8), rgba(30, 30, 30, 0.9)) !important;
         border: 2px solid rgba(200, 200, 200, 0.6) !important; box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
         margin-top: 11px !important;
+    }
+    
+    div.stButton > button p {
+        font-weight: 900 !important;
+        font-size: 16px !important;
     }
 
     .screenshot-btn {
