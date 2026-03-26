@@ -77,24 +77,33 @@ st.markdown("""
     .rank-name { font-weight: 900; font-size: 16px; }
     .rank-val { font-weight: 900; font-size: 15px; }
     
-    /* 매매 카드 내 지역명 및 수치 브라운(#8B4513) */
+    /* 매매 상승 TOP 10 카드 내 지역명 및 상승률 브라운(#8B4513) */
     .rank-m { border-left: 7px solid #FF4500; }
     .rank-m .rank-name, .rank-m .rank-val { color: #8B4513 !important; }
 
-    /* 전세 카드 내 지역명 및 수치 청녹색(#008080) */
+    /* 전세 상승 TOP 10 카드 내 지역명 및 상승률 청녹색(#008080) */
     .rank-j { border-left: 7px solid #000080; }
     .rank-j .rank-name, .rank-j .rank-val { color: #008080 !important; }
 
-    /* 트렌드 차트 제목 컬러 진한 그린(#006400) */
+    /* 트렌드 차트 제목 */
     .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #006400; }
 
-    /* 종료 버튼 */
-    div.stButton { display: flex; justify-content: center; margin: 40px 0; }
+    /* 공통 버튼 스타일 */
+    div.stButton { display: flex; justify-content: center; margin: 20px 0; }
     div.stButton > button {
-        background: linear-gradient(135deg, #757575, #424242) !important;
         color: white !important; border-radius: 25px !important;
         width: 180px !important; height: 50px !important; font-weight: 900 !important;
         box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important; border: none !important;
+    }
+
+    /* 종료 버튼 전용 스타일 (기존 유지) */
+    div.stButton.exit-btn > button {
+        background: linear-gradient(135deg, #757575, #424242) !important;
+    }
+
+    /* [수정 사항] 스크린샷 버튼 전용 스타일 (청녹색 그라데이션) */
+    div.stButton.screenshot-btn > button {
+        background: linear-gradient(135deg, #008080, #004d4d) !important;
     }
 
     /* 종료 화면 스타일 */
@@ -104,7 +113,6 @@ st.markdown("""
     }
     .exit-msg { color: #006400; font-weight: 900; font-size: 32px; margin-top: 20px; }
     
-    /* Created by 필기체 스타일 (네이비) */
     .created-by { 
         font-family: 'Dancing Script', 'Brush Script MT', cursive !important;
         color: #000080 !important;
@@ -113,12 +121,10 @@ st.markdown("""
         margin-top: 10px;
     }
 
-    /* 자산가 문구 스타일 (진한 핑크색) */
     .asset-info {
         font-weight: 900;
-        font-family: 'Dancing Script', 'Brush Script MT', cursive !important;
-        color: #c646c6 !important; 
-        font-size: 24px !important;
+        color: #FFD700 !important; 
+        font-size: 20px !important;
         margin-top: 5px;
         text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
     }
@@ -156,7 +162,7 @@ def main():
                 </div>
                 <div class="exit-msg">모두 부자됩시다.</div>
                 <div class="created-by">Created by Ju Kyung Bae</div>
-                <div class="asset-info">with<br>70억 자산가 이승연</div>
+                <div class="asset-info">with 70억 자산가 이승연</div>
             </div>
         """, unsafe_allow_html=True)
         components.html("<script>window.close();</script>")
@@ -200,34 +206,20 @@ def main():
             fig = px.line(sub_df, x='날짜', y=sel_region, markers=True)
             fig.update_traces(line_color=line_color, line_width=4, marker=dict(size=10, color='white', line=dict(width=2, color=line_color)))
             
-            # [수정 사항] 그래프 내부의 x축(날짜)과 y축(지역명) 라벨 컬러를 진한 파란색(#000080)으로 설정
             fig.update_layout(
-                height=220, 
-                margin=dict(l=10,r=10,t=10,b=10), 
-                paper_bgcolor='rgba(0,0,0,0)', 
-                plot_bgcolor='rgba(0,0,0,0)', 
-                hovermode=False, 
-                dragmode=False, 
+                height=220, margin=dict(l=10,r=10,t=10,b=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
+                hovermode=False, dragmode=False, 
                 font=dict(color='#000080', size=12),
-                xaxis=dict(
-                    fixedrange=True, 
-                    tickfont=dict(color='#000080', weight='bold'),
-                    title=dict(font=dict(color='#000080'))
-                ),
-                yaxis=dict(
-                    fixedrange=True, 
-                    tickfont=dict(color='#000080', weight='bold'),
-                    title=dict(text="", font=dict(color='#000080'))
-                )
+                xaxis=dict(fixedrange=True, tickfont=dict(color='#000080', weight='bold')),
+                yaxis=dict(fixedrange=True, tickfont=dict(color='#000080', weight='bold'))
             )
-            
-            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False, 'scrollZoom': False})
+            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
         draw_chart(df_maemae, '#e74c3c', f'📈 {sel_region} 매매 트렌드 (4주)')
         draw_chart(df_jeonse, '#000080', f'📉 {sel_region} 전세 트렌드 (4주)')
         st.markdown("<hr>", unsafe_allow_html=True)
 
-    # --- 랭킹 섹션 (풀 버전) ---
+    # --- 랭킹 섹션 ---
     # 1. 주간 매매 TOP 10
     st.markdown('<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500;">🔥 주간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
     m_w_row = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
@@ -258,9 +250,70 @@ def main():
         for i, (name, val) in enumerate(top_jm.items()):
             st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    if st.button("🚪 앱 종료"):
+    # --- 하단 버튼 섹션 ---
+    # [수정 사항] 스크린샷 버튼 추가 (HTML/JS 주입을 위한 ID 부여)
+    st.markdown('<div class="stButton screenshot-btn">', unsafe_allow_html=True)
+    screenshot_clicked = st.button("📸 화면 스크린샷", key="screenshot_trigger")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="stButton exit-btn">', unsafe_allow_html=True)
+    if st.button("🚪 앱 종료", key="exit_trigger"):
         st.session_state.is_exit = True
         st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # [수정 사항] 스크린샷 캡처 및 공유를 위한 JavaScript 로직 주입
+    # Streamlit은 서버 사이드라 클라이언트(브라우저) 화면을 직접 캡처할 수 없으므로 JS 라이브러리를 사용해야 합니다.
+    # Dancing Script 등 구글 폰트가 캡처 이미지에 안 나오는 문제를 해결하기 위해 useCORS 옵션을 킵니다.
+    st.markdown(
+        """
+        <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+        <script>
+        // Streamlit 버튼 클릭 감지 (버튼의 key가 trigger가 됨)
+        const screenshotBtn = parent.document.querySelector('button[key="screenshot_trigger"]');
+        
+        if (screenshotBtn) {
+            screenshotBtn.addEventListener('click', function() {
+                // 앱 전체 컨테이너(#root)를 캡처
+                const captureTarget = parent.document.querySelector('#root');
+                
+                html2canvas(captureTarget, {
+                    useCORS: true, // 외부 폰트(구글 폰트) 렌더링 허용
+                    logging: false,
+                    backgroundColor: null // 투명 배경 유지
+                }).then(canvas => {
+                    // 캔버스를 데이터 URL(PNG)로 변환
+                    const dataUrl = canvas.toDataURL('image/png');
+                    
+                    // 모바일 기기 등 Web Share API를 지원하는 경우
+                    if (navigator.share) {
+                        fetch(dataUrl)
+                            .then(res => res.blob())
+                            .then(blob => {
+                                const file = new File([blob], 'DrJ_RealEstate_Screen.png', { type: 'image/png' });
+                                navigator.share({
+                                    files: [file],
+                                    title: 'Dr.J의 부동산 화면 공유',
+                                    text: '오늘의 부동산 트렌드를 공유합니다!'
+                                }).catch(err => console.error('Share failed:', err));
+                            });
+                    } else {
+                        // PC 등 Share API 미지원 시 자동으로 이미지 다운로드 처리
+                        const link = document.createElement('a');
+                        link.href = dataUrl;
+                        link.download = 'DrJ_RealEstate_Screen.png';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        alert('스크린샷이 다운로드 폴더에 저장되었습니다.');
+                    }
+                });
+            });
+        }
+        </script>
+        """,
+        unsafe_allow_html=True
+    )
 
 if __name__ == "__main__":
     main()
