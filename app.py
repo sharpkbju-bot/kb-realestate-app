@@ -84,26 +84,15 @@ st.markdown("""
 
     .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #006400; }
 
-    /* 종료 버튼 100% 너비 및 글자 Bold 강제 적용 */
+    /* 앱 종료 버튼 스타일 (굵게 적용) */
     div.stButton { width: 100% !important; }
     div.stButton > button {
-        width: 100% !important; 
-        min-width: 100% !important;
-        height: 46px !important; 
-        border-radius: 12px !important;
-        font-weight: 900 !important; 
-        font-family: 'Noto Sans KR', sans-serif !important;
-        font-size: 16px !important; 
-        color: #87CEEB !important;
-        background: linear-gradient(135deg, rgba(60, 60, 60, 0.8), rgba(30, 30, 30, 0.9)) !important;
-        border: 2px solid rgba(200, 200, 200, 0.6) !important;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
-        margin-top: 11px !important;
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
+        width: 100% !important; min-width: 100% !important; height: 46px !important; border-radius: 12px !important;
+        font-weight: 900 !important; font-family: 'Noto Sans KR', sans-serif !important; font-size: 16px !important; 
+        color: #87CEEB !important; background: linear-gradient(135deg, rgba(60, 60, 60, 0.8), rgba(30, 30, 30, 0.9)) !important;
+        border: 2px solid rgba(200, 200, 200, 0.6) !important; box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
+        margin-top: 11px !important; display: flex !important; justify-content: center !important; align-items: center !important;
     }
-    /* 버튼 내부 텍스트 굵기 보정 */
     div.stButton > button p { font-weight: 900 !important; }
 
     .screenshot-btn {
@@ -145,7 +134,6 @@ def main():
     sel_date = st.selectbox("📅 날짜 선택", date_list, index=len(date_list)-1)
     sel_region = st.selectbox("🔍 지역 검색 및 선택", options=["지역을 입력하세요."] + region_list, index=0)
 
-    # [복구] 지역 선택 시 요약 카드 및 차트 출력
     if sel_region != "지역을 입력하세요.":
         components.html("<script>window.parent.document.activeElement.blur();</script>", height=0)
         curr_idx = date_list.index(sel_date)
@@ -166,7 +154,6 @@ def main():
             </div>
         ''', unsafe_allow_html=True)
 
-        # 차트 그리기 함수 정의
         def draw_chart(df, line_color, title):
             st.markdown(f'<div class="chart-title">{title}</div>', unsafe_allow_html=True)
             start_idx = max(0, curr_idx - 3)
@@ -199,25 +186,53 @@ def main():
         st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
     # 하단 버튼 그룹
-    st.markdown('<div id="btn-screenshot" class="screenshot-btn">📸 화면 스크린샷</div>', unsafe_allow_html=True)
+    st.markdown('<div id="btn-screenshot" class="screenshot-btn">📸 화면 스크린샷 및 공유</div>', unsafe_allow_html=True)
     
     if st.button("🚪 앱 종료", key="exit_trigger", use_container_width=True):
         st.session_state.is_exit = True
         st.rerun()
 
-    # JavaScript: 스크린샷
+    # [중요] JavaScript: 스크린샷 캡처 후 공유 API 실행
     st.markdown("""
         <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
         <script>
         const scBtn = window.parent.document.getElementById('btn-screenshot');
         if (scBtn) {
-            scBtn.onclick = function() {
+            scBtn.onclick = async function() {
                 const target = window.parent.document.querySelector('#root');
-                html2canvas(target, { useCORS: true, logging: false }).then(canvas => {
-                    const dataUrl = canvas.toDataURL('image/png');
-                    const link = document.createElement('a'); link.href = dataUrl; link.download = 'DrJ_RealEstate.png';
-                    link.click();
-                });
+                
+                // 1. 화면 캡처
+                const canvas = await html2canvas(target, { useCORS: true, logging: false });
+                
+                // 2. Blob 객체로 변환
+                canvas.toBlob(async (blob) => {
+                    const file = new File([blob], "DrJ_RealEstate.png", { type: 'image/png' });
+                    
+                    // 3. 브라우저 공유 기능(Web Share API) 실행
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({
+                                files: [file],
+                                title: 'Dr.J의 부동산 정보',
+                                text: '현재 부동산 동향을 확인하세요!'
+                            });
+                        } catch (err) {
+                            console.error("공유 실패:", err);
+                            // 공유 실패 시 대체 저장 로직
+                            const link = document.createElement('a');
+                            link.href = URL.createObjectURL(blob);
+                            link.download = 'DrJ_RealEstate.png';
+                            link.click();
+                        }
+                    } else {
+                        // 공유 기능을 지원하지 않는 브라우저(일부 PC 등)는 바로 다운로드
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = 'DrJ_RealEstate.png';
+                        link.click();
+                        alert("이 브라우저에서는 직접 공유 기능을 지원하지 않아 파일로 저장합니다.");
+                    }
+                }, 'image/png');
             };
         }
         </script>
