@@ -98,8 +98,14 @@ st.markdown("""
     [data-testid="stPlotlyChart"] { background-color: transparent !important; }
     header {visibility: hidden;}
     
-    /* 실제 종료 버튼 숨기기 */
-    .hidden-btn-container { display: none; }
+    /* [중요] 실제 작동 버튼(exit_action)을 흔적도 없이 완전히 숨김 */
+    div[data-testid="stButton"] {
+        position: absolute;
+        visibility: hidden;
+        height: 0;
+        width: 0;
+        overflow: hidden;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -210,20 +216,15 @@ def main():
         </div>
     """, unsafe_allow_html=True)
 
-    # 🚪 실제 종료 트리거 (컨테이너로 묶어 CSS로 숨김)
-    with st.container():
-        st.markdown('<div class="hidden-btn-container">', unsafe_allow_html=True)
-        if st.button("EXIT_ACTION"):
-            st.session_state.is_exit = True
-            st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
+    # 이 버튼이 실제로 동작하지만 CSS로 완전히 숨겨져 있습니다.
+    st.button("exit_action")
 
-    # JavaScript: 향상된 클릭 이벤트 전달
+    # JavaScript: 스크린샷 및 종료 버튼 연결
     st.markdown(
         """
         <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
         <script>
-        // 스크린샷 로직
+        // 1. 스크린샷 로직
         const scBtn = window.parent.document.getElementById('btn-screenshot');
         if (scBtn) {
             scBtn.onclick = function() {
@@ -236,24 +237,18 @@ def main():
             };
         }
 
-        // 종료 로직 (강력한 트리거 방식)
+        // 2. 종료 로직 (숨겨진 버튼을 텍스트 기반으로 찾아 클릭)
         const exBtn = window.parent.document.getElementById('btn-exit');
         if (exBtn) {
             exBtn.onclick = function() {
-                // Streamlit의 모든 버튼을 검색하여 EXIT_ACTION 텍스트가 포함된 실제 버튼을 찾음
-                const allButtons = window.parent.document.querySelectorAll('button');
-                let found = false;
-                allButtons.forEach(button => {
-                    if (button.innerText && button.innerText.includes("EXIT_ACTION")) {
-                        button.click();
-                        found = true;
+                // 부모 문서(Streamlit 메인 창)의 모든 버튼을 검색
+                const buttons = window.parent.document.querySelectorAll('button');
+                for (let btn of buttons) {
+                    // 버튼 내부 텍스트에 'exit_action'이 포함되어 있으면 클릭
+                    if (btn.innerText.includes('exit_action')) {
+                        btn.click();
+                        break;
                     }
-                });
-                
-                // 만약 첫 번째 시도가 실패할 경우를 대비한 대체 로직
-                if (!found) {
-                    const stBtn = window.parent.document.querySelector('div.stButton button');
-                    if (stBtn) stBtn.click();
                 }
             };
         }
