@@ -12,19 +12,18 @@ st.set_page_config(
     layout="centered"
 )
 
-# [수정] URL 파라미터를 통한 종료 로직 (가장 확실한 방법)
-if st.query_params.get("action") == "exit":
+# [필독] 종료 로직: 세션 상태를 최우선으로 확인
+if st.session_state.get("is_exit"):
     st.markdown(
         f"""
         <style>
-        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
         .stApp {{ background-color: white !important; background-image: none !important; }}
         .exit-wrapper {{ position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; text-align: center; }}
         .brand-name {{ color: #006400; font-size: 45px; font-weight: 900; font-family: 'Arial Black'; }}
         .brand-suffix {{ color: #FF4500; font-size: 24px; font-weight: 900; }}
-        .exit-msg {{ color: #006400; font-weight: 900; font-size: 32px; margin-top: 20px; font-family: 'Noto Sans KR'; }}
-        .created-by {{ font-family: 'Dancing Script', cursive !important; color: #000080 !important; font-size: 30px; font-weight: 700; margin-top: 10px; }}
-        .asset-info {{ font-weight: 900; color: #CC9900 !important; font-size: 20px; margin-top: 5px; font-family: 'Noto Sans KR'; }}
+        .exit-msg {{ color: #006400; font-weight: 900; font-size: 32px; margin-top: 20px; }}
+        .created-by {{ font-family: 'Dancing Script', cursive !important; color: #000080 !important; font-size: 30px; margin-top: 10px; }}
+        .asset-info {{ font-weight: 900; color: #CC9900 !important; font-size: 20px; margin-top: 5px; }}
         header {{ visibility: hidden; }}
         </style>
         <div class="exit-wrapper">
@@ -59,28 +58,23 @@ def set_bg_from_local(image_file):
 
 set_bg_from_local('bg.jpg')
 
-# 2. UI 디자인 및 스타일 설정 (CSS)
+# 2. UI 디자인 및 스타일 설정
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
-    
     html, body, [class*="css"] { font-family: 'Noto+Sans+KR', sans-serif; }
 
     .title-container { width: 100%; padding: 30px 0 15px 0; text-align: center; }
     .brand-name { color: #006400; font-size: clamp(30px, 10vw, 45px); font-weight: 900; font-family: 'Arial Black'; letter-spacing: -2px; }
     .brand-suffix { color: #FF4500; font-size: clamp(16px, 5vw, 24px); font-weight: 900; }
 
-    /* 입력 필드 스타일 - 높이 46px 기준 */
-    div[data-baseweb="select"] * { font-weight: 900 !important; font-size: 16px !important; }
-    label[data-testid="stWidgetLabel"] p { font-weight: 900 !important; font-size: 17px !important; color: #006400 !important; }
-
+    /* 카드 및 랭킹 스타일 */
     .summary-card { 
         background: rgba(255, 255, 255, 0.92) !important;
         border-radius: 18px; padding: 20px; text-align: center; margin-bottom: 12px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #f0f0f0;
     }
     .summary-label { font-weight: 900; color: #000080 !important; }
-
     .rank-card {
         padding: 12px 15px; border-radius: 12px; margin-bottom: 12px;
         display: flex; align-items: center; justify-content: space-between;
@@ -90,31 +84,42 @@ st.markdown("""
     }
     .rank-num { font-weight: 900; font-size: 16px; color: #4a148c !important; }
     .rank-name, .rank-val { font-weight: 900; font-size: 16px; }
-    
     .rank-m { border-left: 7px solid #FF4500; }
-    .rank-m .rank-name, .rank-m .rank-val { color: #8B4513 !important; }
     .rank-j { border-left: 7px solid #000080; }
-    .rank-j .rank-name, .rank-j .rank-val { color: #008080 !important; }
 
     .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #006400; }
 
-    /* 버튼 스타일 (검색창과 동일한 46px 높이) */
-    .custom-btn-group { display: flex; flex-direction: column; width: 100%; margin-top: 20px; }
+    /* 버튼 컨테이너 (높이 46px 유지) */
+    .btn-container {
+        position: relative;
+        width: 100%;
+        height: 46px;
+        margin-top: 11px;
+    }
     .custom-btn {
         width: 100%; height: 46px; border-radius: 12px; font-weight: 900; font-size: 16px; 
         color: #87CEEB !important; display: flex; justify-content: center; align-items: center;
-        text-decoration: none !important; border: 2px solid rgba(200, 200, 200, 0.6);
+        border: 2px solid rgba(200, 200, 200, 0.6);
         background: linear-gradient(135deg, rgba(60, 60, 60, 0.8), rgba(30, 30, 30, 0.9));
-        box-shadow: 0 5px 15px rgba(0,0,0,0.3); cursor: pointer; transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3); pointer-events: none; /* 클릭을 아래 Streamlit 버튼으로 전달 */
     }
-    .custom-btn:hover {
-        border-color: rgba(255, 255, 255, 0.8);
-        background: linear-gradient(135deg, rgba(80, 80, 80, 0.9), rgba(50, 50, 50, 1));
+    
+    /* Streamlit 실제 버튼을 투명하게 만들어 디자인 버튼 위에 겹침 */
+    div[data-testid="stButton"] button {
+        position: absolute;
+        top: 0; left: 0; width: 100% !important; height: 46px !important;
+        background-color: transparent !important;
+        color: transparent !important;
+        border: none !important;
+        z-index: 10;
+        cursor: pointer;
     }
-    .exit-btn-margin { margin-top: 11px !important; }
+    div[data-testid="stButton"] button:hover {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+    }
 
     [data-testid="stPlotlyChart"] { background-color: transparent !important; }
-    header {visibility: hidden;}
+    header { visibility: hidden; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -199,20 +204,24 @@ def main():
     for i, (name, val) in enumerate(top_jw.items()):
         st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 하단 버튼 그룹
-    st.markdown("""
-        <div class="custom-btn-group">
-            <div id="btn-screenshot" class="custom-btn">📸 화면 스크린샷</div>
-            <div id="btn-exit" class="custom-btn exit-btn-margin">🚪 앱 종료</div>
-        </div>
-    """, unsafe_allow_html=True)
+    # 3. 하단 버튼 그룹 (스크린샷 + 앱 종료)
+    st.markdown('<div style="margin-top:20px;"></div>', unsafe_allow_html=True)
+    
+    # [1] 화면 스크린샷 버튼
+    st.markdown('<div class="btn-container"><div id="btn-screenshot" class="custom-btn" style="pointer-events:auto; cursor:pointer;">📸 화면 스크린샷</div></div>', unsafe_allow_html=True)
+    
+    # [2] 앱 종료 버튼 (디자인 버튼 위에 투명한 st.button을 덮어씌움)
+    st.markdown('<div class="btn-container"><div class="custom-btn">🚪 앱 종료</div>', unsafe_allow_html=True)
+    if st.button("EXIT", key="real_exit_btn"):
+        st.session_state.is_exit = True
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    # JavaScript: 스크린샷 및 URL 파라미터 제어
+    # JavaScript: 오직 스크린샷 기능만 담당
     st.markdown(
         """
         <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
         <script>
-        // 1. 스크린샷
         const scBtn = window.parent.document.getElementById('btn-screenshot');
         if (scBtn) {
             scBtn.onclick = function() {
@@ -222,16 +231,6 @@ def main():
                     const link = document.createElement('a'); link.href = dataUrl; link.download = 'DrJ_RealEstate.png';
                     link.click();
                 });
-            };
-        }
-
-        // 2. 종료 (URL 파라미터 직접 조작 - 가장 확실함)
-        const exBtn = window.parent.document.getElementById('btn-exit');
-        if (exBtn) {
-            exBtn.onclick = function() {
-                const url = new URL(window.parent.location.href);
-                url.searchParams.set('action', 'exit');
-                window.parent.location.href = url.href;
             };
         }
         </script>
