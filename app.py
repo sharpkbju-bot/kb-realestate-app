@@ -114,7 +114,7 @@ st.markdown("""
 
     .asset-info {
         font-weight: 900;
-        color: #FFD700 !important; 
+        color: #c646c6 !important; 
         font-size: 20px !important;
         margin-top: 5px;
         text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
@@ -153,7 +153,7 @@ def main():
                 </div>
                 <div class="exit-msg">모두 부자됩시다.</div>
                 <div class="created-by">Created by Ju Kyung Bae</div>
-                <div class="asset-info">with 70억 자산가 이승연</div>
+                <div class="asset-info">with<br>70억 자산가 이승연</div>
             </div>
         """, unsafe_allow_html=True)
         components.html("<script>window.close();</script>")
