@@ -88,25 +88,27 @@ st.markdown("""
     /* 트렌드 차트 제목 컬러 진한 그린(#006400) */
     .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #006400; }
 
-    /* 공통 버튼 스타일 */
-    div.stButton { display: flex; justify-content: center; margin: 20px 0; }
+    /* [수정 사항] 공통 버튼 스타일 - 랭킹 카드와 동일하게 너비 100% 적용 */
+    div.stButton { display: flex; justify-content: center; margin: 10px 0; }
     div.stButton > button {
-        /* [수정 사항] 글자색 하늘색으로 수정 */
-        color: #87CEEB !important; /* 하늘색 */
-        border-radius: 25px !important;
-        width: 100% !important; max-width: 400px !important; height: 60px !important; font-weight: 900 !important;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important; border: none !important;
-        font-size: 20px !important;
+        color: #87CEEB !important;
+        border-radius: 12px !important; /* 랭킹 카드와 유사한 곡률 */
+        width: 100% !important; /* 가로폭 꽉 채우기 */
+        height: 55px !important; 
+        font-weight: 900 !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important; 
+        border: none !important;
+        font-size: 18px !important;
     }
 
-    /* [수정 사항] 스크린샷 버튼 전용 스타일 수정 (배경 연한 그린, 글자 하늘색) */
+    /* 스크린샷 버튼 (배경 연한 그린) */
     div.stButton.screenshot-btn > button {
-        background: #90EE90 !important; /* 연한 그린 (LightGreen) */
+        background: #90EE90 !important;
     }
 
-    /* [수정 사항] 종료 버튼 전용 스타일 수정 (배경 연한 퍼플, 글자 하늘색) */
+    /* 종료 버튼 (배경 연한 퍼플) */
     div.stButton.exit-btn > button {
-        background: #E6E6FA !important; /* 연한 퍼플 (Lavender) */
+        background: #E6E6FA !important;
     }
 
     /* 종료 화면 스타일 */
@@ -116,7 +118,6 @@ st.markdown("""
     }
     .exit-msg { color: #006400; font-weight: 900; font-size: 32px; margin-top: 20px; }
     
-    /* Created by 필기체 스타일 (네이비) */
     .created-by { 
         font-family: 'Dancing Script', 'Brush Script MT', cursive !important;
         color: #000080 !important;
@@ -125,7 +126,6 @@ st.markdown("""
         margin-top: 10px;
     }
 
-    /* 자산가 문구 스타일 (진한 노란색) */
     .asset-info {
         font-weight: 900;
         color: #FFD700 !important; 
@@ -211,7 +211,6 @@ def main():
             fig = px.line(sub_df, x='날짜', y=sel_region, markers=True)
             fig.update_traces(line_color=line_color, line_width=4, marker=dict(size=10, color='white', line=dict(width=2, color=line_color)))
             
-            # 그래프 내부의 x축(날짜)과 y축(지역명) 라벨 컬러 시안과 동일한 네이비 컬러(#000080)
             fig.update_layout(
                 height=220, 
                 margin=dict(l=10,r=10,t=10,b=10), 
@@ -231,22 +230,19 @@ def main():
                     title=dict(text="", font=dict(color='#000080'))
                 )
             )
-            
             st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False, 'scrollZoom': False})
 
         draw_chart(df_maemae, '#e74c3c', f'📈 {sel_region} 매매 트렌드 (4주)')
         draw_chart(df_jeonse, '#000080', f'📉 {sel_region} 전세 트렌드 (4주)')
         st.markdown("<hr>", unsafe_allow_html=True)
 
-    # --- 랭킹 섹션 (풀 버전) ---
-    # 1. 주간 매매 TOP 10
+    # --- 랭킹 섹션 ---
     st.markdown('<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500;">🔥 주간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
     m_w_row = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_mw = m_w_row[m_w_row > 0].sort_values(ascending=False).head(10)
     for i, (name, val) in enumerate(top_mw.items()):
         st.markdown(f'<div class="rank-card rank-m"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 2. 월간 매매 TOP 10
     if curr_idx >= 3:
         st.markdown('<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500;">📅 월간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
         m_m_sum = df_maemae.iloc[curr_idx-3 : curr_idx+1].drop(columns=['날짜']).sum()
@@ -254,14 +250,12 @@ def main():
         for i, (name, val) in enumerate(top_mm.items()):
             st.markdown(f'<div class="rank-card rank-m"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 3. 주간 전세 TOP 10
     st.markdown('<div class="chart-title" style="color:#FF1493; border-left:6px solid #FF1493;">💧 주간 전세 상승 TOP 10</div>', unsafe_allow_html=True)
     j_w_row = df_jeonse[df_jeonse['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_jw = j_w_row[j_w_row > 0].sort_values(ascending=False).head(10)
     for i, (name, val) in enumerate(top_jw.items()):
         st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 4. 월간 전세 TOP 10
     if curr_idx >= 3:
         st.markdown('<div class="chart-title" style="color:#FF1493; border-left:6px solid #FF1493;">📅 월간 전세 상승 TOP 10</div>', unsafe_allow_html=True)
         j_m_sum = df_jeonse.iloc[curr_idx-3 : curr_idx+1].drop(columns=['날짜']).sum()
@@ -270,54 +264,35 @@ def main():
             st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
     # --- 하단 버튼 섹션 ---
-    # [수정 사항] 스크린샷 버튼 (JS 주입을 위한 ID 부여 및 key 설정)
     st.markdown('<div class="stButton screenshot-btn">', unsafe_allow_html=True)
-    screenshot_clicked = st.button("📸 화면 스크린샷", key="screenshot_trigger")
+    st.button("📸 화면 스크린샷", key="screenshot_trigger")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # [수정 사항] 종료 버튼 (JS 주입을 위한 ID 부여 및 key 설정)
     st.markdown('<div class="stButton exit-btn">', unsafe_allow_html=True)
     if st.button("🚪 앱 종료", key="exit_trigger"):
         st.session_state.is_exit = True
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # [수정 사항] 스크린샷 캡처 및 공유를 위한 JavaScript 로직 (Dancing Script 등 폰트 렌더링 포함)
+    # JavaScript 로직 (기존 유지)
     st.markdown(
         """
         <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
         <script>
         const screenshotBtn = parent.document.querySelector('button[key="screenshot_trigger"]');
-        
         if (screenshotBtn) {
             screenshotBtn.addEventListener('click', function() {
                 const captureTarget = parent.document.querySelector('#root');
-                
-                html2canvas(captureTarget, {
-                    useCORS: true,
-                    logging: false,
-                    backgroundColor: null
-                }).then(canvas => {
+                html2canvas(captureTarget, { useCORS: true, logging: false, backgroundColor: null }).then(canvas => {
                     const dataUrl = canvas.toDataURL('image/png');
-                    
                     if (navigator.share) {
-                        fetch(dataUrl)
-                            .then(res => res.blob())
-                            .then(blob => {
-                                const file = new File([blob], 'DrJ_RealEstate_Screen.png', { type: 'image/png' });
-                                navigator.share({
-                                    files: [file],
-                                    title: 'Dr.J의 부동산 화면 공유',
-                                    text: '오늘의 부동산 트렌드를 공유합니다!'
-                                }).catch(err => console.error('Share failed:', err));
-                            });
+                        fetch(dataUrl).then(res => res.blob()).then(blob => {
+                            const file = new File([blob], 'DrJ_RealEstate_Screen.png', { type: 'image/png' });
+                            navigator.share({ files: [file], title: 'Dr.J의 부동산 화면 공유', text: '오늘의 부동산 트렌드를 공유합니다!' });
+                        });
                     } else {
-                        const link = document.createElement('a');
-                        link.href = dataUrl;
-                        link.download = 'DrJ_RealEstate_Screen.png';
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
+                        const link = document.createElement('a'); link.href = dataUrl; link.download = 'DrJ_RealEstate_Screen.png';
+                        document.body.appendChild(link); link.click(); document.body.removeChild(link);
                         alert('스크린샷이 다운로드 폴더에 저장되었습니다.');
                     }
                 });
