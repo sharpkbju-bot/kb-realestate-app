@@ -86,10 +86,19 @@ st.markdown("""
 
     .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #006400; }
 
-    /* [수정] 종료 버튼 사이즈를 100%로 강제 고정 */
-    div.stButton { width: 100% !important; }
+    /* [최종 해결] 종료 버튼 컨테이너의 모든 여백 제거 및 폭 강제 고정 */
+    /* Streamlit이 버튼 주위에 남겨두는 미세 여백(Gap) 제거 */
+    div[data-testid="stVerticalBlock"] > div:has(> div.stButton) {
+        padding: 0px !important;
+        margin: 0px !important;
+        gap: 0px !important;
+    }
+
+    div.stButton { width: 100% !important; margin: 0px !important; padding: 0px !important; }
+    
     div.stButton > button {
         width: 100% !important; 
+        max-width: 100% !important; /* 폭 강제 */
         height: 46px !important; 
         border-radius: 12px !important;
         font-weight: 900 !important; 
@@ -98,13 +107,15 @@ st.markdown("""
         background: linear-gradient(135deg, rgba(60, 60, 60, 0.8), rgba(30, 30, 30, 0.9)) !important;
         border: 2px solid rgba(200, 200, 200, 0.6) !important;
         box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
-        margin-top: 11px !important; 
+        margin-top: 11px !important; /* 스크린샷 버튼과의 간격 */
         transition: all 0.3s ease !important;
-        display: block !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
     }
     div.stButton > button:hover { border-color: rgba(255, 255, 255, 0.8) !important; background: rgba(50, 50, 50, 1) !important; }
 
-    /* 스크린샷용 디자인 버튼 (종료 버튼과 동일한 사이즈 유지) */
+    /* 스크린샷용 디자인 버튼 (너비 100% 유지) */
     .screenshot-btn {
         width: 100%; height: 46px; border-radius: 12px; font-weight: 900; font-size: 16px; 
         color: #87CEEB !important; display: flex; justify-content: center; align-items: center;
@@ -198,7 +209,7 @@ def main():
     # 하단 버튼 그룹
     st.markdown('<div id="btn-screenshot" class="screenshot-btn">📸 화면 스크린샷</div>', unsafe_allow_html=True)
     
-    # 🚪 앱 종료 버튼 (width 100% 적용 완료)
+    # 🚪 앱 종료 버튼 (width 100% 강제 고정 완료)
     if st.button("🚪 앱 종료", key="exit_trigger"):
         st.session_state.is_exit = True
         st.rerun()
