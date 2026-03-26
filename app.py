@@ -128,14 +128,11 @@ def load_data():
     except:
         df_m = pd.read_csv('maemae.csv', encoding='utf-8')
         df_j = pd.read_csv('jeonse.csv', encoding='utf-8')
-    
     common_cols = ['날짜'] + sorted(list(set(df_m.columns) & set(df_j.columns) - {'날짜'}))
     df_m, df_j = df_m[common_cols], df_j[common_cols]
-    
     for col in [c for c in df_m.columns if c != '날짜']:
         df_m[col] = pd.to_numeric(df_m[col], errors='coerce').fillna(0)
         df_j[col] = pd.to_numeric(df_j[col], errors='coerce').fillna(0)
-    
     df_m['날짜'] = df_m['날짜'].astype(str)
     return df_m, df_j
 
@@ -149,11 +146,8 @@ def main():
     sel_date = st.selectbox("📅 날짜 선택", date_list, index=len(date_list)-1)
     sel_region = st.selectbox("🔍 지역 검색 및 선택", options=["지역을 입력하세요."] + region_list, index=0)
 
-    # --- [핵심] 지역 선택 시 출력 로직 (그래프 포함) ---
     if sel_region != "지역을 입력하세요.":
         components.html("<script>window.parent.document.activeElement.blur();</script>", height=0)
-        
-        # 현재 선택된 날짜의 인덱스 확인
         curr_idx = date_list.index(sel_date)
         
         m_val = df_maemae.loc[df_maemae['날짜'] == sel_date, sel_region].values[0]
@@ -162,7 +156,6 @@ def main():
         m_color = "#e74c3c" if m_val > 0 else "#000080" if m_val < 0 else "#333"
         j_color = "#e74c3c" if j_val > 0 else "#000080" if j_val < 0 else "#333"
         
-        # 요약 카드 출력
         st.markdown(f'''
             <div class="summary-card">
                 <div class="summary-label">📍 {sel_region} 매매 증감 ({sel_date})</div>
@@ -174,36 +167,38 @@ def main():
             </div>
         ''', unsafe_allow_html=True)
 
-        # 최근 4주 트렌드 데이터 추출
         start_idx = max(0, curr_idx - 3)
         sub_df_m = df_maemae.iloc[start_idx : curr_idx + 1]
         sub_df_j = df_jeonse.iloc[start_idx : curr_idx + 1]
 
-        # 매매 트렌드 그래프
+        # 매매 그래프 (폰트 진하게 수정)
         st.markdown(f'<div class="chart-title">📈 {sel_region} 매매 트렌드 (4주)</div>', unsafe_allow_html=True)
         fig_m = px.line(sub_df_m, x='날짜', y=sel_region, markers=True)
         fig_m.update_traces(line_color='#e74c3c', line_width=4, marker=dict(size=10, color='white', line=dict(width=2, color='#e74c3c')))
         fig_m.update_layout(
             height=220, margin=dict(l=10, r=10, t=10, b=10),
             paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-            xaxis=dict(title=None, showgrid=False), yaxis=dict(title=None, showgrid=True)
+            font=dict(size=12, color='#000080'),
+            xaxis=dict(title=None, tickfont=dict(size=12, color='#000080', family='Noto Sans KR', weight=900)),
+            yaxis=dict(title=None, tickfont=dict(size=12, color='#000080', family='Noto Sans KR', weight=900))
         )
         st.plotly_chart(fig_m, use_container_width=True, config={'displayModeBar': False})
 
-        # 전세 트렌드 그래프
+        # 전세 그래프 (폰트 진하게 수정)
         st.markdown(f'<div class="chart-title">📉 {sel_region} 전세 트렌드 (4주)</div>', unsafe_allow_html=True)
         fig_j = px.line(sub_df_j, x='날짜', y=sel_region, markers=True)
         fig_j.update_traces(line_color='#000080', line_width=4, marker=dict(size=10, color='white', line=dict(width=2, color='#000080')))
         fig_j.update_layout(
             height=220, margin=dict(l=10, r=10, t=10, b=10),
             paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-            xaxis=dict(title=None, showgrid=False), yaxis=dict(title=None, showgrid=True)
+            font=dict(size=12, color='#000080'),
+            xaxis=dict(title=None, tickfont=dict(size=12, color='#000080', family='Noto Sans KR', weight=900)),
+            yaxis=dict(title=None, tickfont=dict(size=12, color='#000080', family='Noto Sans KR', weight=900))
         )
         st.plotly_chart(fig_j, use_container_width=True, config={'displayModeBar': False})
         
-        st.markdown("<hr style='border: 1px solid rgba(0,100,0,0.2);'>", unsafe_allow_html=True)
+        st.markdown("<hr>", unsafe_allow_html=True)
 
-    # --- 랭킹 섹션 ---
     st.markdown('<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500;">🔥 주간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
     m_w_row = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_mw = m_w_row[m_w_row > 0].sort_values(ascending=False).head(10)
@@ -216,14 +211,12 @@ def main():
     for i, (name, val) in enumerate(top_jw.items()):
         st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 하단 버튼 그룹
     st.markdown('<div id="btn-screenshot" class="screenshot-btn">📸 화면 스크린샷</div>', unsafe_allow_html=True)
     
     if st.button("🚪 앱 종료", key="exit_trigger", use_container_width=True):
         st.session_state.is_exit = True
         st.rerun()
 
-    # JavaScript: 스크린샷
     st.markdown("""
         <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
         <script>
