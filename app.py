@@ -77,11 +77,11 @@ st.markdown("""
     .rank-name { font-weight: 900; font-size: 16px; }
     .rank-val { font-weight: 900; font-size: 15px; }
     
-    /* 매매 카드 내 지역명 및 수치 브라운(#8B4513) */
+    /* 매매 상승 TOP 10 카드 내 지역명 및 상승률 브라운(#8B4513) */
     .rank-m { border-left: 7px solid #FF4500; }
     .rank-m .rank-name, .rank-m .rank-val { color: #8B4513 !important; }
 
-    /* 전세 카드 내 지역명 및 수치 청녹색(#008080) */
+    /* 전세 상승 TOP 10 카드 내 지역명 및 상승률 청녹색(#008080) */
     .rank-j { border-left: 7px solid #000080; }
     .rank-j .rank-name, .rank-j .rank-val { color: #008080 !important; }
 
@@ -91,20 +91,22 @@ st.markdown("""
     /* 공통 버튼 스타일 */
     div.stButton { display: flex; justify-content: center; margin: 20px 0; }
     div.stButton > button {
-        color: white !important; border-radius: 25px !important;
+        /* [수정 사항] 글자색 하늘색으로 수정 */
+        color: #87CEEB !important; /* 하늘색 */
+        border-radius: 25px !important;
         width: 100% !important; max-width: 400px !important; height: 60px !important; font-weight: 900 !important;
         box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important; border: none !important;
         font-size: 20px !important;
     }
 
-    /* [수정 사항] 스크린샷 버튼 전용 스타일 (시안대로 청녹색 그라데이션) */
+    /* [수정 사항] 스크린샷 버튼 전용 스타일 수정 (배경 연한 그린, 글자 하늘색) */
     div.stButton.screenshot-btn > button {
-        background: linear-gradient(135deg, #008080, #004d4d) !important;
+        background: #90EE90 !important; /* 연한 그린 (LightGreen) */
     }
 
-    /* [수정 사항] 종료 버튼 전용 스타일 (시안대로 그레이 그라데이션) */
+    /* [수정 사항] 종료 버튼 전용 스타일 수정 (배경 연한 퍼플, 글자 하늘색) */
     div.stButton.exit-btn > button {
-        background: linear-gradient(135deg, #757575, #424242) !important;
+        background: #E6E6FA !important; /* 연한 퍼플 (Lavender) */
     }
 
     /* 종료 화면 스타일 */
@@ -209,7 +211,7 @@ def main():
             fig = px.line(sub_df, x='날짜', y=sel_region, markers=True)
             fig.update_traces(line_color=line_color, line_width=4, marker=dict(size=10, color='white', line=dict(width=2, color=line_color)))
             
-            # [수정 사항] 그래프 내부의 x축(날짜)과 y축(지역명) 라벨 컬러를 시안과 동일한 네이비 컬러(#000080)로 설정
+            # 그래프 내부의 x축(날짜)과 y축(지역명) 라벨 컬러 시안과 동일한 네이비 컬러(#000080)
             fig.update_layout(
                 height=220, 
                 margin=dict(l=10,r=10,t=10,b=10), 
@@ -217,15 +219,15 @@ def main():
                 plot_bgcolor='rgba(0,0,0,0)', 
                 hovermode=False, 
                 dragmode=False, 
-                font=dict(color='#000080', size=12), # 전체 폰트 컬러 네이비
+                font=dict(color='#000080', size=12),
                 xaxis=dict(
                     fixedrange=True, 
-                    tickfont=dict(color='#000080', weight='bold'), # x축(날짜) 컬러 네이비
+                    tickfont=dict(color='#000080', weight='bold'),
                     title=dict(font=dict(color='#000080'))
                 ),
                 yaxis=dict(
                     fixedrange=True, 
-                    tickfont=dict(color='#000080', weight='bold'), # y축(지역명) 컬러 네이비
+                    tickfont=dict(color='#000080', weight='bold'),
                     title=dict(text="", font=dict(color='#000080'))
                 )
             )
@@ -268,12 +270,12 @@ def main():
             st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
     # --- 하단 버튼 섹션 ---
-    # [수정 사항] 스크린샷 버튼 시안대로 수정 (청녹색 그라데이션, 이모티콘, 흰색 글씨)
+    # [수정 사항] 스크린샷 버튼 (JS 주입을 위한 ID 부여 및 key 설정)
     st.markdown('<div class="stButton screenshot-btn">', unsafe_allow_html=True)
     screenshot_clicked = st.button("📸 화면 스크린샷", key="screenshot_trigger")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # [수정 사항] 종료 버튼 시안대로 수정 (그레이 그라데이션, 이모티콘, 흰색 글씨)
+    # [수정 사항] 종료 버튼 (JS 주입을 위한 ID 부여 및 key 설정)
     st.markdown('<div class="stButton exit-btn">', unsafe_allow_html=True)
     if st.button("🚪 앱 종료", key="exit_trigger"):
         st.session_state.is_exit = True
