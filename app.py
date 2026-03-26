@@ -106,9 +106,14 @@ st.markdown("""
         transition: all 0.3s ease !important;
     }
 
-    /* [수정 사항] 버튼 간의 간격 좁히기 */
-    .screenshot-btn { margin-bottom: -5px !important; } /* 아래쪽 마진 제거/축소 */
-    .exit-btn { margin-top: 5px !important; } /* 위쪽 마진 조정 */
+    /* [수정 사항] 버튼 간 간격을 3mm(약 11px) 정도로 밀착 조정 */
+    .screenshot-btn { margin-bottom: 0px !important; padding-bottom: 0px !important; }
+    .exit-btn { margin-top: 11px !important; padding-top: 0px !important; }
+    
+    /* Streamlit 자체 엘리먼트 간격 강제 조정 */
+    div[data-testid="stVerticalBlock"] > div:has(div.screenshot-btn) + div {
+        margin-top: -15px !important;
+    }
 
     div.stButton > button:hover {
         border-color: rgba(255, 255, 255, 0.8) !important;
