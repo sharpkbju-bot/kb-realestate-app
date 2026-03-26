@@ -8,7 +8,7 @@ import os
 # 1. 페이지 설정
 st.set_page_config(page_title="Dr.J의 부동산", page_icon="🏠", layout="centered")
 
-# 세션 상태 및 종료 로직
+# --- 앱 종료 로직 ---
 if "is_exit" not in st.session_state:
     st.session_state.is_exit = False
 
@@ -25,11 +25,12 @@ if st.session_state.is_exit:
             <div style="margin-bottom:20px;"><span class="brand-name">Dr.J</span><span class="brand-suffix">의 부동산</span></div>
             <div style="color:#006400; font-weight:900; font-size:32px;">모두 부자됩시다.</div>
             <div style="color:#000080; font-size:24px; margin-top:15px; font-weight:700;">Created by Ju Kyung Bae</div>
+            <div style="color:#CC9900; font-weight:900; font-size:20px; margin-top:10px;">with 70억 자산가 이승연</div>
         </div>
     """, unsafe_allow_html=True)
     st.stop()
 
-# 배경 설정
+# --- 배경 이미지 ---
 def set_bg():
     if os.path.exists('bg.jpg'):
         with open("bg.jpg", "rb") as f:
@@ -37,7 +38,7 @@ def set_bg():
         st.markdown(f"""<style>.stApp {{ background-image: url("data:image/jpg;base64,{encoded}"); background-size: cover; background-attachment: fixed; }}</style>""", unsafe_allow_html=True)
 set_bg()
 
-# 2. 스타일 시트 (디자인 복구 및 고정)
+# 2. 스타일 시트 (디자인 완전 복구)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
@@ -47,29 +48,27 @@ st.markdown("""
     .brand-name { color: #006400; font-size: 45px; font-weight: 900; }
     .brand-suffix { color: #FF4500; font-size: 24px; font-weight: 900; }
 
-    /* 요약 카드 */
     .summary-card { 
-        background: rgba(255, 255, 255, 0.95); border-radius: 15px; padding: 15px; 
-        text-align: center; margin-bottom: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        background: rgba(255, 255, 255, 0.95); border-radius: 15px; padding: 18px; 
+        text-align: center; margin-bottom: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
-    /* [복구] 랭킹 카드 스타일 */
+    /* 랭킹 카드 디자인 복구 */
     .rank-card {
         padding: 12px 15px; border-radius: 12px; margin-bottom: 8px;
         display: flex; align-items: center; justify-content: space-between;
         background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-    .rank-num { font-weight: 900; color: #4a148c; font-size: 17px; margin-right: 10px; }
+    .rank-num { font-weight: 900; color: #4a148c; font-size: 17px; margin-right: 10px; min-width: 35px; }
+    .rank-name { flex-grow: 1; text-align: left; font-size: 16px; }
     
-    /* 매매 랭킹: 브라운 텍스트 */
-    .rank-m { border-left: 8px solid #FF4500 !important; }
+    .rank-m { border-left: 8px solid #FF4500 !important; background: linear-gradient(135deg, #fff, #fff5f0); }
     .rank-m .rank-name, .rank-m .rank-val { color: #8B4513 !important; font-weight: 900; }
 
-    /* 전세 랭킹: 청록 텍스트 */
-    .rank-j { border-left: 8px solid #000080 !important; }
+    .rank-j { border-left: 8px solid #000080 !important; background: linear-gradient(135deg, #fff, #f0f5ff); }
     .rank-j .rank-name, .rank-j .rank-val { color: #008080 !important; font-weight: 900; }
 
-    /* 버튼 스타일 (100% 폭 & Bold 강제) */
+    /* 버튼 스타일 */
     div.stButton > button, .screenshot-btn {
         width: 100% !important; height: 48px !important; border-radius: 12px !important;
         font-weight: 900 !important; font-size: 17px !important; color: #87CEEB !important;
@@ -80,11 +79,13 @@ st.markdown("""
     div.stButton > button p { font-weight: 900 !important; font-size: 17px !important; }
     .screenshot-btn { margin-top: 20px; text-decoration: none; }
 
+    .chart-title { font-size: 18px; font-weight: 900; margin: 20px 0 10px 0; color: #006400; padding-left: 10px; border-left: 5px solid #006400; }
+
     header { visibility: hidden; }
     </style>
     """, unsafe_allow_html=True)
 
-# 3. 데이터 로딩 (에러 방지 로직 추가)
+# 3. 데이터 로딩 및 클리닝
 @st.cache_data
 def load_data():
     try:
@@ -94,7 +95,6 @@ def load_data():
         m = pd.read_csv('maemae.csv', encoding='utf-8')
         j = pd.read_csv('jeonse.csv', encoding='utf-8')
     
-    # [핵심] 날짜 제외 모든 컬럼을 강제로 숫자형으로 변환 (오류 원인 제거)
     for df in [m, j]:
         for col in df.columns:
             if col != '날짜':
@@ -114,22 +114,29 @@ def main():
     sel_date = st.selectbox("📅 날짜 선택", date_list, index=len(date_list)-1)
     sel_region = st.selectbox("🔍 지역 검색", ["지역을 입력하세요."] + region_list)
 
-    # 지역 선택 시 출력
     if sel_region != "지역을 입력하세요.":
         m_val = df_m.loc[df_m['날짜'] == sel_date, sel_region].values[0]
         j_val = df_j.loc[df_j['날짜'] == sel_date, sel_region].values[0]
 
-        st.markdown(f'<div class="summary-card"><div style="font-weight:900; color:#000080;">📍 {sel_region} 매매 증감</div><div style="color:#e74c3c; font-size:26px; font-weight:900;">{m_val:+.2f}%</div></div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="summary-card"><div style="font-weight:900; color:#000080;">📍 {sel_region} 전세 증감</div><div style="color:#000080; font-size:26px; font-weight:900;">{j_val:+.2f}%</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="summary-card"><div style="font-weight:900; color:#000080;">📍 {sel_region} 매매 증감</div><div style="color:{"#e74c3c" if m_val > 0 else "#000080"}; font-size:26px; font-weight:900;">{m_val:+.2f}%</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="summary-card"><div style="font-weight:900; color:#000080;">📍 {sel_region} 전세 증감</div><div style="color:{"#e74c3c" if j_val > 0 else "#000080"}; font-size:26px; font-weight:900;">{j_val:+.2f}%</div></div>', unsafe_allow_html=True)
 
-        # 그래프
+        # 그래프 출력 (매매/전세 둘 다 복구)
         idx = date_list.index(sel_date)
         sub_m = df_m.iloc[max(0, idx-3):idx+1]
-        fig = px.line(sub_m, x='날짜', y=sel_region, title=f"📈 {sel_region} 매매 추이")
-        fig.update_layout(height=250, margin=dict(l=10,r=10,t=40,b=10))
-        st.plotly_chart(fig, use_container_width=True)
+        sub_j = df_j.iloc[max(0, idx-3):idx+1]
 
-    # 랭킹 섹션 (데이터 타입 에러 발생 지점 수정 완료)
+        st.markdown('<div class="chart-title">📈 매매 트렌드 (4주)</div>', unsafe_allow_html=True)
+        fig_m = px.line(sub_m, x='날짜', y=sel_region, markers=True)
+        fig_m.update_layout(height=220, margin=dict(l=5,r=5,t=5,b=5), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+        st.plotly_chart(fig_m, use_container_width=True)
+
+        st.markdown('<div class="chart-title">📉 전세 트렌드 (4주)</div>', unsafe_allow_html=True)
+        fig_j = px.line(sub_j, x='날짜', y=sel_region, markers=True)
+        fig_j.update_layout(height=220, margin=dict(l=5,r=5,t=5,b=5), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+        st.plotly_chart(fig_j, use_container_width=True)
+
+    # 랭킹 섹션
     st.markdown('<h3 style="color:#FF4500; font-weight:900; margin-top:30px;">🔥 주간 매매 상승 TOP 10</h3>', unsafe_allow_html=True)
     day_m = df_m[df_m['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_m = day_m[day_m > 0].sort_values(ascending=False).head(10)
@@ -157,7 +164,7 @@ def main():
         if(btn) {
             btn.onclick = function() {
                 const target = window.parent.document.querySelector('#root');
-                html2canvas(target, {useCORS: true}).then(canvas => {
+                html2canvas(target, {useCORS: true, logging: false}).then(canvas => {
                     const link = document.createElement('a');
                     link.href = canvas.toDataURL('image/png');
                     link.download = 'DrJ_RealEstate.png';
