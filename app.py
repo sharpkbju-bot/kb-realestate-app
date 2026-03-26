@@ -116,8 +116,9 @@ st.markdown("""
     /* 자산가 문구 스타일 (진한 핑크색) */
     .asset-info {
         font-weight: 900;
+        font-family: 'Dancing Script', 'Brush Script MT', cursive !important;
         color: #c646c6 !important; 
-        font-size: 22px !important;
+        font-size: 24px !important;
         margin-top: 5px;
         text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
     }
