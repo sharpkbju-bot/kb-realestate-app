@@ -50,7 +50,7 @@ def set_bg_from_local(image_file):
 
 set_bg_from_local('bg.jpg')
 
-# 2. UI 디자인 및 스타일 설정 (CSS)
+# 2. UI 디자인 및 스타일 설정
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
@@ -79,18 +79,23 @@ st.markdown("""
     .rank-num { font-weight: 900; font-size: 16px; color: #4a148c !important; }
     .rank-name, .rank-val { font-weight: 900; font-size: 16px; }
     .rank-m { border-left: 7px solid #FF4500; }
-    .rank-m .rank-name, .rank-m .rank-val { color: #8B4513 !important; }
     .rank-j { border-left: 7px solid #000080; }
-    .rank-j .rank-name, .rank-j .rank-val { color: #008080 !important; }
 
-    .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #006400; }
-
-    /* [최종 해결] 종료 버튼 사이즈 및 여백 완벽 제어 */
-    div.stButton { width: 100% !important; margin: 0 !important; padding: 0 !important; }
-    div.stButton > button {
-        width: 100% !important; 
+    /* [핵심] 버튼 사이즈 강제 일치 스타일 */
+    /* 버튼을 감싸는 모든 컨테이너의 너비 제한을 해제 */
+    div[data-testid="stVerticalBlock"] > div:has(div.stButton) {
+        width: 100% !important;
+    }
+    
+    .stButton, .stButton > button {
+        width: 100% !important;
         min-width: 100% !important;
-        height: 46px !important; 
+        max-width: 100% !important;
+        height: 46px !important;
+        display: block !important;
+    }
+
+    div.stButton > button {
         border-radius: 12px !important;
         font-weight: 900 !important; 
         font-size: 16px !important; 
@@ -98,19 +103,25 @@ st.markdown("""
         background: linear-gradient(135deg, rgba(60, 60, 60, 0.8), rgba(30, 30, 30, 0.9)) !important;
         border: 2px solid rgba(200, 200, 200, 0.6) !important;
         box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
-        margin-top: 11px !important; 
+        margin-top: 11px !important;
         transition: all 0.3s ease !important;
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
     }
 
     .screenshot-btn {
-        width: 100%; height: 46px; border-radius: 12px; font-weight: 900; font-size: 16px; 
-        color: #87CEEB !important; display: flex; justify-content: center; align-items: center;
-        background: linear-gradient(135deg, rgba(60, 60, 60, 0.8), rgba(30, 30, 30, 0.9));
-        border: 2px solid rgba(200, 200, 200, 0.6); box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        cursor: pointer; margin-top: 20px;
+        width: 100% !important;
+        height: 46px !important;
+        border-radius: 12px !important;
+        font-weight: 900 !important;
+        font-size: 16px !important; 
+        color: #87CEEB !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        background: linear-gradient(135deg, rgba(60, 60, 60, 0.8), rgba(30, 30, 30, 0.9)) !important;
+        border: 2px solid rgba(200, 200, 200, 0.6) !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
+        cursor: pointer !important;
+        margin-top: 20px !important;
     }
 
     [data-testid="stPlotlyChart"] { background-color: transparent !important; }
@@ -144,26 +155,6 @@ def main():
     sel_date = st.selectbox("📅 날짜 선택", date_list, index=len(date_list)-1)
     sel_region = st.selectbox("🔍 지역 검색 및 선택", options=["지역을 입력하세요."] + region_list, index=0)
 
-    if sel_region != "지역을 입력하세요.":
-        components.html("<script>window.parent.document.activeElement.blur();</script>", height=0)
-        curr_idx = date_list.index(sel_date)
-        m_val = df_maemae.loc[df_maemae['날짜'] == sel_date, sel_region].values[0]
-        j_val = df_jeonse.loc[df_jeonse['날짜'] == sel_date, sel_region].values[0]
-        
-        m_color = "#e74c3c" if m_val > 0 else "#000080" if m_val < 0 else "#333"
-        j_color = "#e74c3c" if j_val > 0 else "#000080" if j_val < 0 else "#333"
-        
-        st.markdown(f'''
-            <div class="summary-card">
-                <div class="summary-label">📍 {sel_region} 매매 증감 ({sel_date})</div>
-                <div style="color:{m_color}; font-size:28px; font-weight:900;">{m_val:+.2f}%</div>
-            </div>
-            <div class="summary-card">
-                <div class="summary-label">📍 {sel_region} 전세 증감 ({sel_date})</div>
-                <div style="color:{j_color}; font-size:28px; font-weight:900;">{j_val:+.2f}%</div>
-            </div>
-        ''', unsafe_allow_html=True)
-
     # 랭킹 TOP 10 섹션
     st.markdown('<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500;">🔥 주간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
     m_w_row = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
@@ -177,10 +168,10 @@ def main():
     for i, (name, val) in enumerate(top_jw.items()):
         st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 하단 버튼 그룹 (들여쓰기 주의!)
+    # [수정] 하단 버튼 섹션 - 레이아웃 간소화
     st.markdown('<div id="btn-screenshot" class="screenshot-btn">📸 화면 스크린샷</div>', unsafe_allow_html=True)
     
-    if st.button("🚪 앱 종료", key="exit_trigger"):
+    if st.button("🚪 앱 종료", key="exit_trigger", use_container_width=True):
         st.session_state.is_exit = True
         st.rerun()
 
