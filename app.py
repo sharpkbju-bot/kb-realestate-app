@@ -82,30 +82,14 @@ st.markdown("""
     .rank-j { border-left: 7px solid #000080 !important; }
     .rank-j .rank-name, .rank-j .rank-val { color: #008080 !important; font-weight: 900 !important; }
 
-    .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #006400; }
+    .chart-title { font-size: 19px; font-weight: 900; margin: 35px 0 15px 0; padding-left: 12px; color: #006400; border-bottom: 2px solid rgba(0,100,0,0.1); padding-bottom: 5px; }
 
-    div.stButton { width: 100% !important; }
     div.stButton > button {
-        width: 100% !important; 
-        min-width: 100% !important;
-        height: 46px !important; 
-        border-radius: 12px !important;
-        font-weight: 900 !important; 
-        font-family: 'Noto Sans KR', sans-serif !important;
-        font-size: 16px !important; 
-        color: #87CEEB !important;
+        width: 100% !important; height: 46px !important; border-radius: 12px !important;
+        font-weight: 900 !important; font-size: 16px !important; color: #87CEEB !important;
         background: linear-gradient(135deg, rgba(60, 60, 60, 0.8), rgba(30, 30, 30, 0.9)) !important;
-        border: 2px solid rgba(200, 200, 200, 0.6) !important;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
+        border: 2px solid rgba(200, 200, 200, 0.6) !important; box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
         margin-top: 11px !important;
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-    }
-    
-    div.stButton > button p {
-        font-weight: 900 !important;
-        font-size: 16px !important;
     }
 
     .screenshot-btn {
@@ -113,9 +97,8 @@ st.markdown("""
         color: #87CEEB !important; display: flex; justify-content: center; align-items: center;
         background: linear-gradient(135deg, rgba(60, 60, 60, 0.8), rgba(30, 30, 30, 0.9));
         border: 2px solid rgba(200, 200, 200, 0.6); box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        cursor: pointer; margin-top: 20px;
+        cursor: pointer; margin: 30px 0 10px 0;
     }
-
     header { visibility: hidden; }
     </style>
     """, unsafe_allow_html=True)
@@ -146,10 +129,11 @@ def main():
     sel_date = st.selectbox("📅 날짜 선택", date_list, index=len(date_list)-1)
     sel_region = st.selectbox("🔍 지역 검색 및 선택", options=["지역을 입력하세요."] + region_list, index=0)
 
-    # 1. 지역 상세 및 그래프 (지역 선택 시에만 출력)
+    curr_idx = date_list.index(sel_date)
+
+    # --- 1. 지역 상세 정보 및 그래프 ---
     if sel_region != "지역을 입력하세요.":
         components.html("<script>window.parent.document.activeElement.blur();</script>", height=0)
-        curr_idx = date_list.index(sel_date)
         
         m_val = df_maemae.loc[df_maemae['날짜'] == sel_date, sel_region].values[0]
         j_val = df_jeonse.loc[df_jeonse['날짜'] == sel_date, sel_region].values[0]
@@ -172,7 +156,7 @@ def main():
         sub_df_m = df_maemae.iloc[start_idx : curr_idx + 1]
         sub_df_j = df_jeonse.iloc[start_idx : curr_idx + 1]
 
-        # 그래프 설정 (진하게 900)
+        # 그래프 폰트 진하게(900)
         chart_font = dict(size=12, color='#000080', family='Noto Sans KR', weight=900)
 
         st.markdown(f'<div class="chart-title">📈 {sel_region} 매매 트렌드 (4주)</div>', unsafe_allow_html=True)
@@ -187,34 +171,40 @@ def main():
         fig_j.update_layout(height=220, margin=dict(l=10, r=10, t=10, b=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', xaxis=dict(title=None, tickfont=chart_font), yaxis=dict(title=None, tickfont=chart_font))
         st.plotly_chart(fig_j, use_container_width=True, config={'displayModeBar': False})
         
-        st.markdown("<hr style='border: 1px solid rgba(0,100,0,0.1); margin: 25px 0;'>", unsafe_allow_html=True)
+        st.markdown("<hr style='border: 1px solid rgba(0,100,0,0.1);'>", unsafe_allow_html=True)
 
-    # 2. 주간 랭킹 TOP 10 (항상 출력)
-    # 매매 랭킹
+    # --- 2. 주간 랭킹 TOP 10 섹션 ---
     st.markdown(f'<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500;">🔥 주간 매매 상승 TOP 10 ({sel_date})</div>', unsafe_allow_html=True)
-    m_data = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
-    top_m = m_data[m_data > 0].sort_values(ascending=False).head(10)
-    
-    if not top_m.empty:
-        for i, (name, val) in enumerate(top_m.items()):
+    m_week = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
+    top_mw = m_week[m_week > 0].sort_values(ascending=False).head(10)
+    if not top_mw.empty:
+        for i, (name, val) in enumerate(top_mw.items()):
             st.markdown(f'<div class="rank-card rank-m"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
-    else:
-        st.write("상승 지역 데이터가 없습니다.")
-
-    # 전세 랭킹
+    
     st.markdown(f'<div class="chart-title" style="color:#000080; border-left:6px solid #000080;">💧 주간 전세 상승 TOP 10 ({sel_date})</div>', unsafe_allow_html=True)
-    j_data = df_jeonse[df_jeonse['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
-    top_j = j_data[j_data > 0].sort_values(ascending=False).head(10)
-    
-    if not top_j.empty:
-        for i, (name, val) in enumerate(top_j.items()):
+    j_week = df_jeonse[df_jeonse['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
+    top_jw = j_week[j_week > 0].sort_values(ascending=False).head(10)
+    if not top_jw.empty:
+        for i, (name, val) in enumerate(top_jw.items()):
             st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
-    else:
-        st.write("상승 지역 데이터가 없습니다.")
 
-    # 3. 버튼 및 스크립트
+    # --- 3. 월간 랭킹 TOP 10 섹션 (최근 4주 합산) ---
+    st.markdown(f'<div class="chart-title" style="color:#8B4513; border-left:6px solid #8B4513;">📊 월간 매매 상승 TOP 10 (최근 4주)</div>', unsafe_allow_html=True)
+    m_month = df_maemae.iloc[max(0, curr_idx-3) : curr_idx+1].drop(columns=['날짜']).sum()
+    top_mm = m_month[m_month > 0].sort_values(ascending=False).head(10)
+    if not top_mm.empty:
+        for i, (name, val) in enumerate(top_mm.items()):
+            st.markdown(f'<div class="rank-card rank-m" style="background:rgba(255,235,200,0.9) !important;"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
+
+    st.markdown(f'<div class="chart-title" style="color:#008080; border-left:6px solid #008080;">🌊 월간 전세 상승 TOP 10 (최근 4주)</div>', unsafe_allow_html=True)
+    j_month = df_jeonse.iloc[max(0, curr_idx-3) : curr_idx+1].drop(columns=['날짜']).sum()
+    top_jm = j_month[j_month > 0].sort_values(ascending=False).head(10)
+    if not top_jm.empty:
+        for i, (name, val) in enumerate(top_jm.items()):
+            st.markdown(f'<div class="rank-card rank-j" style="background:rgba(200,240,240,0.9) !important;"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
+
+    # --- 4. 하단 버튼 ---
     st.markdown('<div id="btn-screenshot" class="screenshot-btn">📸 화면 스크린샷</div>', unsafe_allow_html=True)
-    
     if st.button("🚪 앱 종료", key="exit_trigger", use_container_width=True):
         st.session_state.is_exit = True
         st.rerun()
