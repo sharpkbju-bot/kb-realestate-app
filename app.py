@@ -60,7 +60,7 @@ st.markdown("""
     .brand-name { color: #006400; font-size: clamp(30px, 10vw, 45px); font-weight: 900; font-family: 'Arial Black'; letter-spacing: -2px; }
     .brand-suffix { color: #FF4500; font-size: clamp(16px, 5vw, 24px); font-weight: 900; }
 
-    /* [복구] 날짜 및 지역 선택 필드 글자색/굵기 */
+    /* 날짜 및 지역 선택 필드 글자색/굵기 */
     div[data-baseweb="select"] * { font-weight: 900 !important; font-size: 16px !important; color: #006400 !important; }
     label[data-testid="stWidgetLabel"] p { font-weight: 900 !important; font-size: 17px !important; color: #006400 !important; }
 
@@ -71,7 +71,6 @@ st.markdown("""
     }
     .summary-label { font-weight: 900; color: #000080 !important; }
 
-    /* [복구] 랭킹 카드 스타일 */
     .rank-card {
         padding: 12px 15px; border-radius: 12px; margin-bottom: 12px;
         display: flex; align-items: center; justify-content: space-between;
@@ -87,18 +86,25 @@ st.markdown("""
 
     .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #006400; }
 
-    /* [개선] Streamlit 버튼 직접 스타일링 (디자인 통합 + 100% 작동) */
+    /* [수정] 종료 버튼 사이즈를 100%로 강제 고정 */
+    div.stButton { width: 100% !important; }
     div.stButton > button {
-        width: 100% !important; height: 46px !important; border-radius: 12px !important;
-        font-weight: 900 !important; font-size: 16px !important; color: #87CEEB !important;
+        width: 100% !important; 
+        height: 46px !important; 
+        border-radius: 12px !important;
+        font-weight: 900 !important; 
+        font-size: 16px !important; 
+        color: #87CEEB !important;
         background: linear-gradient(135deg, rgba(60, 60, 60, 0.8), rgba(30, 30, 30, 0.9)) !important;
         border: 2px solid rgba(200, 200, 200, 0.6) !important;
         box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
-        margin-top: 11px !important; transition: all 0.3s ease !important;
+        margin-top: 11px !important; 
+        transition: all 0.3s ease !important;
+        display: block !important;
     }
     div.stButton > button:hover { border-color: rgba(255, 255, 255, 0.8) !important; background: rgba(50, 50, 50, 1) !important; }
 
-    /* 스크린샷용 커스텀 디자인 버튼 */
+    /* 스크린샷용 디자인 버튼 (종료 버튼과 동일한 사이즈 유지) */
     .screenshot-btn {
         width: 100%; height: 46px; border-radius: 12px; font-weight: 900; font-size: 16px; 
         color: #87CEEB !important; display: flex; justify-content: center; align-items: center;
@@ -176,7 +182,7 @@ def main():
         draw_chart(df_jeonse, '#000080', f'📉 {sel_region} 전세 트렌드 (4주)')
         st.markdown("<hr>", unsafe_allow_html=True)
 
-    # 랭킹 TOP 10 섹션 (색상 복구 적용)
+    # 랭킹 TOP 10 섹션
     st.markdown('<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500;">🔥 주간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
     m_w_row = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_mw = m_w_row[m_w_row > 0].sort_values(ascending=False).head(10)
@@ -192,7 +198,7 @@ def main():
     # 하단 버튼 그룹
     st.markdown('<div id="btn-screenshot" class="screenshot-btn">📸 화면 스크린샷</div>', unsafe_allow_html=True)
     
-    # 🚪 앱 종료 버튼 (이제 100% 작동함)
+    # 🚪 앱 종료 버튼 (width 100% 적용 완료)
     if st.button("🚪 앱 종료", key="exit_trigger"):
         st.session_state.is_exit = True
         st.rerun()
