@@ -57,7 +57,7 @@ st.markdown("""
     }
     .summary-label { font-weight: 900; color: #000080 !important; }
 
-    /* [복원] 랭킹 카드 및 글자 색상 스타일 */
+    /* 랭킹 카드 및 글자 색상 스타일 */
     .rank-card {
         padding: 12px 15px; border-radius: 12px; margin-bottom: 12px;
         display: flex; align-items: center; justify-content: space-between;
@@ -80,7 +80,7 @@ st.markdown("""
 
     .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #006400; }
 
-    /* 하단 커스텀 버튼 스타일 */
+    /* 하단 커스텀 버튼 스타일 (Full Width + 3mm 간격) */
     .custom-btn-group { display: flex; flex-direction: column; width: 100%; margin-top: 20px; }
     .custom-btn {
         width: 100%; height: 55px; border-radius: 12px; font-weight: 900; font-size: 18px;
@@ -172,22 +172,38 @@ def main():
             sub_df = df.iloc[start_idx : curr_idx + 1]
             fig = px.line(sub_df, x='날짜', y=sel_region, markers=True)
             fig.update_traces(line_color=line_color, line_width=4, marker=dict(size=10, color='white', line=dict(width=2, color=line_color)))
-            fig.update_layout(height=220, margin=dict(l=10,r=10,t=10,b=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='#000080', size=12))
+            
+            # [수정 사항] 그래프 내부의 x축(날짜)과 y축(지역명) 라벨 컬러를 짙은 남색(#000080)으로 설정
+            fig.update_layout(
+                height=220, 
+                margin=dict(l=10,r=10,t=10,b=10), 
+                paper_bgcolor='rgba(0,0,0,0)', 
+                plot_bgcolor='rgba(0,0,0,0)', 
+                font=dict(color='#000080', size=12),
+                xaxis=dict(
+                    fixedrange=True, 
+                    tickfont=dict(color='#000080', weight='bold'),
+                    title=dict(font=dict(color='#000080')) # x축 라벨("날짜") 컬러 설정
+                ),
+                yaxis=dict(
+                    fixedrange=True, 
+                    tickfont=dict(color='#000080', weight='bold'),
+                    title=dict(text="", font=dict(color='#000080')) # y축 라벨(지역명) 컬러 설정
+                )
+            )
             st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
         draw_chart(df_maemae, '#e74c3c', f'📈 {sel_region} 매매 트렌드 (4주)')
         draw_chart(df_jeonse, '#000080', f'📉 {sel_region} 전세 트렌드 (4주)')
         st.markdown("<hr>", unsafe_allow_html=True)
 
-    # --- [복원] 랭킹 섹션 시작 ---
-    # 1. 주간 매매 TOP 10
+    # 랭킹 섹션 복원 (매매: 주황/전세: 청록 컬러 스킴 유지)
     st.markdown('<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500;">🔥 주간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
     m_w_row = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_mw = m_w_row[m_w_row > 0].sort_values(ascending=False).head(10)
     for i, (name, val) in enumerate(top_mw.items()):
         st.markdown(f'<div class="rank-card rank-m"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 2. 월간 매매 TOP 10
     if curr_idx >= 3:
         st.markdown('<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500;">📅 월간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
         m_m_sum = df_maemae.iloc[curr_idx-3 : curr_idx+1].drop(columns=['날짜']).sum()
@@ -195,14 +211,12 @@ def main():
         for i, (name, val) in enumerate(top_mm.items()):
             st.markdown(f'<div class="rank-card rank-m"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 3. 주간 전세 TOP 10
     st.markdown('<div class="chart-title" style="color:#FF1493; border-left:6px solid #FF1493;">💧 주간 전세 상승 TOP 10</div>', unsafe_allow_html=True)
     j_w_row = df_jeonse[df_jeonse['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_jw = j_w_row[j_w_row > 0].sort_values(ascending=False).head(10)
     for i, (name, val) in enumerate(top_jw.items()):
         st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 4. 월간 전세 TOP 10
     if curr_idx >= 3:
         st.markdown('<div class="chart-title" style="color:#FF1493; border-left:6px solid #FF1493;">📅 월간 전세 상승 TOP 10</div>', unsafe_allow_html=True)
         j_m_sum = df_jeonse.iloc[curr_idx-3 : curr_idx+1].drop(columns=['날짜']).sum()
@@ -210,7 +224,7 @@ def main():
         for i, (name, val) in enumerate(top_jm.items()):
             st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # --- 하단 커스텀 버튼 섹션 ---
+    # 하단 커스텀 버튼 섹션 (기존 코드 유지)
     st.markdown("""
         <div class="custom-btn-group">
             <div id="btn-screenshot" class="custom-btn">📸 화면 스크린샷</div>
@@ -218,13 +232,11 @@ def main():
         </div>
     """, unsafe_allow_html=True)
 
-    # 종료 감지 로직
     if st.query_params.get("action") == "exit":
         st.session_state.is_exit = True
         st.query_params.clear()
         st.rerun()
 
-    # JavaScript (스크린샷 및 종료)
     st.markdown(
         """
         <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
