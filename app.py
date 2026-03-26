@@ -84,20 +84,17 @@ st.markdown("""
 
     .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #006400; }
 
-    /* [집중 수정] 종료 버튼 글자 Bold 강제 적용 및 사이즈 고정 */
+    /* 종료 버튼 100% 너비 및 글자 Bold 강제 적용 */
     div.stButton { width: 100% !important; }
     div.stButton > button {
         width: 100% !important; 
         min-width: 100% !important;
         height: 46px !important; 
         border-radius: 12px !important;
-        
-        /* 글자 스타일 강제 주입 */
         font-weight: 900 !important; 
         font-family: 'Noto Sans KR', sans-serif !important;
         font-size: 16px !important; 
         color: #87CEEB !important;
-        
         background: linear-gradient(135deg, rgba(60, 60, 60, 0.8), rgba(30, 30, 30, 0.9)) !important;
         border: 2px solid rgba(200, 200, 200, 0.6) !important;
         box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
@@ -106,12 +103,8 @@ st.markdown("""
         justify-content: center !important;
         align-items: center !important;
     }
-    
-    /* 버튼 내부 텍스트 요소까지 한번 더 타겟팅 */
-    div.stButton > button p {
-        font-weight: 900 !important;
-        font-size: 16px !important;
-    }
+    /* 버튼 내부 텍스트 굵기 보정 */
+    div.stButton > button p { font-weight: 900 !important; }
 
     .screenshot-btn {
         width: 100%; height: 46px; border-radius: 12px; font-weight: 900; font-size: 16px; 
@@ -121,6 +114,7 @@ st.markdown("""
         cursor: pointer; margin-top: 20px;
     }
 
+    [data-testid="stPlotlyChart"] { background-color: transparent !important; }
     header { visibility: hidden; }
     </style>
     """, unsafe_allow_html=True)
@@ -151,8 +145,10 @@ def main():
     sel_date = st.selectbox("📅 날짜 선택", date_list, index=len(date_list)-1)
     sel_region = st.selectbox("🔍 지역 검색 및 선택", options=["지역을 입력하세요."] + region_list, index=0)
 
+    # [복구] 지역 선택 시 요약 카드 및 차트 출력
     if sel_region != "지역을 입력하세요.":
         components.html("<script>window.parent.document.activeElement.blur();</script>", height=0)
+        curr_idx = date_list.index(sel_date)
         m_val = df_maemae.loc[df_maemae['날짜'] == sel_date, sel_region].values[0]
         j_val = df_jeonse.loc[df_jeonse['날짜'] == sel_date, sel_region].values[0]
         
@@ -170,6 +166,26 @@ def main():
             </div>
         ''', unsafe_allow_html=True)
 
+        # 차트 그리기 함수 정의
+        def draw_chart(df, line_color, title):
+            st.markdown(f'<div class="chart-title">{title}</div>', unsafe_allow_html=True)
+            start_idx = max(0, curr_idx - 3)
+            sub_df = df.iloc[start_idx : curr_idx + 1]
+            fig = px.line(sub_df, x='날짜', y=sel_region, markers=True)
+            fig.update_traces(line_color=line_color, line_width=4, marker=dict(size=10, color='white', line=dict(width=2, color=line_color)))
+            fig.update_layout(
+                height=220, margin=dict(l=10,r=10,t=10,b=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
+                font=dict(color='#000080', size=12),
+                xaxis=dict(fixedrange=True, tickfont=dict(color='#000080', weight='bold'), title=None),
+                yaxis=dict(fixedrange=True, tickfont=dict(color='#000080', weight='bold'), title=None)
+            )
+            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+
+        draw_chart(df_maemae, '#e74c3c', f'📈 {sel_region} 매매 트렌드 (4주)')
+        draw_chart(df_jeonse, '#000080', f'📉 {sel_region} 전세 트렌드 (4주)')
+        st.markdown("<hr>", unsafe_allow_html=True)
+
+    # 랭킹 TOP 10 섹션
     st.markdown('<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500;">🔥 주간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
     m_w_row = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_mw = m_w_row[m_w_row > 0].sort_values(ascending=False).head(10)
@@ -185,7 +201,6 @@ def main():
     # 하단 버튼 그룹
     st.markdown('<div id="btn-screenshot" class="screenshot-btn">📸 화면 스크린샷</div>', unsafe_allow_html=True)
     
-    # use_container_width=True 옵션과 CSS 시너지 효과
     if st.button("🚪 앱 종료", key="exit_trigger", use_container_width=True):
         st.session_state.is_exit = True
         st.rerun()
