@@ -100,10 +100,11 @@ st.markdown("""
         margin-top: 10px;
     }
 
-    /* [수정 사항] 자산가 문구 스타일 (진한 노란색) */
+    /* [수정 사항] 자산가 문구 스타일 (진한 핑크색) */
     .asset-info {
         font-weight: 900;
-        color: #FFD700 !important; /* 진한 노란색(Gold) */
+        font-family: 'Dancing Script', 'Brush Script MT', cursive !important;
+        color: #FF5AD9 !important; /* 진한 핑크(Pink) */
         font-size: 20px !important;
         margin-top: 5px;
         text-shadow: 1px 1px 2px rgba(0,0,0,0.2); /* 가독성을 위한 그림자 */
