@@ -77,41 +77,32 @@ st.markdown("""
     .rank-name { font-weight: 900; font-size: 16px; }
     .rank-val { font-weight: 900; font-size: 15px; }
     
-    /* 매매 상승 TOP 10 카드 내 지역명 및 상승률 브라운(#8B4513) */
     .rank-m { border-left: 7px solid #FF4500; }
     .rank-m .rank-name, .rank-m .rank-val { color: #8B4513 !important; }
 
-    /* 전세 상승 TOP 10 카드 내 지역명 및 상승률 청녹색(#008080) */
     .rank-j { border-left: 7px solid #000080; }
     .rank-j .rank-name, .rank-j .rank-val { color: #008080 !important; }
 
-    /* 트렌드 차트 제목 컬러 진한 그린(#006400) */
     .chart-title { font-size: 19px; font-weight: 900; margin: 30px 0 15px 0; padding-left: 12px; color: #006400; }
 
-    /* [수정 사항] 공통 버튼 스타일 - 랭킹 카드와 동일하게 너비 100% 적용 */
-    div.stButton { display: flex; justify-content: center; margin: 10px 0; }
+    /* [수정 사항] 버튼 컨테이너 및 버튼을 랭킹 카드 가로폭에 100% 맞춤 */
+    div.stButton { width: 100% !important; margin: 10px 0 !important; }
     div.stButton > button {
         color: #87CEEB !important;
-        border-radius: 12px !important; /* 랭킹 카드와 유사한 곡률 */
-        width: 100% !important; /* 가로폭 꽉 채우기 */
+        border-radius: 12px !important; 
+        width: 100% !important; 
+        max-width: none !important; /* 가로폭 제한 해제 */
         height: 55px !important; 
         font-weight: 900 !important;
         box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important; 
         border: none !important;
         font-size: 18px !important;
+        display: block !important;
     }
 
-    /* 스크린샷 버튼 (배경 연한 그린) */
-    div.stButton.screenshot-btn > button {
-        background: #90EE90 !important;
-    }
+    div.stButton.screenshot-btn > button { background: #90EE90 !important; }
+    div.stButton.exit-btn > button { background: #E6E6FA !important; }
 
-    /* 종료 버튼 (배경 연한 퍼플) */
-    div.stButton.exit-btn > button {
-        background: #E6E6FA !important;
-    }
-
-    /* 종료 화면 스타일 */
     .exit-wrapper {
         position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
         width: 100%; text-align: center; z-index: 9999;
@@ -162,9 +153,7 @@ def main():
     if st.session_state.get("is_exit"):
         st.markdown(f"""
             <div class="exit-wrapper">
-                <div class="title-container">
-                    <span class="brand-name">Dr.J</span><span class="brand-suffix">의 부동산</span>
-                </div>
+                <div class="title-container"><span class="brand-name">Dr.J</span><span class="brand-suffix">의 부동산</span></div>
                 <div class="exit-msg">모두 부자됩시다.</div>
                 <div class="created-by">Created by Ju Kyung Bae</div>
                 <div class="asset-info">with 70억 자산가 이승연</div>
@@ -212,23 +201,11 @@ def main():
             fig.update_traces(line_color=line_color, line_width=4, marker=dict(size=10, color='white', line=dict(width=2, color=line_color)))
             
             fig.update_layout(
-                height=220, 
-                margin=dict(l=10,r=10,t=10,b=10), 
-                paper_bgcolor='rgba(0,0,0,0)', 
-                plot_bgcolor='rgba(0,0,0,0)', 
-                hovermode=False, 
-                dragmode=False, 
+                height=220, margin=dict(l=10,r=10,t=10,b=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
+                hovermode=False, dragmode=False, 
                 font=dict(color='#000080', size=12),
-                xaxis=dict(
-                    fixedrange=True, 
-                    tickfont=dict(color='#000080', weight='bold'),
-                    title=dict(font=dict(color='#000080'))
-                ),
-                yaxis=dict(
-                    fixedrange=True, 
-                    tickfont=dict(color='#000080', weight='bold'),
-                    title=dict(text="", font=dict(color='#000080'))
-                )
+                xaxis=dict(fixedrange=True, tickfont=dict(color='#000080', weight='bold')),
+                yaxis=dict(fixedrange=True, tickfont=dict(color='#000080', weight='bold'))
             )
             st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False, 'scrollZoom': False})
 
