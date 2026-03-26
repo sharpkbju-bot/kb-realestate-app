@@ -1,197 +1,93 @@
-import streamlit as st
-import pandas as pd
-import plotly.express as px
-import streamlit.components.v1 as components
-import base64
-import os
+# ... (상단 설정 및 배경 로직 동일)
 
-# 1. 페이지 설정
-st.set_page_config(
-    page_title="Dr.J의 부동산", 
-    page_icon="🏠",
-    layout="centered"
-)
-
-# 세션 상태 초기화 및 종료 로직
-if "is_exit" not in st.session_state:
-    st.session_state.is_exit = False
-
-if st.session_state.is_exit:
-    st.markdown("""
-        <style>
-        .stApp { background-color: white !important; background-image: none !important; }
-        .exit-wrapper { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; text-align: center; }
-        .brand-name { color: #006400; font-size: 45px; font-weight: 900; font-family: 'Arial Black'; }
-        .brand-suffix { color: #FF4500; font-size: 24px; font-weight: 900; }
-        .exit-msg { color: #006400; font-weight: 900; font-size: 32px; margin-top: 20px; }
-        .created-by { font-family: 'Dancing Script', cursive !important; color: #000080 !important; font-size: 30px; margin-top: 10px; }
-        .asset-info { font-weight: 900; color: #CC9900 !important; font-size: 20px; margin-top: 5px; }
-        header { visibility: hidden; }
-        </style>
-        <div class="exit-wrapper">
-            <div class="title-container"><span class="brand-name">Dr.J</span><span class="brand-suffix">의 부동산</span></div>
-            <div class="exit-msg">모두 부자됩시다.</div>
-            <div class="created-by">Created by Ju Kyung Bae</div>
-            <div class="asset-info">with 70억 자산가 이승연</div>
-        </div>
-    """, unsafe_allow_html=True)
-    st.stop()
-
-# 배경 이미지 주입
-def set_bg_from_local(image_file):
-    if os.path.exists(image_file):
-        with open(image_file, "rb") as f:
-            encoded_string = base64.b64encode(f.read()).decode()
-        st.markdown(f"""
-            <style>
-            .stApp {{ background-image: url("data:image/jpg;base64,{encoded_string}"); background-size: cover; background-attachment: fixed; background-position: center; }}
-            </style>
-        """, unsafe_allow_html=True)
-
-set_bg_from_local('bg.jpg')
-
-# 2. UI 디자인 및 스타일 설정
+# 2. UI 디자인 및 스타일 설정 (색상 완벽 고정 버전)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
     html, body, [class*="css"] { font-family: 'Noto+Sans+KR', sans-serif; }
 
-    .title-container { width: 100%; padding: 30px 0 15px 0; text-align: center; }
-    .brand-name { color: #006400; font-size: clamp(30px, 10vw, 45px); font-weight: 900; font-family: 'Arial Black'; letter-spacing: -2px; }
-    .brand-suffix { color: #FF4500; font-size: clamp(16px, 5vw, 24px); font-weight: 900; }
+    /* 타이틀 및 상단 선택창 스타일 */
+    .brand-name { color: #006400 !important; font-size: 45px; font-weight: 900; font-family: 'Arial Black'; }
+    .brand-suffix { color: #FF4500 !important; font-size: 24px; font-weight: 900; }
+    div[data-baseweb="select"] * { font-weight: 900 !important; color: #006400 !important; }
 
-    div[data-baseweb="select"] * { font-weight: 900 !important; font-size: 16px !important; color: #006400 !important; }
-    label[data-testid="stWidgetLabel"] p { font-weight: 900 !important; font-size: 17px !important; color: #006400 !important; }
-
-    .summary-card { 
-        background: rgba(255, 255, 255, 0.92) !important;
-        border-radius: 18px; padding: 20px; text-align: center; margin-bottom: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #f0f0f0;
-    }
-    .summary-label { font-weight: 900; color: #000080 !important; }
-
+    /* [복구] 랭킹 카드 공통 스타일 */
     .rank-card {
         padding: 12px 15px; border-radius: 12px; margin-bottom: 12px;
         display: flex; align-items: center; justify-content: space-between;
         background: linear-gradient(135deg, rgba(243, 229, 245, 0.95), rgba(225, 190, 231, 0.95)) !important;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.5) !important; border: 1px solid rgba(103, 58, 183, 0.2);
-    }
-    .rank-num { font-weight: 900; font-size: 16px; color: #4a148c !important; }
-    .rank-name, .rank-val { font-weight: 900; font-size: 16px; }
-    .rank-m { border-left: 7px solid #FF4500; }
-    .rank-j { border-left: 7px solid #000080; }
-
-    /* [핵심] 버튼 사이즈 강제 일치 스타일 */
-    /* 버튼을 감싸는 모든 컨테이너의 너비 제한을 해제 */
-    div[data-testid="stVerticalBlock"] > div:has(div.stButton) {
-        width: 100% !important;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
     }
     
-    .stButton, .stButton > button {
-        width: 100% !important;
-        min-width: 100% !important;
-        max-width: 100% !important;
-        height: 46px !important;
-        display: block !important;
-    }
+    /* 순위 숫자 색상 (진한 보라) */
+    .rank-num { font-weight: 900 !important; font-size: 16px !important; color: #4a148c !important; margin-right: 8px; }
 
-    div.stButton > button {
-        border-radius: 12px !important;
+    /* 매매 랭킹 텍스트 색상 (브라운 계열) */
+    .rank-m { border-left: 7px solid #FF4500 !important; }
+    .rank-m .rank-name, .rank-m .rank-val { 
+        color: #8B4513 !important; 
         font-weight: 900 !important; 
         font-size: 16px !important; 
-        color: #87CEEB !important;
-        background: linear-gradient(135deg, rgba(60, 60, 60, 0.8), rgba(30, 30, 30, 0.9)) !important;
-        border: 2px solid rgba(200, 200, 200, 0.6) !important;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
-        margin-top: 11px !important;
-        transition: all 0.3s ease !important;
     }
 
-    .screenshot-btn {
-        width: 100% !important;
-        height: 46px !important;
-        border-radius: 12px !important;
-        font-weight: 900 !important;
+    /* 전세 랭킹 텍스트 색상 (청록 계열) */
+    .rank-j { border-left: 7px solid #000080 !important; }
+    .rank-j .rank-name, .rank-j .rank-val { 
+        color: #008080 !important; 
+        font-weight: 900 !important; 
         font-size: 16px !important; 
-        color: #87CEEB !important;
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-        background: linear-gradient(135deg, rgba(60, 60, 60, 0.8), rgba(30, 30, 30, 0.9)) !important;
-        border: 2px solid rgba(200, 200, 200, 0.6) !important;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
-        cursor: pointer !important;
-        margin-top: 20px !important;
     }
 
-    [data-testid="stPlotlyChart"] { background-color: transparent !important; }
+    /* 버튼 스타일 유지 */
+    div.stButton > button {
+        width: 100% !important; height: 46px !important; border-radius: 12px !important;
+        font-weight: 900 !important; font-size: 16px !important; color: #87CEEB !important;
+        background: linear-gradient(135deg, rgba(60, 60, 60, 0.8), rgba(30, 30, 30, 0.9)) !important;
+        border: 2px solid rgba(200, 200, 200, 0.6) !important;
+        margin-top: 11px !important;
+    }
+    .screenshot-btn {
+        width: 100%; height: 46px; border-radius: 12px; font-weight: 900; font-size: 16px; 
+        color: #87CEEB !important; display: flex; justify-content: center; align-items: center;
+        background: linear-gradient(135deg, rgba(60, 60, 60, 0.8), rgba(30, 30, 30, 0.9));
+        border: 2px solid rgba(200, 200, 200, 0.6); margin-top: 20px;
+    }
+
     header { visibility: hidden; }
     </style>
     """, unsafe_allow_html=True)
 
-@st.cache_data
-def load_data():
-    try:
-        df_m = pd.read_csv('maemae.csv', encoding='cp949')
-        df_j = pd.read_csv('jeonse.csv', encoding='cp949')
-    except:
-        df_m = pd.read_csv('maemae.csv', encoding='utf-8')
-        df_j = pd.read_csv('jeonse.csv', encoding='utf-8')
-    common_cols = ['날짜'] + sorted(list(set(df_m.columns) & set(df_j.columns) - {'날짜'}))
-    df_m, df_j = df_m[common_cols], df_j[common_cols]
-    for col in [c for c in df_m.columns if c != '날짜']:
-        df_m[col] = pd.to_numeric(df_m[col], errors='coerce').fillna(0)
-        df_j[col] = pd.to_numeric(df_j[col], errors='coerce').fillna(0)
-    df_m['날짜'] = df_m['날짜'].astype(str)
-    return df_m, df_j
+# ... (데이터 로드 부분 동일)
 
 def main():
-    st.markdown('<div class="title-container"><span class="brand-name">Dr.J</span><span class="brand-suffix">의 부동산</span></div>', unsafe_allow_html=True)
+    # ... (상단 타이틀 및 선택창 로직 동일)
 
-    df_maemae, df_jeonse = load_data()
-    date_list = sorted(df_maemae['날짜'].unique().tolist())
-    region_list = sorted([col for col in df_maemae.columns if col != '날짜'])
-
-    sel_date = st.selectbox("📅 날짜 선택", date_list, index=len(date_list)-1)
-    sel_region = st.selectbox("🔍 지역 검색 및 선택", options=["지역을 입력하세요."] + region_list, index=0)
-
-    # 랭킹 TOP 10 섹션
-    st.markdown('<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500;">🔥 주간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
-    m_w_row = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
-    top_mw = m_w_row[m_w_row > 0].sort_values(ascending=False).head(10)
+    # 매매 TOP 10 출력 부분
+    st.markdown('<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500; font-weight:900; padding-left:10px;">🔥 주간 매매 상승 TOP 10</div>', unsafe_allow_html=True)
+    # (데이터 처리 생략)
     for i, (name, val) in enumerate(top_mw.items()):
-        st.markdown(f'<div class="rank-card rank-m"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
+        st.markdown(f'''
+            <div class="rank-card rank-m">
+                <div class="rank-info">
+                    <span class="rank-num">{i+1}위</span> 
+                    <span class="rank-name">{name}</span>
+                </div>
+                <span class="rank-val">+{val:.2f}%</span>
+            </div>
+        ''', unsafe_allow_html=True)
 
-    st.markdown('<div class="chart-title" style="color:#FF1493; border-left:6px solid #FF1493;">💧 주간 전세 상승 TOP 10</div>', unsafe_allow_html=True)
-    j_w_row = df_jeonse[df_jeonse['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
-    top_jw = j_w_row[j_w_row > 0].sort_values(ascending=False).head(10)
+    # 전세 TOP 10 출력 부분
+    st.markdown('<div class="chart-title" style="color:#FF1493; border-left:6px solid #FF1493; font-weight:900; padding-left:10px;">💧 주간 전세 상승 TOP 10</div>', unsafe_allow_html=True)
+    # (데이터 처리 생략)
     for i, (name, val) in enumerate(top_jw.items()):
-        st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
+        st.markdown(f'''
+            <div class="rank-card rank-j">
+                <div class="rank-info">
+                    <span class="rank-num">{i+1}위</span> 
+                    <span class="rank-name">{name}</span>
+                </div>
+                <span class="rank-val">+{val:.2f}%</span>
+            </div>
+        ''', unsafe_allow_html=True)
 
-    # [수정] 하단 버튼 섹션 - 레이아웃 간소화
-    st.markdown('<div id="btn-screenshot" class="screenshot-btn">📸 화면 스크린샷</div>', unsafe_allow_html=True)
-    
-    if st.button("🚪 앱 종료", key="exit_trigger", use_container_width=True):
-        st.session_state.is_exit = True
-        st.rerun()
-
-    # JavaScript: 스크린샷
-    st.markdown("""
-        <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-        <script>
-        const scBtn = window.parent.document.getElementById('btn-screenshot');
-        if (scBtn) {
-            scBtn.onclick = function() {
-                const target = window.parent.document.querySelector('#root');
-                html2canvas(target, { useCORS: true, logging: false }).then(canvas => {
-                    const dataUrl = canvas.toDataURL('image/png');
-                    const link = document.createElement('a'); link.href = dataUrl; link.download = 'DrJ_RealEstate.png';
-                    link.click();
-                });
-            };
-        }
-        </script>
-    """, unsafe_allow_html=True)
-
-if __name__ == "__main__":
-    main()
+    # ... (하단 버튼 로직 동일)
