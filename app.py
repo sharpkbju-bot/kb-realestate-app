@@ -50,7 +50,7 @@ def set_bg_from_local(image_file):
 
 set_bg_from_local('bg.jpg')
 
-# UI 디자인 및 스타일 설정
+# UI 디자인 및 스타일 설정 (탭 글자 크기 및 굵기 대폭 강화)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
@@ -62,18 +62,25 @@ st.markdown("""
     .brand-name { color: #006400; font-size: clamp(35px, 11vw, 50px); font-weight: 900; font-family: 'Arial Black'; letter-spacing: -2px; }
     .brand-suffix { color: #FF4500; font-size: clamp(18px, 6vw, 26px); font-weight: 900; }
 
-    /* 상단 탭 메뉴 3분할 및 글자 강조 */
+    /* ★ 탭 메뉴 글자 크기 및 굵기 강제 적용 ★ */
     .stTabs [data-baseweb="tab-list"] { 
-        display: flex; justify-content: space-between; width: 100%; gap: 0px; 
-        background-color: rgba(255,255,255,0.4); border-radius: 15px 15px 0 0;
+        display: flex !important; justify-content: space-between !important; width: 100% !important; gap: 0px !important; 
+        background-color: rgba(255,255,255,0.4) !important; border-radius: 15px 15px 0 0 !important;
     }
     .stTabs [data-baseweb="tab"] { 
-        flex: 1; text-align: center; height: 65px; font-weight: 900 !important; 
-        font-size: 20px !important; /* 글자 크기 대폭 확대 */
-        color: #1a1a1a !important; border: 1px solid rgba(0,0,0,0.1); background-color: rgba(255,255,255,0.8);
+        flex: 1 !important; text-align: center !important; height: 75px !important; 
+        border: 1px solid rgba(0,0,0,0.1) !important; background-color: rgba(255,255,255,0.8) !important;
     }
+    /* 탭 내부의 글자(p태그 등)를 직접 타겟팅 */
+    .stTabs [data-baseweb="tab"] div p { 
+        font-size: 22px !important; font-weight: 900 !important; color: #1a1a1a !important; 
+    }
+    /* 선택된 탭의 글자색 하얗게 */
     .stTabs [aria-selected="true"] { 
-        background-color: #006400 !important; color: #ffffff !important; border: 1px solid #006400 !important;
+        background-color: #006400 !important; border: 1px solid #006400 !important;
+    }
+    .stTabs [aria-selected="true"] div p { 
+        color: #ffffff !important; 
     }
 
     /* 섹션 타이틀 스타일 */
@@ -82,25 +89,19 @@ st.markdown("""
         color: #ffffff; background: #2c3e50; border-radius: 10px; text-align: center;
     }
 
-    /* 카드별 개별 컬러 */
+    /* 카드 스타일 */
     .rank-card { padding: 12px 18px; border-radius: 14px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; font-weight: 900 !important; font-size: 17px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-    
     .m-weekly { background: linear-gradient(135deg, #FFEFBA, #FFFFFF); border-left: 10px solid #FF4500; color: #D32F2F; } 
     .j-weekly { background: linear-gradient(135deg, #E0F7FA, #FFFFFF); border-left: 10px solid #01579B; color: #01579B; } 
     .m-accum { background: linear-gradient(135deg, #FFF9C4, #FFFFFF); border-left: 10px solid #FBC02D; color: #7F6000; }  
     .j-accum { background: linear-gradient(135deg, #E8F5E9, #FFFFFF); border-left: 10px solid #2E7D32; color: #1B5E20; }  
 
-    /* 위젯 라벨 및 선택박스 굵기 */
-    label[data-testid="stWidgetLabel"] p { font-weight: 900 !important; font-size: 19px !important; color: #1a1a1a !important; }
-    div[data-baseweb="select"] * { font-weight: 900 !important; font-size: 18px !important; }
-
-    /* 종료 버튼 (그레이 컬러 테마) */
+    /* 종료 버튼 (그레이 테마) */
     div.stButton > button {
         width: 100% !important; height: 55px !important; border-radius: 15px !important;
-        font-weight: 900 !important; font-size: 19px !important; color: #FFD700 !important; /* 금색 글씨 */
-        background: linear-gradient(135deg, #555555, #222222) !important; /* 그레이 그라데이션 */
+        font-weight: 900 !important; font-size: 20px !important; color: #FFD700 !important;
+        background: linear-gradient(135deg, #555555, #222222) !important;
         border: 2px solid #FFD700 !important; margin-top: 35px !important;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
     }
     header { visibility: hidden; }
     </style>
@@ -130,53 +131,33 @@ def main():
 
     tab1, tab2, tab3 = st.tabs(["📊 지역분석", "🌡️ 시장온도", "🏆 랭킹TOP"])
 
-    # --- 탭 1: 지역분석 ---
     with tab1:
         sel_date = st.selectbox("📅 기준 날짜 선택", date_list, index=len(date_list)-1, key="tab1_date")
         sel_regions = st.multiselect("🔍 비교 지역 선택", region_list, default=[region_list[0]] if region_list else [])
-        
         if sel_regions:
             curr_idx = date_list.index(sel_date)
             start_idx = max(0, curr_idx - 7)
-            
             st.markdown('<div class="chart-title">📈 매매 증감 추이 (최근 8주)</div>', unsafe_allow_html=True)
             sub_m = df_maemae.iloc[start_idx : curr_idx + 1][['날짜'] + sel_regions]
             fig_m = px.line(sub_m, x='날짜', y=sel_regions, markers=True)
-            fig_m.update_traces(line_width=7, marker=dict(size=12)) # 선 굵기 더욱 강화
-            fig_m.update_layout(
-                height=400, margin=dict(l=10, r=10, t=10, b=10),
-                font=dict(size=15, color="black", weight=900),
-                xaxis=dict(tickfont=dict(weight=900), title=None),
-                yaxis=dict(tickfont=dict(weight=900), title=None),
-                legend=dict(font=dict(size=14, weight=900), orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
-            )
+            fig_m.update_traces(line_width=8, marker=dict(size=14)) # 선 굵기 더 강화
+            fig_m.update_layout(height=400, font=dict(size=15, color="black", weight=900), legend=dict(font=dict(size=14, weight=900), orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
             st.plotly_chart(fig_m, use_container_width=True)
 
             st.markdown('<div class="chart-title">📉 전세 증감 추이 (최근 8주)</div>', unsafe_allow_html=True)
             sub_j = df_jeonse.iloc[start_idx : curr_idx + 1][['날짜'] + sel_regions]
             fig_j = px.line(sub_j, x='날짜', y=sel_regions, markers=True)
-            fig_j.update_traces(line_width=7, marker=dict(size=12))
-            fig_j.update_layout(
-                height=400, margin=dict(l=10, r=10, t=10, b=10),
-                font=dict(size=15, color="black", weight=900),
-                xaxis=dict(tickfont=dict(weight=900), title=None),
-                yaxis=dict(tickfont=dict(weight=900), title=None),
-                legend=dict(font=dict(size=14, weight=900), orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
-            )
+            fig_j.update_traces(line_width=8, marker=dict(size=14))
+            fig_j.update_layout(height=400, font=dict(size=15, color="black", weight=900), legend=dict(font=dict(size=14, weight=900), orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
             st.plotly_chart(fig_j, use_container_width=True)
 
-    # --- 탭 2: 시장온도 ---
     with tab2:
         st.markdown('<div class="chart-title">🌡️ 시장 온도계 (8주 합산)</div>', unsafe_allow_html=True)
         m_sum = df_maemae.iloc[max(0, len(date_list)-8):].drop(columns=['날짜']).sum()
         j_sum = df_jeonse.iloc[max(0, len(date_list)-8):].drop(columns=['날짜']).sum()
         heat_df = pd.DataFrame({'매매합계': m_sum, '전세합계': j_sum}).sort_values(by='매매합계', ascending=False)
-        st.dataframe(
-            heat_df.style.background_gradient(cmap='RdYlBu_r').format("{:+.2f}%"),
-            use_container_width=True, height=600
-        )
+        st.dataframe(heat_df.style.background_gradient(cmap='RdYlBu_r').format("{:+.2f}%"), use_container_width=True, height=600)
 
-    # --- 탭 3: 랭킹TOP ---
     with tab3:
         sel_date_rank = st.selectbox("📅 랭킹 기준일 선택", date_list, index=len(date_list)-1, key="tab3_date")
         curr_idx_rank = date_list.index(sel_date_rank)
@@ -207,7 +188,6 @@ def main():
             for i, (n, v) in enumerate(j_8.items()):
                 if v > 0: st.markdown(f'<div class="rank-card j-accum"><span>{i+1}. {n}</span><span>+{v:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 하단 종료 버튼
     if st.button("🚪 안전하게 앱 종료하기", key="exit_trigger", use_container_width=True):
         st.session_state.is_exit = True
         st.rerun()
