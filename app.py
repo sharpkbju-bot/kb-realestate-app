@@ -89,17 +89,9 @@ st.markdown("""
         font-weight: 900 !important; font-size: 16px !important; color: #87CEEB !important;
         background: linear-gradient(135deg, rgba(60, 60, 60, 0.8), rgba(30, 30, 30, 0.9)) !important;
         border: 2px solid rgba(200, 200, 200, 0.6) !important; box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
-        margin-top: 11px !important;
+        margin-top: 20px !important;
     }
     div.stButton > button p { font-weight: 900 !important; font-size: 16px !important; }
-
-    .screenshot-btn {
-        width: 100%; height: 46px; border-radius: 12px; font-weight: 900; font-size: 16px; 
-        color: #87CEEB !important; display: flex; justify-content: center; align-items: center;
-        background: linear-gradient(135deg, rgba(60, 60, 60, 0.8), rgba(30, 30, 30, 0.9));
-        border: 2px solid rgba(200, 200, 200, 0.6); box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        cursor: pointer; margin: 30px 0 10px 0;
-    }
     header { visibility: hidden; }
     </style>
     """, unsafe_allow_html=True)
@@ -133,7 +125,9 @@ def main():
     curr_idx = date_list.index(sel_date)
 
     if sel_region != "지역을 입력하세요.":
+        # 검색 후 키보드 닫기
         components.html("<script>window.parent.document.activeElement.blur();</script>", height=0)
+        
         m_val = df_maemae.loc[df_maemae['날짜'] == sel_date, sel_region].values[0]
         j_val = df_jeonse.loc[df_jeonse['날짜'] == sel_date, sel_region].values[0]
         
@@ -198,54 +192,10 @@ def main():
         for i, (name, val) in enumerate(top_jm.items()):
             st.markdown(f'<div class="rank-card rank-j" style="background:rgba(200,240,240,0.9) !important;"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # --- 4. 하단 버튼 및 갤럭시 S25 최적화 캡처 스크립트 ---
-    st.markdown('<div id="btn-screenshot" class="screenshot-btn">📸 화면 스크린샷</div>', unsafe_allow_html=True)
+    # --- 4. 하단 버튼 (종료만 유지) ---
     if st.button("🚪 앱 종료", key="exit_trigger", use_container_width=True):
         st.session_state.is_exit = True
         st.rerun()
-
-    # 갤럭시/안드로이드 크롬 보안 우회 최종 스크립트
-    st.markdown("""
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-        <script>
-        function runCapture() {
-            // 안드로이드 보안 차단을 피하기 위해 window.parent부터 단계적으로 탐색
-            const rootDoc = window.parent.document;
-            const target = rootDoc.querySelector('.main') || rootDoc.body;
-            
-            html2canvas(target, {
-                useCORS: true,
-                allowTaint: true,
-                scale: 2,
-                backgroundColor: "#f5f5f5"
-            }).then(canvas => {
-                canvas.toBlob(blob => {
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `DrJ_RealEstate_${new Date().getTime()}.png`;
-                    rootDoc.body.appendChild(a);
-                    a.click();
-                    rootDoc.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                }, 'image/png');
-            }).catch(err => alert("캡처 오류: " + err));
-        }
-
-        function init() {
-            // 버튼을 찾을 때까지 반복 시도 (안드로이드 렌더링 속도 대응)
-            const btn = window.parent.document.getElementById('btn-screenshot');
-            if (btn) {
-                // 터치와 클릭 모두 대응
-                btn.onclick = (e) => { e.preventDefault(); runCapture(); };
-                btn.ontouchstart = (e) => { e.preventDefault(); runCapture(); };
-            } else {
-                setTimeout(init, 500);
-            }
-        }
-        init();
-        </script>
-    """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
