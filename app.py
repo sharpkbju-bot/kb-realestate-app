@@ -125,7 +125,6 @@ def main():
     curr_idx = date_list.index(sel_date)
 
     if sel_region != "지역을 입력하세요.":
-        # 검색 후 키보드 닫기
         components.html("<script>window.parent.document.activeElement.blur();</script>", height=0)
         
         m_val = df_maemae.loc[df_maemae['날짜'] == sel_date, sel_region].values[0]
@@ -163,7 +162,7 @@ def main():
         st.plotly_chart(fig_j, use_container_width=True, config={'displayModeBar': False})
         st.markdown("<hr style='border: 1px solid rgba(0,100,0,0.1);'>", unsafe_allow_html=True)
 
-    # --- 랭킹 섹션 ---
+    # --- 주간 랭킹 섹션 ---
     st.markdown(f'<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500;">🔥 주간 매매 상승 TOP 10 ({sel_date})</div>', unsafe_allow_html=True)
     m_week = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_mw = m_week[m_week > 0].sort_values(ascending=False).head(10)
@@ -178,21 +177,23 @@ def main():
         for i, (name, val) in enumerate(top_jw.items()):
             st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    st.markdown(f'<div class="chart-title" style="color:#8B4513; border-left:6px solid #8B4513;">📊 월간 매매 상승 TOP 10 (최근 4주)</div>', unsafe_allow_html=True)
-    m_month = df_maemae.iloc[max(0, curr_idx-3) : curr_idx+1].drop(columns=['날짜']).sum()
-    top_mm = m_month[m_month > 0].sort_values(ascending=False).head(10)
-    if not top_mm.empty:
-        for i, (name, val) in enumerate(top_mm.items()):
+    # --- 기간별 랭킹 섹션 (최근 8주 합산으로 수정) ---
+    st.markdown(f'<div class="chart-title" style="color:#8B4513; border-left:6px solid #8B4513;">📊 매매 누적 상승 TOP 10 (최근 8주)</div>', unsafe_allow_html=True)
+    # 8주 합산 로직: curr_idx 기준 -7부터 현재까지 (총 8개 행)
+    m_8weeks = df_maemae.iloc[max(0, curr_idx-7) : curr_idx+1].drop(columns=['날짜']).sum()
+    top_m8 = m_8weeks[m_8weeks > 0].sort_values(ascending=False).head(10)
+    if not top_m8.empty:
+        for i, (name, val) in enumerate(top_m8.items()):
             st.markdown(f'<div class="rank-card rank-m" style="background:rgba(255,235,200,0.9) !important;"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    st.markdown(f'<div class="chart-title" style="color:#008080; border-left:6px solid #008080;">🌊 월간 전세 상승 TOP 10 (최근 4주)</div>', unsafe_allow_html=True)
-    j_month = df_jeonse.iloc[max(0, curr_idx-3) : curr_idx+1].drop(columns=['날짜']).sum()
-    top_jm = j_month[j_month > 0].sort_values(ascending=False).head(10)
-    if not top_jm.empty:
-        for i, (name, val) in enumerate(top_jm.items()):
+    st.markdown(f'<div class="chart-title" style="color:#008080; border-left:6px solid #008080;">🌊 전세 누적 상승 TOP 10 (최근 8주)</div>', unsafe_allow_html=True)
+    j_8weeks = df_jeonse.iloc[max(0, curr_idx-7) : curr_idx+1].drop(columns=['날짜']).sum()
+    top_j8 = j_8weeks[j_8weeks > 0].sort_values(ascending=False).head(10)
+    if not top_j8.empty:
+        for i, (name, val) in enumerate(top_j8.items()):
             st.markdown(f'<div class="rank-card rank-j" style="background:rgba(200,240,240,0.9) !important;"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # --- 4. 하단 버튼 (종료만 유지) ---
+    # --- 하단 버튼 ---
     if st.button("🚪 앱 종료", key="exit_trigger", use_container_width=True):
         st.session_state.is_exit = True
         st.rerun()
