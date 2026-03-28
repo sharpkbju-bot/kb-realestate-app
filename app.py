@@ -162,7 +162,6 @@ def main():
         sub_df_m = df_maemae.iloc[start_idx : curr_idx + 1]
         sub_df_j = df_jeonse.iloc[start_idx : curr_idx + 1]
 
-        # 그래프 폰트 진하게(900)
         chart_font = dict(size=12, color='#000080', family='Noto Sans KR', weight=900)
 
         st.markdown(f'<div class="chart-title">📈 {sel_region} 매매 트렌드 (4주)</div>', unsafe_allow_html=True)
@@ -194,7 +193,7 @@ def main():
         for i, (name, val) in enumerate(top_jw.items()):
             st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # --- 3. 월간 랭킹 TOP 10 섹션 (최근 4주 합산) ---
+    # --- 3. 월간 랭킹 TOP 10 섹션 ---
     st.markdown(f'<div class="chart-title" style="color:#8B4513; border-left:6px solid #8B4513;">📊 월간 매매 상승 TOP 10 (최근 4주)</div>', unsafe_allow_html=True)
     m_month = df_maemae.iloc[max(0, curr_idx-3) : curr_idx+1].drop(columns=['날짜']).sum()
     top_mm = m_month[m_month > 0].sort_values(ascending=False).head(10)
@@ -209,23 +208,49 @@ def main():
         for i, (name, val) in enumerate(top_jm.items()):
             st.markdown(f'<div class="rank-card rank-j" style="background:rgba(200,240,240,0.9) !important;"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # --- 4. 하단 버튼 ---
+    # --- 4. 하단 버튼 및 모바일 캡처 최적화 스크립트 ---
     st.markdown('<div id="btn-screenshot" class="screenshot-btn">📸 화면 스크린샷</div>', unsafe_allow_html=True)
     if st.button("🚪 앱 종료", key="exit_trigger", use_container_width=True):
         st.session_state.is_exit = True
         st.rerun()
 
+    # 모바일에서 신뢰도 높게 작동하도록 타겟팅 및 다운로드 방식 수정
     st.markdown("""
         <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
         <script>
-        const scBtn = window.parent.document.getElementById('btn-screenshot');
+        // 1. 버튼 찾기 (부모 창까지 검색)
+        const findBtn = () => {
+            return document.getElementById('btn-screenshot') || 
+                   window.parent.document.getElementById('btn-screenshot');
+        };
+
+        const scBtn = findBtn();
         if (scBtn) {
             scBtn.onclick = function() {
-                const target = window.parent.document.querySelector('#root');
-                html2canvas(target, { useCORS: true, logging: false }).then(canvas => {
-                    const dataUrl = canvas.toDataURL('image/png');
-                    const link = document.createElement('a'); link.href = dataUrl; link.download = 'DrJ_RealEstate.png';
-                    link.click();
+                // 2. 캡처 대상 설정 (Streamlit 메인 컨테이너)
+                const target = window.parent.document.querySelector('.main') || window.parent.document.body;
+                
+                html2canvas(target, {
+                    useCORS: true,
+                    allowTaint: true,
+                    scale: 2, // 모바일에서도 선명하게
+                    logging: false,
+                    backgroundColor: null
+                }).then(canvas => {
+                    // 3. 모바일 다운로드 호환성을 위해 Blob 방식 사용
+                    canvas.toBlob(function(blob) {
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = 'DrJ_RealEstate_' + new Date().getTime() + '.png';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
+                    }, 'image/png');
+                }).catch(err => {
+                    console.error("Capture failed:", err);
+                    alert("스크린샷 생성에 실패했습니다. 브라우저 설정을 확인해주세요.");
                 });
             };
         }
