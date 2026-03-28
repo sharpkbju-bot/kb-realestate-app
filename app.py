@@ -84,6 +84,7 @@ st.markdown("""
 
     .chart-title { font-size: 19px; font-weight: 900; margin: 35px 0 15px 0; padding-left: 12px; color: #006400; border-bottom: 2px solid rgba(0,100,0,0.1); padding-bottom: 5px; }
 
+    /* '앱 종료' 버튼 굵게 설정 */
     div.stButton > button {
         width: 100% !important; height: 46px !important; border-radius: 12px !important;
         font-weight: 900 !important; font-size: 16px !important; color: #87CEEB !important;
@@ -91,11 +92,7 @@ st.markdown("""
         border: 2px solid rgba(200, 200, 200, 0.6) !important; box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
         margin-top: 11px !important;
     }
-    
-    div.stButton > button p {
-        font-weight: 900 !important;
-        font-size: 16px !important;
-    }
+    div.stButton > button p { font-weight: 900 !important; font-size: 16px !important; }
 
     .screenshot-btn {
         width: 100%; height: 46px; border-radius: 12px; font-weight: 900; font-size: 16px; 
@@ -138,7 +135,6 @@ def main():
 
     if sel_region != "지역을 입력하세요.":
         components.html("<script>window.parent.document.activeElement.blur();</script>", height=0)
-        
         m_val = df_maemae.loc[df_maemae['날짜'] == sel_date, sel_region].values[0]
         j_val = df_jeonse.loc[df_jeonse['날짜'] == sel_date, sel_region].values[0]
         
@@ -161,7 +157,6 @@ def main():
         sub_df_j = df_jeonse.iloc[start_idx : curr_idx + 1]
 
         chart_font = dict(size=12, color='#000080', family='Noto Sans KR', weight=900)
-
         st.markdown(f'<div class="chart-title">📈 {sel_region} 매매 트렌드 (4주)</div>', unsafe_allow_html=True)
         fig_m = px.line(sub_df_m, x='날짜', y=sel_region, markers=True)
         fig_m.update_traces(line_color='#e74c3c', line_width=4, marker=dict(size=10, color='white', line=dict(width=2, color='#e74c3c')))
@@ -173,10 +168,9 @@ def main():
         fig_j.update_traces(line_color='#000080', line_width=4, marker=dict(size=10, color='white', line=dict(width=2, color='#000080')))
         fig_j.update_layout(height=220, margin=dict(l=10, r=10, t=10, b=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', xaxis=dict(title=None, tickfont=chart_font), yaxis=dict(title=None, tickfont=chart_font))
         st.plotly_chart(fig_j, use_container_width=True, config={'displayModeBar': False})
-        
         st.markdown("<hr style='border: 1px solid rgba(0,100,0,0.1);'>", unsafe_allow_html=True)
 
-    # --- 2. 주간 랭킹 TOP 10 섹션 ---
+    # --- 2. 주간 랭킹 ---
     st.markdown(f'<div class="chart-title" style="color:#FF4500; border-left:6px solid #FF4500;">🔥 주간 매매 상승 TOP 10 ({sel_date})</div>', unsafe_allow_html=True)
     m_week = df_maemae[df_maemae['날짜'] == sel_date].drop(columns=['날짜']).iloc[0]
     top_mw = m_week[m_week > 0].sort_values(ascending=False).head(10)
@@ -191,7 +185,7 @@ def main():
         for i, (name, val) in enumerate(top_jw.items()):
             st.markdown(f'<div class="rank-card rank-j"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # --- 3. 월간 랭킹 TOP 10 섹션 ---
+    # --- 3. 월간 랭킹 ---
     st.markdown(f'<div class="chart-title" style="color:#8B4513; border-left:6px solid #8B4513;">📊 월간 매매 상승 TOP 10 (최근 4주)</div>', unsafe_allow_html=True)
     m_month = df_maemae.iloc[max(0, curr_idx-3) : curr_idx+1].drop(columns=['날짜']).sum()
     top_mm = m_month[m_month > 0].sort_values(ascending=False).head(10)
@@ -206,43 +200,52 @@ def main():
         for i, (name, val) in enumerate(top_jm.items()):
             st.markdown(f'<div class="rank-card rank-j" style="background:rgba(200,240,240,0.9) !important;"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # --- 4. 하단 버튼 및 캡처 스크립트 (모바일 최적화) ---
+    # --- 4. 하단 버튼 및 모바일 대응 캡처 로직 ---
     st.markdown('<div id="btn-screenshot" class="screenshot-btn">📸 화면 스크린샷</div>', unsafe_allow_html=True)
     if st.button("🚪 앱 종료", key="exit_trigger", use_container_width=True):
         st.session_state.is_exit = True
         st.rerun()
 
-    # Iframe 내부에서 자기 자신을 캡처하도록 변경
+    # 모바일 브라우저의 터치와 iframe 보안 문제를 피하기 위한 로직
     st.markdown("""
         <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
         <script>
-        setTimeout(() => {
-            const scBtn = document.getElementById('btn-screenshot');
+        function setupCapture() {
+            // 버튼 탐색 (부모 프레임까지 확장 검색)
+            let scBtn = document.getElementById('btn-screenshot') || window.parent.document.getElementById('btn-screenshot');
+            
             if (scBtn) {
-                scBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    // window.parent 대신 현재 문서의 최상위 요소 캡처
-                    const target = document.body;
+                scBtn.onclick = function() {
+                    // 모바일에서도 확실히 잡히는 'main' 클래스 타겟팅
+                    const target = window.parent.document.querySelector('.main') || window.parent.document.body;
                     
                     html2canvas(target, {
                         useCORS: true,
                         allowTaint: true,
-                        scale: 1.5,
-                        logging: true,
-                        backgroundColor: "#f5f5f5"
+                        backgroundColor: "#f0f2f6",
+                        scale: window.devicePixelRatio || 2 // 기기 해상도에 맞춤
                     }).then(canvas => {
-                        const link = document.createElement('a');
-                        link.href = canvas.toDataURL('image/png');
-                        link.download = 'DrJ_RealEstate.png';
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                    }).catch(err => {
-                        alert("캡처 오류: " + err);
+                        // Blob 방식으로 변환하여 모바일 다운로드 신뢰도 향상
+                        canvas.toBlob(function(blob) {
+                            const url = URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = 'DrJ_RealEstate_' + new Date().toISOString().slice(0,10) + '.png';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            URL.revokeObjectURL(url);
+                        }, 'image/png');
+                    }).catch(e => {
+                        console.error("Screenshot error:", e);
                     });
-                }, { passive: false });
+                };
+            } else {
+                // 버튼이 아직 안 그려졌을 경우를 대비해 0.5초 뒤 재시도
+                setTimeout(setupCapture, 500);
             }
-        }, 1500); // 렌더링 대기 시간 추가
+        }
+        setupCapture();
         </script>
     """, unsafe_allow_html=True)
 
