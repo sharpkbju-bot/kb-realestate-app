@@ -51,13 +51,7 @@ st.markdown("""
     .brand-name { color: #006400; font-size: 35px; font-weight: 900; }
     .brand-suffix { color: #FF4500; font-size: 20px; font-weight: 900; }
 
-    .stTabs [data-baseweb="tab-list"] { width: 100%; background-color: rgba(255,255,255,0.4); border-radius: 12px 12px 0 0; }
-    .stTabs [data-baseweb="tab"] { flex: 1; height: 60px; background-color: rgba(255,255,255,0.8); }
-    .stTabs [data-baseweb="tab"] div p { font-size: 18px; font-weight: 900; color: #1a1a1a; }
-    .stTabs [aria-selected="true"] { background-color: #006400 !important; }
-    .stTabs [aria-selected="true"] div p { color: #ffffff !important; }
-
-    /* 선택 박스 스타일 - 가독성 확보 */
+    /* 선택 박스 가독성 스타일 */
     div[data-baseweb="select"] > div:first-child {
         background-color: #f0f2f6 !important; 
         border: 1px solid #cccccc !important;
@@ -75,8 +69,7 @@ st.markdown("""
         font-size: 18px !important;
     }
 
-    label[data-testid="stWidgetLabel"] p { font-weight: 900 !important; font-size: 16px !important; color: #222222 !important; }
-
+    /* 그래프 터치 방지 */
     .stPlotlyChart { pointer-events: none !important; user-select: none !important; }
 
     .chart-title { font-size: 18px; font-weight: 900; color: #ffffff; background: #2c3e50; border-radius: 8px; text-align: center; padding: 10px; margin: 20px 0; }
@@ -84,16 +77,10 @@ st.markdown("""
     /* 랭킹 카드 스타일 */
     .rank-card { padding: 10px 12px; border-radius: 12px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; font-weight: 900; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     .m-weekly { background: linear-gradient(135deg, #FFEFBA, #FFFFFF); border-left: 6px solid #FF4500; color: #D32F2F; }
-    .j-weekly { background: linear-gradient(135deg, #E0F7FA, #FFFFFF); border-left: 6px solid #01579B; color: #01579B; }
+    .j-weekly { background: linear-gradient(135deg, #E0F7FA, #FFFFFF); border-left: 8px solid #01579B; color: #01579B; }
     .m-accum { background: linear-gradient(135deg, #FFF9C4, #FFFFFF); border-left: 6px solid #FBC02D; color: #7F6000; }  
     .j-accum { background: linear-gradient(135deg, #E8F5E9, #FFFFFF); border-left: 6px solid #2E7D32; color: #1B5E20; }
 
-    div.stButton > button {
-        width: 100% !important; height: 50px !important; border-radius: 12px !important;
-        font-weight: 900 !important; font-size: 17px !important; color: #FFD700 !important;
-        background: linear-gradient(135deg, #555555, #222222) !important;
-        border: 2px solid #FFD700 !important; margin-top: 30px !important;
-    }
     header { visibility: hidden; }
     </style>
     """, unsafe_allow_html=True)
@@ -127,21 +114,46 @@ def main():
     with tab1:
         sel_date = st.selectbox("📅 기준 날짜 선택", date_list, index=len(date_list)-1, key="tab1_date")
         sel_regions = st.multiselect("🔍 비교 지역 선택", region_list, default=[region_list[0]] if region_list else [])
+        
         if sel_regions:
             curr_idx = date_list.index(sel_date)
             start_idx = max(0, curr_idx - 7)
+            
+            # 그래프 공통 스타일 설정 (투명 배경 + 진한 네이비 볼드 폰트)
+            graph_font = dict(size=14, color="#000080", family="Noto Sans KR")
+
             st.markdown('<div class="chart-title">📈 매매 증감 추이 (최근 8주)</div>', unsafe_allow_html=True)
             sub_m = df_maemae.iloc[start_idx : curr_idx + 1][['날짜'] + sel_regions]
             fig_m = px.line(sub_m, x='날짜', y=sel_regions, markers=True)
             fig_m.update_traces(line_width=6, marker=dict(size=10))
-            fig_m.update_layout(height=350, font=dict(size=13, weight=900), hovermode=False)
+            fig_m.update_layout(
+                height=350,
+                paper_bgcolor='rgba(0,0,0,0)', # 배경 투명
+                plot_bgcolor='rgba(0,0,0,0)',  # 내부 차트 투명
+                font=graph_font,
+                hovermode=False,
+                margin=dict(l=10, r=10, t=10, b=10),
+                xaxis=dict(tickfont=dict(weight='bold'), title_font=dict(weight='bold')),
+                yaxis=dict(tickfont=dict(weight='bold'), title_font=dict(weight='bold')),
+                legend=dict(font=dict(weight='bold'))
+            )
             st.plotly_chart(fig_m, use_container_width=True, config={'staticPlot': True})
 
             st.markdown('<div class="chart-title">📉 전세 증감 추이 (최근 8주)</div>', unsafe_allow_html=True)
             sub_j = df_jeonse.iloc[start_idx : curr_idx + 1][['날짜'] + sel_regions]
             fig_j = px.line(sub_j, x='날짜', y=sel_regions, markers=True)
             fig_j.update_traces(line_width=6, marker=dict(size=10))
-            fig_j.update_layout(height=350, font=dict(size=13, weight=900), hovermode=False)
+            fig_j.update_layout(
+                height=350,
+                paper_bgcolor='rgba(0,0,0,0)', # 배경 투명
+                plot_bgcolor='rgba(0,0,0,0)',  # 내부 차트 투명
+                font=graph_font,
+                hovermode=False,
+                margin=dict(l=10, r=10, t=10, b=10),
+                xaxis=dict(tickfont=dict(weight='bold'), title_font=dict(weight='bold')),
+                yaxis=dict(tickfont=dict(weight='bold'), title_font=dict(weight='bold')),
+                legend=dict(font=dict(weight='bold'))
+            )
             st.plotly_chart(fig_j, use_container_width=True, config={'staticPlot': True})
 
     with tab2:
@@ -155,7 +167,6 @@ def main():
         sel_date_rank = st.selectbox("📅 랭킹 기준일 선택", date_list, index=len(date_list)-1, key="tab3_date")
         curr_idx_rank = date_list.index(sel_date_rank)
         
-        # 1. 주간 상승 지역 TOP 10 (한 주 데이터)
         st.markdown('<div class="chart-title" style="background:#e67e22;">🔥 주간 상승 지역 TOP 10</div>', unsafe_allow_html=True)
         c1, c2 = st.columns(2)
         with c1:
@@ -169,7 +180,6 @@ def main():
             for i, (n, v) in enumerate(j_w.items()):
                 if v > 0: st.markdown(f'<div class="rank-card j-weekly"><span>{i+1}. {n}</span><span>+{v:.2f}</span></div>', unsafe_allow_html=True)
 
-        # 2. 8주 누적 상승 TOP 10 (데이터 합산 로직 추가)
         st.markdown('<div class="chart-title" style="background:#f1c40f; color:#000;">📊 8주 누적 상승 TOP 10</div>', unsafe_allow_html=True)
         c3, c4 = st.columns(2)
         with c3:
