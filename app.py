@@ -25,7 +25,6 @@ if st.session_state.is_exit:
         <div class="exit-wrapper">
             <h1 style="color: #006400; font-weight: 900;">Dr.J의 부동산</h1>
             <h2 style="color: #006400; font-weight: 900;">모두 부자됩시다.</h2>
-            <p style="font-size: 20px; font-weight: 900; color: #666;">안전하게 종료되었습니다.</p>
         </div>
     """, unsafe_allow_html=True)
     st.stop()
@@ -60,31 +59,29 @@ st.markdown("""
     .stTabs [aria-selected="true"] { background-color: #006400 !important; }
     .stTabs [aria-selected="true"] div p { color: #ffffff !important; }
 
-    /* ★ 모든 선택 박스(날짜, 지역) 공통 스타일 ★ */
-    div[data-baseweb="select"] > div {
-        background-color: #f0f2f6 !important; /* 연한 그레이 */
-        border: 1px solid #d1d5db !important;
+    /* ★ 선택 박스 가독성 해결 핵심 섹션 ★ */
+    /* 1. 박스 배경색 강제 지정 */
+    div[data-baseweb="select"] > div:first-child {
+        background-color: #f0f2f6 !important; 
+        border: 1px solid #cccccc !important;
         border-radius: 10px !important;
-        height: 48px !important;
+        min-height: 48px !important;
         display: flex !important;
-        align-items: center !important; /* 세로 중앙 정렬 */
+        align-items: center !important;
     }
     
-    /* 선택된 텍스트 볼드 및 컬러 설정 */
-    div[data-baseweb="select"] [data-testid="stMarkdownContainer"] p, 
-    div[data-baseweb="select"] span {
+    /* 2. 글자색을 아주 짙은 퍼플로 고정 (안보임 현상 방지) */
+    div[data-baseweb="select"] div[data-testid="stMarkdownContainer"] p,
+    div[data-baseweb="select"] span,
+    div[data-baseweb="select"] div {
+        color: #4B0082 !important; 
         font-weight: 900 !important;
         font-size: 18px !important;
-        color: #4B0082 !important; /* 짙은 퍼플 */
-        margin: 0 !important;
+        line-height: 1.2 !important;
     }
 
-    /* 위젯 레이블 볼드 처리 */
-    label[data-testid="stWidgetLabel"] p { 
-        font-weight: 900 !important; 
-        font-size: 16px !important; 
-        color: #333333 !important; 
-    }
+    /* 위젯 레이블 볼드 */
+    label[data-testid="stWidgetLabel"] p { font-weight: 900 !important; font-size: 16px !important; color: #222222 !important; }
 
     /* 그래프 터치 방지 */
     .stPlotlyChart { pointer-events: none !important; user-select: none !important; }
@@ -95,11 +92,11 @@ st.markdown("""
     .m-weekly { background: linear-gradient(135deg, #FFEFBA, #FFFFFF); border-left: 8px solid #FF4500; color: #D32F2F; }
     .j-weekly { background: linear-gradient(135deg, #E0F7FA, #FFFFFF); border-left: 8px solid #01579B; color: #01579B; }
     
-    /* 종료 버튼 (그레이 테마) */
+    /* 종료 버튼 */
     div.stButton > button {
         width: 100% !important; height: 50px !important; border-radius: 12px !important;
         font-weight: 900 !important; font-size: 17px !important; color: #FFD700 !important;
-        background: linear-gradient(135deg, #666666, #333333) !important;
+        background: linear-gradient(135deg, #555555, #222222) !important;
         border: 2px solid #FFD700 !important; margin-top: 30px !important;
     }
     header { visibility: hidden; }
@@ -115,14 +112,12 @@ def load_data():
         df_m = pd.read_csv('maemae.csv', encoding='utf-8')
         df_j = pd.read_csv('jeonse.csv', encoding='utf-8')
     
-    # ★ 에러 방지: 숫자가 아닌 값(문자열 등)을 강제로 0으로 변환 ★
     for col in df_m.columns:
         if col != '날짜':
             df_m[col] = pd.to_numeric(df_m[col], errors='coerce').fillna(0)
     for col in df_j.columns:
         if col != '날짜':
             df_j[col] = pd.to_numeric(df_j[col], errors='coerce').fillna(0)
-            
     return df_m, df_j
 
 def main():
@@ -135,7 +130,6 @@ def main():
     tab1, tab2, tab3 = st.tabs(["📊 지역분석", "🌡️ 시장온도", "🏆 랭킹TOP"])
 
     with tab1:
-        # 기준 날짜 및 지역 선택 (스타일 적용됨)
         sel_date = st.selectbox("📅 기준 날짜 선택", date_list, index=len(date_list)-1, key="tab1_date")
         sel_regions = st.multiselect("🔍 비교 지역 선택", region_list, default=[region_list[0]] if region_list else [])
         
@@ -159,7 +153,6 @@ def main():
 
     with tab2:
         st.markdown('<div class="chart-title">🌡️ 시장 온도계 (8주 합산)</div>', unsafe_allow_html=True)
-        # 시장온도 데이터 계산 시에도 수치형 데이터 보장
         m_sum = df_maemae.iloc[max(0, len(date_list)-8):].drop(columns=['날짜']).sum()
         j_sum = df_jeonse.iloc[max(0, len(date_list)-8):].drop(columns=['날짜']).sum()
         heat_df = pd.DataFrame({'매매합계': m_sum, '전세합계': j_sum}).sort_values(by='매매합계', ascending=False)
@@ -167,8 +160,6 @@ def main():
 
     with tab3:
         sel_date_rank = st.selectbox("📅 랭킹 기준일 선택", date_list, index=len(date_list)-1, key="tab3_date")
-        
-        # 랭킹 데이터 추출 로직 (안정화)
         target_row_m = df_maemae[df_maemae['날짜'] == sel_date_rank].drop(columns=['날짜'])
         target_row_j = df_jeonse[df_jeonse['날짜'] == sel_date_rank].drop(columns=['날짜'])
 
