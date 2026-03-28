@@ -50,7 +50,7 @@ def set_bg_from_local(image_file):
 
 set_bg_from_local('bg.jpg')
 
-# UI 디자인 및 스타일 설정 (탭 글자 크기 및 굵기 대폭 강화)
+# UI 디자인 및 스타일 설정 (탭 및 위젯 가독성 대폭 강화)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
@@ -62,7 +62,7 @@ st.markdown("""
     .brand-name { color: #006400; font-size: clamp(35px, 11vw, 50px); font-weight: 900; font-family: 'Arial Black'; letter-spacing: -2px; }
     .brand-suffix { color: #FF4500; font-size: clamp(18px, 6vw, 26px); font-weight: 900; }
 
-    /* ★ 탭 메뉴 글자 크기 및 굵기 강제 적용 ★ */
+    /* 상단 탭 메뉴 버튼 스타일 강화 */
     .stTabs [data-baseweb="tab-list"] { 
         display: flex !important; justify-content: space-between !important; width: 100% !important; gap: 0px !important; 
         background-color: rgba(255,255,255,0.4) !important; border-radius: 15px 15px 0 0 !important;
@@ -71,16 +71,29 @@ st.markdown("""
         flex: 1 !important; text-align: center !important; height: 75px !important; 
         border: 1px solid rgba(0,0,0,0.1) !important; background-color: rgba(255,255,255,0.8) !important;
     }
-    /* 탭 내부의 글자(p태그 등)를 직접 타겟팅 */
     .stTabs [data-baseweb="tab"] div p { 
         font-size: 22px !important; font-weight: 900 !important; color: #1a1a1a !important; 
     }
-    /* 선택된 탭의 글자색 하얗게 */
-    .stTabs [aria-selected="true"] { 
-        background-color: #006400 !important; border: 1px solid #006400 !important;
+    .stTabs [aria-selected="true"] { background-color: #006400 !important; border: 1px solid #006400 !important; }
+    .stTabs [aria-selected="true"] div p { color: #ffffff !important; }
+
+    /* ★ 랭킹 기준일 선택 레이블 및 리스트 박스 강화 ★ */
+    label[data-testid="stWidgetLabel"] p { 
+        font-weight: 900 !important; 
+        font-size: 22px !important; /* 레이블 크기 확대 */
+        color: #000000 !important; 
+        margin-bottom: 10px !important;
     }
-    .stTabs [aria-selected="true"] div p { 
-        color: #ffffff !important; 
+    /* 리스트 박스 내부 텍스트 및 선택된 항목 */
+    div[data-baseweb="select"] div {
+        font-weight: 900 !important;
+        font-size: 20px !important; /* 날짜 숫자 크기 확대 */
+        color: #000000 !important;
+    }
+    /* 드롭다운 메뉴 아이템 텍스트 */
+    div[data-baseweb="popover"] li {
+        font-weight: 900 !important;
+        font-size: 18px !important;
     }
 
     /* 섹션 타이틀 스타일 */
@@ -90,7 +103,7 @@ st.markdown("""
     }
 
     /* 카드 스타일 */
-    .rank-card { padding: 12px 18px; border-radius: 14px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; font-weight: 900 !important; font-size: 17px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    .rank-card { padding: 12px 18px; border-radius: 14px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; font-weight: 900 !important; font-size: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
     .m-weekly { background: linear-gradient(135deg, #FFEFBA, #FFFFFF); border-left: 10px solid #FF4500; color: #D32F2F; } 
     .j-weekly { background: linear-gradient(135deg, #E0F7FA, #FFFFFF); border-left: 10px solid #01579B; color: #01579B; } 
     .m-accum { background: linear-gradient(135deg, #FFF9C4, #FFFFFF); border-left: 10px solid #FBC02D; color: #7F6000; }  
@@ -98,10 +111,10 @@ st.markdown("""
 
     /* 종료 버튼 (그레이 테마) */
     div.stButton > button {
-        width: 100% !important; height: 55px !important; border-radius: 15px !important;
-        font-weight: 900 !important; font-size: 20px !important; color: #FFD700 !important;
+        width: 100% !important; height: 60px !important; border-radius: 15px !important;
+        font-weight: 900 !important; font-size: 22px !important; color: #FFD700 !important;
         background: linear-gradient(135deg, #555555, #222222) !important;
-        border: 2px solid #FFD700 !important; margin-top: 35px !important;
+        border: 2px solid #FFD700 !important; margin-top: 40px !important;
     }
     header { visibility: hidden; }
     </style>
@@ -132,6 +145,7 @@ def main():
     tab1, tab2, tab3 = st.tabs(["📊 지역분석", "🌡️ 시장온도", "🏆 랭킹TOP"])
 
     with tab1:
+        # 기준 날짜 선택 박스 디자인 강화됨
         sel_date = st.selectbox("📅 기준 날짜 선택", date_list, index=len(date_list)-1, key="tab1_date")
         sel_regions = st.multiselect("🔍 비교 지역 선택", region_list, default=[region_list[0]] if region_list else [])
         if sel_regions:
@@ -140,7 +154,7 @@ def main():
             st.markdown('<div class="chart-title">📈 매매 증감 추이 (최근 8주)</div>', unsafe_allow_html=True)
             sub_m = df_maemae.iloc[start_idx : curr_idx + 1][['날짜'] + sel_regions]
             fig_m = px.line(sub_m, x='날짜', y=sel_regions, markers=True)
-            fig_m.update_traces(line_width=8, marker=dict(size=14)) # 선 굵기 더 강화
+            fig_m.update_traces(line_width=8, marker=dict(size=14))
             fig_m.update_layout(height=400, font=dict(size=15, color="black", weight=900), legend=dict(font=dict(size=14, weight=900), orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
             st.plotly_chart(fig_m, use_container_width=True)
 
@@ -159,18 +173,19 @@ def main():
         st.dataframe(heat_df.style.background_gradient(cmap='RdYlBu_r').format("{:+.2f}%"), use_container_width=True, height=600)
 
     with tab3:
+        # ★ 랭킹 기준일 선택 디자인 강화 ★
         sel_date_rank = st.selectbox("📅 랭킹 기준일 선택", date_list, index=len(date_list)-1, key="tab3_date")
         curr_idx_rank = date_list.index(sel_date_rank)
         
         st.markdown('<div class="chart-title" style="background:#e67e22;">🔥 주간 상승 지역 TOP 10</div>', unsafe_allow_html=True)
         c1, c2 = st.columns(2)
         with c1:
-            st.markdown('<p style="font-weight:900; text-align:center; color:#D32F2F; font-size:18px;">[매매 주간]</p>', unsafe_allow_html=True)
+            st.markdown('<p style="font-weight:900; text-align:center; color:#D32F2F; font-size:19px;">[매매 주간]</p>', unsafe_allow_html=True)
             m_w = df_maemae[df_maemae['날짜'] == sel_date_rank].drop(columns=['날짜']).iloc[0].sort_values(ascending=False).head(10)
             for i, (n, v) in enumerate(m_w.items()):
                 if v > 0: st.markdown(f'<div class="rank-card m-weekly"><span>{i+1}. {n}</span><span>+{v:.2f}</span></div>', unsafe_allow_html=True)
         with c2:
-            st.markdown('<p style="font-weight:900; text-align:center; color:#01579B; font-size:18px;">[전세 주간]</p>', unsafe_allow_html=True)
+            st.markdown('<p style="font-weight:900; text-align:center; color:#01579B; font-size:19px;">[전세 주간]</p>', unsafe_allow_html=True)
             j_w = df_jeonse[df_jeonse['날짜'] == sel_date_rank].drop(columns=['날짜']).iloc[0].sort_values(ascending=False).head(10)
             for i, (n, v) in enumerate(j_w.items()):
                 if v > 0: st.markdown(f'<div class="rank-card j-weekly"><span>{i+1}. {n}</span><span>+{v:.2f}</span></div>', unsafe_allow_html=True)
@@ -178,12 +193,12 @@ def main():
         st.markdown('<div class="chart-title" style="background:#f1c40f; color:#000;">📊 8주 누적 상승 TOP 10</div>', unsafe_allow_html=True)
         c3, c4 = st.columns(2)
         with c3:
-            st.markdown('<p style="font-weight:900; text-align:center; color:#7F6000; font-size:18px;">[매매 누적]</p>', unsafe_allow_html=True)
+            st.markdown('<p style="font-weight:900; text-align:center; color:#7F6000; font-size:19px;">[매매 누적]</p>', unsafe_allow_html=True)
             m_8 = df_maemae.iloc[max(0, curr_idx_rank-7) : curr_idx_rank+1].drop(columns=['날짜']).sum().sort_values(ascending=False).head(10)
             for i, (n, v) in enumerate(m_8.items()):
                 if v > 0: st.markdown(f'<div class="rank-card m-accum"><span>{i+1}. {n}</span><span>+{v:.2f}%</span></div>', unsafe_allow_html=True)
         with c4:
-            st.markdown('<p style="font-weight:900; text-align:center; color:#1B5E20; font-size:18px;">[전세 누적]</p>', unsafe_allow_html=True)
+            st.markdown('<p style="font-weight:900; text-align:center; color:#1B5E20; font-size:19px;">[전세 누적]</p>', unsafe_allow_html=True)
             j_8 = df_jeonse.iloc[max(0, curr_idx_rank-7) : curr_idx_rank+1].drop(columns=['날짜']).sum().sort_values(ascending=False).head(10)
             for i, (n, v) in enumerate(j_8.items()):
                 if v > 0: st.markdown(f'<div class="rank-card j-accum"><span>{i+1}. {n}</span><span>+{v:.2f}%</span></div>', unsafe_allow_html=True)
