@@ -84,7 +84,6 @@ st.markdown("""
 
     .chart-title { font-size: 19px; font-weight: 900; margin: 35px 0 15px 0; padding-left: 12px; color: #006400; border-bottom: 2px solid rgba(0,100,0,0.1); padding-bottom: 5px; }
 
-    /* 버튼 및 버튼 내부 텍스트 굵게 설정 */
     div.stButton > button {
         width: 100% !important; height: 46px !important; border-radius: 12px !important;
         font-weight: 900 !important; font-size: 16px !important; color: #87CEEB !important;
@@ -137,7 +136,6 @@ def main():
 
     curr_idx = date_list.index(sel_date)
 
-    # --- 1. 지역 상세 정보 및 그래프 ---
     if sel_region != "지역을 입력하세요.":
         components.html("<script>window.parent.document.activeElement.blur();</script>", height=0)
         
@@ -208,52 +206,43 @@ def main():
         for i, (name, val) in enumerate(top_jm.items()):
             st.markdown(f'<div class="rank-card rank-j" style="background:rgba(200,240,240,0.9) !important;"><div class="rank-info"><span class="rank-num">{i+1}위</span> <span class="rank-name">{name}</span></div><span class="rank-val">+{val:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # --- 4. 하단 버튼 및 모바일 캡처 최적화 스크립트 ---
+    # --- 4. 하단 버튼 및 캡처 스크립트 (모바일 최적화) ---
     st.markdown('<div id="btn-screenshot" class="screenshot-btn">📸 화면 스크린샷</div>', unsafe_allow_html=True)
     if st.button("🚪 앱 종료", key="exit_trigger", use_container_width=True):
         st.session_state.is_exit = True
         st.rerun()
 
-    # 모바일에서 신뢰도 높게 작동하도록 타겟팅 및 다운로드 방식 수정
+    # Iframe 내부에서 자기 자신을 캡처하도록 변경
     st.markdown("""
         <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
         <script>
-        // 1. 버튼 찾기 (부모 창까지 검색)
-        const findBtn = () => {
-            return document.getElementById('btn-screenshot') || 
-                   window.parent.document.getElementById('btn-screenshot');
-        };
-
-        const scBtn = findBtn();
-        if (scBtn) {
-            scBtn.onclick = function() {
-                // 2. 캡처 대상 설정 (Streamlit 메인 컨테이너)
-                const target = window.parent.document.querySelector('.main') || window.parent.document.body;
-                
-                html2canvas(target, {
-                    useCORS: true,
-                    allowTaint: true,
-                    scale: 2, // 모바일에서도 선명하게
-                    logging: false,
-                    backgroundColor: null
-                }).then(canvas => {
-                    // 3. 모바일 다운로드 호환성을 위해 Blob 방식 사용
-                    canvas.toBlob(function(blob) {
-                        const url = URL.createObjectURL(blob);
+        setTimeout(() => {
+            const scBtn = document.getElementById('btn-screenshot');
+            if (scBtn) {
+                scBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    // window.parent 대신 현재 문서의 최상위 요소 캡처
+                    const target = document.body;
+                    
+                    html2canvas(target, {
+                        useCORS: true,
+                        allowTaint: true,
+                        scale: 1.5,
+                        logging: true,
+                        backgroundColor: "#f5f5f5"
+                    }).then(canvas => {
                         const link = document.createElement('a');
-                        link.href = url;
-                        link.download = 'DrJ_RealEstate_' + new Date().getTime() + '.png';
+                        link.href = canvas.toDataURL('image/png');
+                        link.download = 'DrJ_RealEstate.png';
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);
-                        URL.revokeObjectURL(url);
-                    }, 'image/png');
-                }).catch(err => {
-                    console.error("Capture failed:", err);
-                    alert("스크린샷 생성에 실패했습니다. 브라우저 설정을 확인해주세요.");
-                });
-            };
-        }
+                    }).catch(err => {
+                        alert("캡처 오류: " + err);
+                    });
+                }, { passive: false });
+            }
+        }, 1500); // 렌더링 대기 시간 추가
         </script>
     """, unsafe_allow_html=True)
 
