@@ -72,17 +72,22 @@ st.markdown("""
         color: #4B0082 !important; font-weight: 900 !important; font-size: 18px !important;
     }
 
-    /* 조회 버튼 스타일 (지역분석 폼 전용) */
+    /* ★ 앱 종료 버튼 커스텀 (네이비 배경 + 밝은 핑크 글씨) ★ */
     .stButton > button {
-        font-weight: 900 !important; border-radius: 10px !important;
+        width: 100% !important; 
+        height: 65px !important; 
+        border-radius: 15px !important;
+        font-weight: 900 !important; 
+        font-size: 22px !important; 
+        color: #FF69B4 !important; /* 밝은 핑크 (Hot Pink) */
+        background-color: #000080 !important; /* 진한 네이비 (Navy) */
+        border: 3px solid #FF69B4 !important; /* 테두리도 핑크로 강조 */
+        margin-top: 40px !important;
+        box-shadow: 0 4px 15px rgba(0,0,128,0.3) !important;
     }
-
-    /* 종료 버튼 전용 스타일 */
-    .exit-btn > div > button {
-        width: 100% !important; height: 60px !important; border-radius: 12px !important;
-        font-weight: 900 !important; font-size: 20px !important; color: #FFD700 !important;
-        background: linear-gradient(135deg, #444444, #000000) !important;
-        border: 3px solid #FFD700 !important; margin-top: 30px !important;
+    .stButton > button:hover {
+        color: #ffffff !important;
+        background-color: #0000CD !important;
     }
 
     .chart-title { font-size: 18px; font-weight: 900; color: #ffffff; background: #2c3e50; border-radius: 8px; text-align: center; padding: 10px; margin: 20px 0 10px 0; }
@@ -125,15 +130,12 @@ def main():
     date_list = sorted(df_maemae['날짜'].unique().tolist())
     region_list = sorted([col for col in df_maemae.columns if col != '날짜'])
 
-    # 탭 명칭 수정: 랭킹 TOP 10
     tab1, tab2, tab3 = st.tabs(["📊 지역분석", "🌡️ 시장온도", "🏆 랭킹 TOP 10"])
 
     with tab1:
-        # 드롭다운 자동 닫기를 위해 폼(Form) 활용
-        with st.form("search_form"):
-            sel_date = st.selectbox("📅 기준 날짜 선택", date_list, index=len(date_list)-1)
-            sel_regions = st.multiselect("🔍 비교 지역 선택", region_list, default=[region_list[0]] if region_list else [])
-            submitted = st.form_submit_button("지역 확정 및 조회 (박스 닫기)")
+        # [삭제됨] 폼 형식을 제거하여 선택 즉시 반영되도록 복구
+        sel_date = st.selectbox("📅 기준 날짜 선택", date_list, index=len(date_list)-1, key="tab1_date")
+        sel_regions = st.multiselect("🔍 비교 지역 선택", region_list, default=[region_list[0]] if region_list else [])
         
         if sel_regions:
             curr_idx = date_list.index(sel_date)
@@ -187,7 +189,6 @@ def main():
         sel_date_rank = st.selectbox("📅 랭킹 기준일 선택", date_list, index=len(date_list)-1, key="tab3_date")
         curr_idx_rank = date_list.index(sel_date_rank)
         
-        # 주간 리스트에 [매매], [전세] 표기 추가
         st.markdown('<div class="chart-title" style="background:#e67e22;">🔥 주간 상승 지역 TOP 10</div>', unsafe_allow_html=True)
         c1, c2 = st.columns(2)
         with c1:
@@ -201,7 +202,6 @@ def main():
             for n, v in j_w.items():
                 if v > 0: st.markdown(f'<div class="rank-card j-weekly"><span>{n}</span><span>+{v:.2f}</span></div>', unsafe_allow_html=True)
 
-        # 8주 누적 리스트에 [매매], [전세] 표기 추가
         st.markdown('<div class="chart-title" style="background:#f1c40f; color:#000;">📊 8주 누적 상승 TOP 10</div>', unsafe_allow_html=True)
         c3, c4 = st.columns(2)
         with c3:
@@ -215,11 +215,10 @@ def main():
             for n, v in j_8.items():
                 if v > 0: st.markdown(f'<div class="rank-card j-accum"><span>{n}</span><span>+{v:.2f}%</span></div>', unsafe_allow_html=True)
 
-    st.markdown('<div class="exit-btn">', unsafe_allow_html=True)
+    # 하단 종료 버튼
     if st.button("🚪 앱 종료", key="exit_trigger"):
         st.session_state.is_exit = True
         st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
