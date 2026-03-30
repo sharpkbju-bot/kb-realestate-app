@@ -69,8 +69,6 @@ st.markdown("""
     .rank-card { padding: 10px 15px; border-radius: 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; font-weight: 900; font-size: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
     .m-style { background: linear-gradient(135deg, #FFEFBA, #FFFFFF); border-left: 8px solid #FF4500; color: #D32F2F; }
     .j-style { background: linear-gradient(135deg, #E0F7FA, #FFFFFF); border-left: 8px solid #01579B; color: #01579B; }
-    .accum-m { background: linear-gradient(135deg, #FFF9C4, #FFFFFF); border-left: 8px solid #FBC02D; color: #7F6000; }  
-    .accum-j { background: linear-gradient(135deg, #E8F5E9, #FFFFFF); border-left: 8px solid #2E7D32; color: #1B5E20; }
 
     .stPlotlyChart { pointer-events: none !important; user-select: none !important; }
     .chart-title { font-size: 18px; font-weight: 900; color: #ffffff; background: #2c3e50; border-radius: 8px; text-align: center; padding: 10px; margin: 20px 0; }
@@ -85,14 +83,18 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
+# 인코딩 오류 방지를 위해 안전하게 데이터 로드
 @st.cache_data
 def load_data():
-    try:
-        df_m = pd.read_csv('maemae.csv', encoding='cp949')
-        df_j = pd.read_csv('jeonse.csv', encoding='utf-8')
-    except:
-        df_m = pd.read_csv('maemae.csv', encoding='utf-8')
-        df_j = pd.read_csv('jeonse.csv', encoding='cp949')
+    def read_csv_safe(file):
+        try:
+            return pd.read_csv(file, encoding='cp949')
+        except UnicodeDecodeError:
+            return pd.read_csv(file, encoding='utf-8')
+
+    df_m = read_csv_safe('maemae.csv')
+    df_j = read_csv_safe('jeonse.csv')
+    
     for col in df_m.columns:
         if col != '날짜': df_m[col] = pd.to_numeric(df_m[col], errors='coerce').fillna(0)
     for col in df_j.columns:
@@ -160,7 +162,7 @@ def main():
             for i, (n, v) in enumerate(j_w.items()):
                 if v > 0: st.markdown(f'<div class="rank-card j-style"><span>{i+1}. {n}</span><span>+{v:.2f}</span></div>', unsafe_allow_html=True)
 
-        # 2. 월간 TOP 10 (최근 4주 합산)
+        # 2. 월간 TOP 10 (4주)
         st.markdown('<div class="chart-title" style="background:#2ecc71;">📅 월간 상승 지역 TOP 10 (4주)</div>', unsafe_allow_html=True)
         c_m1, c_m2 = st.columns(2)
         with c_m1:
@@ -181,12 +183,12 @@ def main():
             st.markdown('<p style="font-weight:900; text-align:center; color:#7F6000;">[매매 누적]</p>', unsafe_allow_html=True)
             m_8 = df_maemae.iloc[max(0, curr_idx_rank-7) : curr_idx_rank+1].drop(columns=['날짜']).sum().sort_values(ascending=False).head(10)
             for i, (n, v) in enumerate(m_8.items()):
-                if v > 0: st.markdown(f'<div class="rank-card accum-m"><span>{i+1}. {n}</span><span>+{v:.2f}%</span></div>', unsafe_allow_html=True)
+                if v > 0: st.markdown(f'<div class="rank-card m-style" style="background:linear-gradient(135deg, #FFF9C4, #FFFFFF); border-left:8px solid #FBC02D;"><span>{i+1}. {n}</span><span>+{v:.2f}%</span></div>', unsafe_allow_html=True)
         with c_a2:
             st.markdown('<p style="font-weight:900; text-align:center; color:#1B5E20;">[전세 누적]</p>', unsafe_allow_html=True)
             j_8 = df_jeonse.iloc[max(0, curr_idx_rank-7) : curr_idx_rank+1].drop(columns=['날짜']).sum().sort_values(ascending=False).head(10)
             for i, (n, v) in enumerate(j_8.items()):
-                if v > 0: st.markdown(f'<div class="rank-card accum-j"><span>{i+1}. {n}</span><span>+{v:.2f}%</span></div>', unsafe_allow_html=True)
+                if v > 0: st.markdown(f'<div class="rank-card j-style" style="background:linear-gradient(135deg, #E8F5E9, #FFFFFF); border-left:8px solid #2E7D32;"><span>{i+1}. {n}</span><span>+{v:.2f}%</span></div>', unsafe_allow_html=True)
 
     st.write("---")
     if st.button("🚪 안전하게 앱 종료하기", key="exit_btn", use_container_width=True):
