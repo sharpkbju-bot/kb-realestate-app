@@ -16,17 +16,25 @@ if "is_exit" not in st.session_state:
     st.session_state.is_exit = False
 
 if st.session_state.is_exit:
+    # 종료 화면 스타일에 로고 이미지와 동일한 CSS 추가
     st.markdown("""
         <style>
         .stApp { background-color: white !important; background-image: none !important; }
         .exit-wrapper { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; text-align: center; z-index: 1000; }
-        .exit-title { font-size: 30px !important; font-weight: 900; color: #000080; margin-bottom: 10px; }
+        
+        /* ★ 로고 이미지와 동일한 스타일 적용 ★ */
+        .exit-logo-font { font-family: 'Noto Sans KR', sans-serif; font-weight: 900; line-height: 1.2; margin-bottom: 15px; }
+        .exit-logo-drj { color: #006400; font-size: 50px; } /* Dr.J: 진한 녹색, 더 크게 */
+        .exit-logo-bds { color: #FF4500; font-size: 28px; } /* 의 부동산: 오렌지레드, 보통 */
+        
         .exit-wishes { font-size: 20px !important; font-weight: 700; color: #333333; margin-bottom: 10px; }
         .exit-msg { font-size: 16px; color: #666; }
         header { visibility: hidden; }
         </style>
         <div class="exit-wrapper">
-            <h1 class="exit-title">Dr.J의 부동산</h1>
+            <div class="exit-logo-font">
+                <span class="exit-logo-drj">Dr.J</span><span class="exit-logo-bds">의 부동산</span>
+            </div>
             <h2 class="exit-wishes">모두 부자됩시다.</h2>
             <p class="exit-msg">with by 70억 자산가 SY.LEE</p>
         </div>
@@ -65,25 +73,25 @@ st.markdown("""
     .brand-suffix { color: #FF4500; font-size: 20px; font-weight: 900; }
 
     /* 탭 메뉴 테두리 */
-    .stTabs [data-baseweb="tab-list"] { 
+    .stTabs [data-basWeb="tab-list"] { 
         width: 100%; 
         background-color: rgba(255,255,255,0.4); 
         border-radius: 12px 12px 0 0; 
         border: 2px solid #2c3e50;
         padding: 2px;
     }
-    .stTabs [data-baseweb="tab"] { 
+    .stTabs [data-basWeb="tab"] { 
         flex: 1; 
         height: 60px; 
         background-color: rgba(255,255,255,0.8); 
         border-right: 1px solid #ddd;
     }
-    .stTabs [data-baseweb="tab"] div p { font-size: 15px !important; font-weight: 900 !important; color: #1a1a1a; }
+    .stTabs [data-basWeb="tab"] div p { font-size: 15px !important; font-weight: 900 !important; color: #1a1a1a; }
     .stTabs [aria-selected="true"] { background-color: #006400 !important; }
     .stTabs [aria-selected="true"] div p { color: #ffffff !important; }
 
     /* 입력창(드롭다운) 스타일 보강: 다크모드 글자 안보임 해결 */
-    div[data-baseweb="select"] > div:first-child {
+    div[data-basWeb="select"] > div:first-child {
         background-color: #f0f2f6 !important; 
         border: 2px solid #4B0082 !important; 
         border-radius: 10px !important; 
@@ -91,15 +99,15 @@ st.markdown("""
     }
     
     /* 입력되는 글자색을 검정색으로 강제 고정 */
-    div[data-baseweb="select"] input {
+    div[data-basWeb="select"] input {
         color: #000000 !important;
         -webkit-text-fill-color: #000000 !important;
     }
 
     /* 선택된 항목 및 텍스트 색상 */
-    div[data-baseweb="select"] div[data-testid="stMarkdownContainer"] p,
-    div[data-baseweb="select"] span, 
-    div[data-baseweb="select"] div {
+    div[data-basWeb="select"] div[data-testid="stMarkdownContainer"] p,
+    div[data-basWeb="select"] span, 
+    div[data-basWeb="select"] div {
         color: #4B0082 !important; 
         font-weight: 900 !important; 
         font-size: 18px !important;
@@ -172,7 +180,7 @@ st.markdown("""
         width: 100% !important; height: 55px !important; border-radius: 12px !important;
         font-weight: 900 !important; font-size: 18px !important; color: #FFD700 !important;
         background: linear-gradient(135deg, #444444, #111111) !important;
-        border: 3px solid #FFD700 !important;
+        border: 2px solid #FFD700 !important;
     }
 
     /* 데이터프레임(시장온도) 영역 테두리 */
