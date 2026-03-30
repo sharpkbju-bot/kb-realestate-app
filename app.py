@@ -23,8 +23,8 @@ if st.session_state.is_exit:
         header { visibility: hidden; }
         </style>
         <div class="exit-wrapper">
-            <h1 style="color: #006400; font-weight: 900;">Dr.J의 부동산</h1>
-            <h2 style="color: #006400; font-weight: 900;">모두 부자됩시다.</h2>
+            <h1 style="color: #006400; font-weight: 600;">Dr.J의 부동산</h1>
+            <h2 style="color: #006400; font-weight: 400;">모두 부자됩시다.</h2>
         </div>
     """, unsafe_allow_html=True)
     st.stop()
