@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -51,14 +52,14 @@ st.markdown("""
     .brand-name { color: #006400; font-size: 35px; font-weight: 900; }
     .brand-suffix { color: #FF4500; font-size: 20px; font-weight: 900; }
 
-    /* 탭 디자인 */
+    /* 탭 디자인: 탭명 글자 크기를 15px로 축소 */
     .stTabs [data-baseweb="tab-list"] { width: 100%; background-color: rgba(255,255,255,0.4); border-radius: 12px 12px 0 0; }
     .stTabs [data-baseweb="tab"] { flex: 1; height: 60px; background-color: rgba(255,255,255,0.8); }
-    .stTabs [data-baseweb="tab"] div p { font-size: 15px; font-weight: 900; color: #1a1a1a; }
+    .stTabs [data-baseweb="tab"] div p { font-size: 15px !important; font-weight: 900 !important; color: #1a1a1a; }
     .stTabs [aria-selected="true"] { background-color: #006400 !important; }
     .stTabs [aria-selected="true"] div p { color: #ffffff !important; }
 
-    /* 선택 박스 스타일 - 가독성 확보 핵심 섹션 */
+    /* 선택 박스 스타일 */
     div[data-baseweb="select"] > div:first-child {
         background-color: #f0f2f6 !important; 
         border: 1px solid #cccccc !important;
@@ -68,11 +69,11 @@ st.markdown("""
         align-items: center !important;
     }
     
-    /* ★ 날짜 선택 글자색 및 Bold 처리 ★ */
+    /* 날짜 선택 글자색 및 Bold 처리 */
     div[data-baseweb="select"] div[data-testid="stMarkdownContainer"] p,
     div[data-baseweb="select"] span,
     div[data-baseweb="select"] div {
-        color: #4B0082 !important; /* 짙은 퍼플 */
+        color: #4B0082 !important; 
         font-weight: 900 !important;
         font-size: 18px !important;
     }
@@ -80,7 +81,7 @@ st.markdown("""
     /* 위젯 레이블 볼드 */
     label[data-testid="stWidgetLabel"] p { font-weight: 900 !important; font-size: 16px !important; color: #222222 !important; }
 
-    /* ★ 그래프 터치 및 인터랙션 완벽 차단 ★ */
+    /* 그래프 터치 및 인터랙션 차단 */
     .stPlotlyChart {
         pointer-events: none !important; 
         user-select: none !important;
@@ -94,12 +95,12 @@ st.markdown("""
     .m-accum { background: linear-gradient(135deg, #FFF9C4, #FFFFFF); border-left: 8px solid #FBC02D; color: #7F6000; }  
     .j-accum { background: linear-gradient(135deg, #E8F5E9, #FFFFFF); border-left: 8px solid #2E7D32; color: #1B5E20; }
     
-    /* 종료 버튼 */
+    /* 종료 버튼 스타일 */
     div.stButton > button {
-        width: 100% !important; height: 50px !important; border-radius: 12px !important;
+        width: 100% !important; height: 55px !important; border-radius: 12px !important;
         font-weight: 900 !important; font-size: 17px !important; color: #FFD700 !important;
         background: linear-gradient(135deg, #555555, #222222) !important;
-        border: 2px solid #FFD700 !important; margin-top: 30px !important;
+        border: 2px solid #FFD700 !important;
     }
     header { visibility: hidden; }
     </style>
@@ -129,7 +130,7 @@ def main():
     date_list = sorted(df_maemae['날짜'].unique().tolist())
     region_list = sorted([col for col in df_maemae.columns if col != '날짜'])
 
-    tab1, tab2, tab3 = st.tabs(["📊 지역 분석", "🌡️ 시장 온도", "🏆 랭킹 TOP 10"])
+    tab1, tab2, tab3 = st.tabs(["📊 지역분석", "🌡️ 시장온도", "🏆 랭킹TOP"])
 
     with tab1:
         sel_date = st.selectbox("📅 기준 날짜 선택", date_list, index=len(date_list)-1, key="tab1_date")
@@ -138,8 +139,6 @@ def main():
         if sel_regions:
             curr_idx = date_list.index(sel_date)
             start_idx = max(0, curr_idx - 7)
-            
-            # 그래프 공통 스타일 설정 (투명 배경 + 진한 네이비 볼드 폰트)
             graph_font = dict(size=14, color="#000080", family="Noto Sans KR")
 
             st.markdown('<div class="chart-title">📈 매매 증감 추이 (최근 8주)</div>', unsafe_allow_html=True)
@@ -147,16 +146,12 @@ def main():
             fig_m = px.line(sub_m, x='날짜', y=sel_regions, markers=True)
             fig_m.update_traces(line_width=6, marker=dict(size=10))
             fig_m.update_layout(
-                height=350,
-                paper_bgcolor='rgba(0,0,0,0)', 
-                plot_bgcolor='rgba(0,0,0,0)', 
-                font=graph_font,
-                hovermode=False, # 툴팁 방지
-                xaxis=dict(tickfont=dict(weight='bold'), fixedrange=True), # 축 고정
+                height=350, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
+                font=graph_font, hovermode=False,
+                xaxis=dict(tickfont=dict(weight='bold'), fixedrange=True),
                 yaxis=dict(tickfont=dict(weight='bold'), fixedrange=True),
                 legend=dict(font=dict(weight='bold'))
             )
-            # config 옵션으로 고정된 이미지처럼 표시
             st.plotly_chart(fig_m, use_container_width=True, config={'staticPlot': True})
 
             st.markdown('<div class="chart-title">📉 전세 증감 추이 (최근 8주)</div>', unsafe_allow_html=True)
@@ -164,11 +159,8 @@ def main():
             fig_j = px.line(sub_j, x='날짜', y=sel_regions, markers=True)
             fig_j.update_traces(line_width=6, marker=dict(size=10))
             fig_j.update_layout(
-                height=350,
-                paper_bgcolor='rgba(0,0,0,0)', 
-                plot_bgcolor='rgba(0,0,0,0)', 
-                font=graph_font,
-                hovermode=False,
+                height=350, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
+                font=graph_font, hovermode=False,
                 xaxis=dict(tickfont=dict(weight='bold'), fixedrange=True),
                 yaxis=dict(tickfont=dict(weight='bold'), fixedrange=True),
                 legend=dict(font=dict(weight='bold'))
@@ -212,6 +204,8 @@ def main():
             for i, (n, v) in enumerate(j_8.items()):
                 if v > 0: st.markdown(f'<div class="rank-card j-accum"><span>{i+1}. {n}</span><span>+{v:.2f}%</span></div>', unsafe_allow_html=True)
 
+    # 앱 종료 버튼을 탭 외부, 페이지 최하단으로 이동시켜 입력 박스와 겹치지 않게 배치
+    st.write("---") # 구분선 추가
     if st.button("🚪 앱 종료", key="exit_trigger", use_container_width=True):
         st.session_state.is_exit = True
         st.rerun()
