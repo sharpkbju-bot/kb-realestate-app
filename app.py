@@ -179,19 +179,19 @@ def main():
         st.markdown('<div class="chart-title" style="background:#e67e22;">🔥 주간 상승 지역 TOP 10</div>', unsafe_allow_html=True)
         c1, c2 = st.columns(2)
         with c1:
-            st.markdown('<p style="font-weight:900; text-align:center; color:#D32F2F; font-size:15px;">[매매 주간 상승률]</p>', unsafe_allow_html=True)
+            st.markdown('<p style="font-weight:900; text-align:center; color:#D32F2F; font-size:15px;">[주간 상승률]</p>', unsafe_allow_html=True)
             m_w = df_maemae[df_maemae['날짜'] == sel_date_rank].drop(columns=['날짜']).iloc[0].sort_values(ascending=False).head(10)
             for i, (n, v) in enumerate(m_w.items()):
                 if v > 0: st.markdown(f'<div class="rank-card m-weekly"><span>{i+1}. {n}</span><span>+{v:.2f}</span></div>', unsafe_allow_html=True)
         with c2:
-            st.markdown('<p style="font-weight:900; text-align:center; color:#01579B; font-size:15px;">[전세 주간]</p>', unsafe_allow_html=True)
+            st.markdown('<p style="font-weight:900; text-align:center; color:#01579B; font-size:15px;">[전세 주간 상승률]</p>', unsafe_allow_html=True)
             j_w = df_jeonse[df_jeonse['날짜'] == sel_date_rank].drop(columns=['날짜']).iloc[0].sort_values(ascending=False).head(10)
             for i, (n, v) in enumerate(j_w.items()):
                 if v > 0: st.markdown(f'<div class="rank-card j-weekly"><span>{i+1}. {n}</span><span>+{v:.2f}</span></div>', unsafe_allow_html=True)
         st.markdown('<div class="chart-title" style="background:#f1c40f; color:#000;">📊 8주 누적 상승 TOP 10</div>', unsafe_allow_html=True)
         c3, c4 = st.columns(2)
         with c3:
-            st.markdown('<p style="font-weight:900; text-align:center; color:#7F6000; font-size:15px;">[매매 누적]</p>', unsafe_allow_html=True)
+            st.markdown('<p style="font-weight:900; text-align:center; color:#7F6000; font-size:15px;">[매매 누적 상승률]</p>', unsafe_allow_html=True)
             m_8 = df_maemae.iloc[max(0, curr_idx_rank-7) : curr_idx_rank+1].drop(columns=['날짜']).sum().sort_values(ascending=False).head(10)
             for i, (n, v) in enumerate(m_8.items()):
                 if v > 0: st.markdown(f'<div class="rank-card m-accum"><span>{i+1}. {n}</span><span>+{v:.2f}%</span></div>', unsafe_allow_html=True)
