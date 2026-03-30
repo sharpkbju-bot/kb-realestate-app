@@ -110,7 +110,6 @@ st.markdown("""
     .m-accum { background: linear-gradient(135deg, #FFF9C4, #FFFFFF); border-left: 8px solid #FBC02D; color: #7F6000; }
     .j-accum { background: linear-gradient(135deg, #E8F5E9, #FFFFFF); border-left: 8px solid #2E7D32; color: #1B5E20; }
 
-    /* 안전하게 앱 종료하기 버튼 글자 BOLD 적용 */
     div.stButton > button {
         width: 100% !important; height: 55px !important; border-radius: 12px !important;
         font-weight: 900 !important; font-size: 18px !important; color: #FFD700 !important;
@@ -141,16 +140,27 @@ def main():
     date_list = sorted(df_maemae['날짜'].unique().tolist())
     region_list = sorted([col for col in df_maemae.columns if col != '날짜'])
     
-    # 탭 생성
-    tab_list = ["📊 지역 분석", "🌡️ 시장 온도", "🏆 누적 랭킹 TOP 10"]
-    tabs = st.tabs(tab_list)
+    # ★ 탭 이동 시 날짜 초기화를 위한 세션 로직 ★
+    if "current_tab" not in st.session_state:
+        st.session_state.current_tab = 0
+    if "date_version" not in st.session_state:
+        st.session_state.date_version = 0
 
-    # 탭 이동 시 날짜 초기화 로직 (세션 활용)
-    latest_date = date_list[-1] if date_list else ""
+    tab_titles = ["📊 지역 분석", "🌡️ 시장 온도", "🏆 누적 랭킹 TOP 10"]
+    tabs = st.tabs(tab_titles)
 
+    # 각 탭 클릭 시 날짜 버전 업데이트 (selectbox 초기화 유도)
+    for i, tab in enumerate(tabs):
+        with tab:
+            if st.session_state.current_tab != i:
+                st.session_state.current_tab = i
+                st.session_state.date_version += 1
+                st.rerun()
+
+    # 1번 탭: 지역 분석
     with tabs[0]:
-        # 탭을 넘나들 때 기본값을 최신날짜로 강제 설정
-        sel_date = st.selectbox("📅 기준 날짜 선택", date_list, index=len(date_list)-1, key="tab1_date")
+        # key에 date_version을 포함하여 탭 이동 시마다 강제 리셋
+        sel_date = st.selectbox("📅 기준 날짜 선택", date_list, index=len(date_list)-1, key=f"date_sel_{st.session_state.date_version}")
         sel_regions = st.multiselect("🔍 비교 지역 선택", region_list, default=[region_list[0]] if region_list else [])
         
         if sel_regions:
@@ -173,20 +183,20 @@ def main():
                     st.markdown(f'<div class="{j_class}"><div>{region} 전세 증감({sel_date})</div><div style="font-size:24px;">{j_val:+.2f}%</div>{"<div style=\'color:#01579B; font-size:12px;\'>🔥 누적 TOP</div>" if is_j_hot else ""}</div>', unsafe_allow_html=True)
             
             start_idx = max(0, curr_idx - 7)
-            sub_m = df_maemae.iloc[start_idx : curr_idx + 1][['날짜'] + sel_regions]
-            sub_j = df_jeonse.iloc[start_idx : curr_idx + 1][['날짜'] + sel_regions]
-
-            # 그래프 설정: 짙은 그린 컬러(#006400) 및 터치 불가(staticPlot)
             st.markdown('<div class="chart-title">📈 매매 증감 추이 (최근 8주)</div>', unsafe_allow_html=True)
+            sub_m = df_maemae.iloc[start_idx : curr_idx + 1][['날짜'] + sel_regions]
+            # ★ 그래프 컬러 짙은 그린(#006400) 및 터치 불가(staticPlot) ★
             fig_m = px.line(sub_m, x='날짜', y=sel_regions, markers=True, color_discrete_sequence=['#006400'])
             fig_m.update_layout(height=350, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
             st.plotly_chart(fig_m, use_container_width=True, config={'staticPlot': True})
             
             st.markdown('<div class="chart-title">📉 전세 증감 추이 (최근 8주)</div>', unsafe_allow_html=True)
+            sub_j = df_jeonse.iloc[start_idx : curr_idx + 1][['날짜'] + sel_regions]
             fig_j = px.line(sub_j, x='날짜', y=sel_regions, markers=True, color_discrete_sequence=['#006400'])
             fig_j.update_layout(height=350, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
             st.plotly_chart(fig_j, use_container_width=True, config={'staticPlot': True})
 
+    # 2번 탭: 시장 온도
     with tabs[1]:
         st.markdown('<div class="chart-title">🌡️ 시장 온도계 (8주 합산)</div>', unsafe_allow_html=True)
         m_sum = df_maemae.iloc[-8:].drop(columns=['날짜']).sum()
@@ -194,9 +204,9 @@ def main():
         heat_df = pd.DataFrame({'매매합계': m_sum, '전세합계': j_sum}).sort_values(by='매매합계', ascending=False)
         st.dataframe(heat_df.style.background_gradient(cmap='RdYlBu_r').format("{:+.2f}%"), use_container_width=True, height=500)
 
+    # 3번 탭: 누적 랭킹
     with tabs[2]:
-        # 탭 이동 시 최신 날짜로 초기화
-        sel_date_rank = st.selectbox("📅 랭킹 기준일 선택", date_list, index=len(date_list)-1, key="tab3_date")
+        sel_date_rank = st.selectbox("📅 랭킹 기준일 선택", date_list, index=len(date_list)-1, key=f"rank_sel_{st.session_state.date_version}")
         curr_idx_rank = date_list.index(sel_date_rank)
         
         st.markdown('<div class="chart-title" style="background:#e67e22;">🔥 주간 상승 지역 TOP 10</div>', unsafe_allow_html=True)
