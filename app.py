@@ -102,7 +102,7 @@ def main():
     date_list = sorted(df_maemae['날짜'].unique().tolist())
     region_list = sorted([col for col in df_maemae.columns if col != '날짜'])
 
-    tab1, tab2, tab3 = st.tabs(["📊 지역분석", "🌡️ 시장온도", "🏆 랭킹 TOP 10"])
+    tab1, tab2, tab3 = st.tabs(["📊 지역 분석", "🌡️ 시장 온도", "🏆 랭킹 TOP 10"])
 
     with tab1:
         sel_date = st.selectbox("📅 기준 날짜 선택", date_list, index=len(date_list)-1)
@@ -140,7 +140,7 @@ def main():
 
     # 시장온도, 랭킹 탭은 기존과 동일하게 유지...
     
-    if st.button("🚪 안전하게 앱 종료하기", key="exit_trigger"):
+    if st.button("🚪 앱 종료", key="exit_trigger"):
         st.session_state.is_exit = True
         st.rerun()
 
