@@ -82,7 +82,7 @@ st.markdown("""
     .stTabs [aria-selected="true"] { background-color: #006400 !important; }
     .stTabs [aria-selected="true"] div p { color: #ffffff !important; }
 
-    /* 입력창(드롭다운) 스타일 보강: 다크모드 글자 안보임 해결 */
+    /* 입력창(드롭다운) 스타일 보강 */
     div[data-baseweb="select"] > div:first-child {
         background-color: #f0f2f6 !important; 
         border: 2px solid #4B0082 !important; 
@@ -90,13 +90,11 @@ st.markdown("""
         min-height: 48px !important;
     }
     
-    /* 입력되는 글자색을 검정색으로 강제 고정 */
     div[data-baseweb="select"] input {
         color: #000000 !important;
         -webkit-text-fill-color: #000000 !important;
     }
 
-    /* 선택된 항목 및 텍스트 색상 */
     div[data-baseweb="select"] div[data-testid="stMarkdownContainer"] p,
     div[data-baseweb="select"] span, 
     div[data-baseweb="select"] div {
@@ -136,7 +134,6 @@ st.markdown("""
 
     .stPlotlyChart { pointer-events: none !important; user-select: none !important; }
     
-    /* 차트 타이틀 테두리 */
     .chart-title { 
         font-size: 18px; 
         font-weight: 900; 
@@ -149,7 +146,6 @@ st.markdown("""
         border: 2px solid #FFD700;
     }
     
-    /* 랭킹 카드 테두리 */
     .rank-card { 
         padding: 10px 15px; 
         border-radius: 12px; 
@@ -167,21 +163,27 @@ st.markdown("""
     .m-accum { background: linear-gradient(135deg, #FFF9C4, #FFFFFF); border-left: 8px solid #FBC02D; border-color: #FBC02D; color: #7F6000; }  
     .j-accum { background: linear-gradient(135deg, #E8F5E9, #FFFFFF); border-left: 8px solid #2E7D32; border-color: #2E7D32; color: #1B5E20; }
     
-    /* 종료 버튼 테두리 */
+    /* 공통 버튼 스타일 */
     div.stButton > button {
-        width: 100% !important; height: 55px !important; border-radius: 12px !important;
-        font-weight: 900 !important; font-size: 18px !important; color: #FFD700 !important;
+        width: 100% !important; border-radius: 12px !important;
+        font-weight: 900 !important;
+    }
+
+    /* 종료 버튼 전용 테두리 */
+    .exit-btn-container div.stButton > button {
+        height: 55px !important; font-size: 18px !important; color: #FFD700 !important;
         background: linear-gradient(135deg, #444444, #111111) !important;
         border: 3px solid #FFD700 !important;
     }
 
-    /* 데이터프레임(시장온도) 영역 테두리 */
-    .stDataFrame {
-        border: 2px solid #2c3e50;
-        border-radius: 10px;
-        overflow: hidden;
+    /* 초기화/선택완료 버튼 스타일 */
+    .control-btn-container div.stButton > button {
+        height: 40px !important; font-size: 14px !important; margin-top: -10px;
     }
+    .reset-btn div.stButton > button { background-color: #f8d7da !important; color: #721c24 !important; border: 2px solid #f5c6cb !important; }
+    .confirm-btn div.stButton > button { background-color: #d4edda !important; color: #155724 !important; border: 2px solid #c3e6cb !important; }
 
+    .stDataFrame { border: 2px solid #2c3e50; border-radius: 10px; overflow: hidden; }
     header { visibility: hidden; }
     </style>
     """, unsafe_allow_html=True)
@@ -208,7 +210,28 @@ def main():
 
     with tab1:
         sel_date = st.selectbox("📅 기준 날짜 선택", date_list, index=len(date_list)-1, key="tab1_date")
-        sel_regions = st.multiselect("🔍 비교 지역 선택", region_list, default=[region_list[0]] if region_list else [])
+        
+        # 멀티셀렉트 제어를 위한 세션 상태
+        if "sel_regions" not in st.session_state:
+            st.session_state.sel_regions = [region_list[0]] if region_list else []
+
+        sel_regions = st.multiselect("🔍 비교 지역 선택", region_list, key="region_selector", default=st.session_state.sel_regions)
+
+        # ★ 버튼 레이아웃 추가 ★
+        btn_col1, btn_col2 = st.columns([1, 1])
+        with btn_col1:
+            st.markdown('<div class="control-btn-container reset-btn">', unsafe_allow_html=True)
+            if st.button("🔄 모두 초기화"):
+                st.session_state.sel_regions = []
+                st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
+        with btn_col2:
+            st.markdown('<div class="control-btn-container confirm-btn">', unsafe_allow_html=True)
+            if st.button("✅ 선택 완료"):
+                st.session_state.sel_regions = sel_regions
+                st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
+
         if sel_regions:
             curr_idx = date_list.index(sel_date)
             m_accum_top = df_maemae.iloc[max(0, curr_idx-7) : curr_idx+1].drop(columns=['날짜']).sum().sort_values(ascending=False).head(10).index.tolist()
@@ -226,6 +249,7 @@ def main():
                 with col2:
                     j_class = "stat-card j-card highlight-card" if is_j_hot else "stat-card j-card"
                     st.markdown(f'<div class="{j_class}"><div>{region} 전세 증감({sel_date})</div><div style="font-size:24px;">{j_val:+.2f}%</div><div style="color:#FF4500; font-size:12px;">🔥 누적 TOP</div></div>', unsafe_allow_html=True)
+            
             start_idx = max(0, curr_idx - 7)
             custom_colors = px.colors.qualitative.Plotly.copy()
             custom_colors[0] = '#006400'
@@ -283,9 +307,11 @@ def main():
                 if v > 0: st.markdown(f'<div class="rank-card j-accum"><span>{i+1}. {n}</span><span>+{v:.2f}%</span></div>', unsafe_allow_html=True)
 
     st.markdown("<br><br>", unsafe_allow_html=True)
+    st.markdown('<div class="exit-btn-container">', unsafe_allow_html=True)
     if st.button("🚪 안전하게 앱 종료하기", key="exit_trigger", use_container_width=True):
         st.session_state.is_exit = True
         st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
