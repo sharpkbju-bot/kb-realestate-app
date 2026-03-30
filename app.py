@@ -55,7 +55,7 @@ st.markdown("""
     /* 메인 타이틀 테두리 */
     .brand-container { 
         text-align: center; 
-        padding: 20px; 
+        padding: 15px; 
         border: 2px solid #006400; 
         border-radius: 15px; 
         background-color: rgba(255,255,255,0.6);
