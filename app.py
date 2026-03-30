@@ -176,9 +176,9 @@ st.markdown("""
         border: 3px solid #FFD700 !important;
     }
 
-    /* 초기화/선택완료 버튼 스타일 */
+    /* 초기화/선택완료 버튼 스타일 - 모바일 나란히 배치를 위해 간격 조정 */
     .control-btn-container div.stButton > button {
-        height: 40px !important; font-size: 14px !important; margin-top: -10px;
+        height: 40px !important; font-size: 14px !important;
     }
     .reset-btn div.stButton > button { background-color: #f8d7da !important; color: #721c24 !important; border: 2px solid #f5c6cb !important; }
     .confirm-btn div.stButton > button { background-color: #d4edda !important; color: #155724 !important; border: 2px solid #c3e6cb !important; }
@@ -211,14 +211,13 @@ def main():
     with tab1:
         sel_date = st.selectbox("📅 기준 날짜 선택", date_list, index=len(date_list)-1, key="tab1_date")
         
-        # 멀티셀렉트 제어를 위한 세션 상태
         if "sel_regions" not in st.session_state:
             st.session_state.sel_regions = [region_list[0]] if region_list else []
 
         sel_regions = st.multiselect("🔍 비교 지역 선택", region_list, key="region_selector", default=st.session_state.sel_regions)
 
-        # ★ 버튼 레이아웃 추가 ★
-        btn_col1, btn_col2 = st.columns([1, 1])
+        # 모바일에서도 나란히 배치되도록 컬럼 비율 유지
+        btn_col1, btn_col2 = st.columns(2)
         with btn_col1:
             st.markdown('<div class="control-btn-container reset-btn">', unsafe_allow_html=True)
             if st.button("🔄 모두 초기화"):
