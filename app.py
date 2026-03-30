@@ -5,7 +5,11 @@ import base64
 import os
 
 # 1. 페이지 설정
-st.set_page_config(page_title="Dr.J의 부동산", page_icon="🏠", layout="centered")
+st.set_page_config(
+    page_title="Dr.J의 부동산", 
+    page_icon="🏠",
+    layout="centered"
+)
 
 # 세션 상태 초기화 및 종료 로직
 if "is_exit" not in st.session_state:
@@ -47,34 +51,56 @@ st.markdown("""
     .brand-name { color: #006400; font-size: 35px; font-weight: 900; }
     .brand-suffix { color: #FF4500; font-size: 20px; font-weight: 900; }
 
-    /* 탭 디자인: 글자 크기 축소 반영 */
-    .stTabs [data-baseweb="tab-list"] { width: 100%; background-color: rgba(255,255,255,0.4); border-radius: 12px; }
+    /* 탭 디자인 */
+    .stTabs [data-baseweb="tab-list"] { width: 100%; background-color: rgba(255,255,255,0.4); border-radius: 12px 12px 0 0; }
     .stTabs [data-baseweb="tab"] { flex: 1; height: 60px; background-color: rgba(255,255,255,0.8); }
-    .stTabs [data-baseweb="tab"] div p { font-size: 14px !important; font-weight: 900; color: #1a1a1a; }
+    .stTabs [data-baseweb="tab"] div p { font-size: 18px; font-weight: 900; color: #1a1a1a; }
     .stTabs [aria-selected="true"] { background-color: #006400 !important; }
     .stTabs [aria-selected="true"] div p { color: #ffffff !important; }
 
-    /* 위젯 라벨 볼드 */
-    label[data-testid="stWidgetLabel"] p { font-weight: 900 !important; font-size: 18px !important; color: #111111 !important; }
-    
+    /* 선택 박스 스타일 - 가독성 확보 핵심 섹션 */
     div[data-baseweb="select"] > div:first-child {
-        background-color: #f0f2f6 !important; border: 2px solid #999999 !important; border-radius: 10px !important;
+        background-color: #f0f2f6 !important; 
+        border: 1px solid #cccccc !important;
+        border-radius: 10px !important;
+        min-height: 48px !important;
+        display: flex !important;
+        align-items: center !important;
     }
-
-    /* 앱 종료 버튼 커스텀 (네이비 배경 + 밝은 핑크 글씨) */
-    .stButton > button {
-        width: 100% !important; height: 65px !important; border-radius: 15px !important;
-        font-weight: 900 !important; font-size: 22px !important; 
-        color: #FF69B4 !important; background-color: #000080 !important; 
-        border: 3px solid #FF69B4 !important; margin-top: 40px !important;
-    }
-
-    .chart-title { font-size: 18px; font-weight: 900; color: #ffffff; background: #34495e; border-radius: 8px; text-align: center; padding: 10px; margin: 20px 0 10px 0; }
     
-    .stat-card { padding: 15px; border-radius: 12px; margin: 10px 0; display: flex; flex-direction: column; align-items: center; font-weight: 900; font-size: 16px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .m-card { border-left: 10px solid #FF4500; color: #D32F2F; }
-    .j-card { border-left: 10px solid #01579B; color: #01579B; border: 3px solid #FF4500; }
+    /* ★ 날짜 선택 글자색 및 Bold 처리 ★ */
+    div[data-baseweb="select"] div[data-testid="stMarkdownContainer"] p,
+    div[data-baseweb="select"] span,
+    div[data-baseweb="select"] div {
+        color: #4B0082 !important; /* 짙은 퍼플 */
+        font-weight: 900 !important;
+        font-size: 18px !important;
+    }
 
+    /* 위젯 레이블 볼드 */
+    label[data-testid="stWidgetLabel"] p { font-weight: 900 !important; font-size: 16px !important; color: #222222 !important; }
+
+    /* ★ 그래프 터치 및 인터랙션 완벽 차단 ★ */
+    .stPlotlyChart {
+        pointer-events: none !important; 
+        user-select: none !important;
+    }
+
+    /* 섹션 타이틀 및 카드 */
+    .chart-title { font-size: 18px; font-weight: 900; color: #ffffff; background: #2c3e50; border-radius: 8px; text-align: center; padding: 10px; margin: 20px 0; }
+    .rank-card { padding: 10px 15px; border-radius: 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; font-weight: 900; font-size: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    .m-weekly { background: linear-gradient(135deg, #FFEFBA, #FFFFFF); border-left: 8px solid #FF4500; color: #D32F2F; }
+    .j-weekly { background: linear-gradient(135deg, #E0F7FA, #FFFFFF); border-left: 8px solid #01579B; color: #01579B; }
+    .m-accum { background: linear-gradient(135deg, #FFF9C4, #FFFFFF); border-left: 8px solid #FBC02D; color: #7F6000; }  
+    .j-accum { background: linear-gradient(135deg, #E8F5E9, #FFFFFF); border-left: 8px solid #2E7D32; color: #1B5E20; }
+    
+    /* 종료 버튼 */
+    div.stButton > button {
+        width: 100% !important; height: 50px !important; border-radius: 12px !important;
+        font-weight: 900 !important; font-size: 17px !important; color: #FFD700 !important;
+        background: linear-gradient(135deg, #555555, #222222) !important;
+        border: 2px solid #FFD700 !important; margin-top: 30px !important;
+    }
     header { visibility: hidden; }
     </style>
     """, unsafe_allow_html=True)
@@ -85,18 +111,19 @@ def load_data():
         df_m = pd.read_csv('maemae.csv', encoding='cp949')
         df_j = pd.read_csv('jeonse.csv', encoding='cp949')
     except:
-        # 파일이 없을 때만 작동하는 안전한 샘플 데이터 (개수 정확히 일치시킴)
-        dates = pd.date_range(start='2026-01-25', periods=8, freq='W').strftime('%Y-%m-%d')
-        df_m = pd.DataFrame({'날짜': dates, '강북구': [0.2, 0.12, 0.6, 0.55, 0.08, 0.57, 0.3, 0.88]})
-        df_j = pd.DataFrame({'날짜': dates, '강북구': [0.18, 0.12, 0.13, 0.2, 0.3, 0.02, 0.38, 1.02]})
+        df_m = pd.read_csv('maemae.csv', encoding='utf-8')
+        df_j = pd.read_csv('jeonse.csv', encoding='utf-8')
     
-    for df in [df_m, df_j]:
-        for col in df.columns:
-            if col != '날짜': df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+    for col in df_m.columns:
+        if col != '날짜':
+            df_m[col] = pd.to_numeric(df_m[col], errors='coerce').fillna(0)
+    for col in df_j.columns:
+        if col != '날짜':
+            df_j[col] = pd.to_numeric(df_j[col], errors='coerce').fillna(0)
     return df_m, df_j
 
 def main():
-    st.markdown('<div style="text-align:center; padding: 15px;"><span class="brand-name">Dr.J</span><span class="brand-suffix">의 부동산</span></div>', unsafe_allow_html=True)
+    st.markdown('<div style="text-align:center; padding: 20px;"><span class="brand-name">Dr.J</span><span class="brand-suffix">의 부동산</span></div>', unsafe_allow_html=True)
     
     df_maemae, df_jeonse = load_data()
     date_list = sorted(df_maemae['날짜'].unique().tolist())
@@ -105,42 +132,87 @@ def main():
     tab1, tab2, tab3 = st.tabs(["📊 지역 분석", "🌡️ 시장 온도", "🏆 랭킹 TOP 10"])
 
     with tab1:
-        sel_date = st.selectbox("📅 기준 날짜 선택", date_list, index=len(date_list)-1)
+        sel_date = st.selectbox("📅 기준 날짜 선택", date_list, index=len(date_list)-1, key="tab1_date")
         sel_regions = st.multiselect("🔍 비교 지역 선택", region_list, default=[region_list[0]] if region_list else [])
         
         if sel_regions:
             curr_idx = date_list.index(sel_date)
-            for region in sel_regions:
-                m_val = df_maemae[df_maemae['날짜'] == sel_date][region].values[0]
-                j_val = df_jeonse[df_jeonse['날짜'] == sel_date][region].values[0]
+            start_idx = max(0, curr_idx - 7)
+            
+            # 그래프 공통 스타일 설정 (투명 배경 + 진한 네이비 볼드 폰트)
+            graph_font = dict(size=14, color="#000080", family="Noto Sans KR")
 
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.markdown(f'<div class="stat-card m-card"><div>{region} 매매</div><div style="font-size:24px;">{m_val:+.2f}%</div></div>', unsafe_allow_html=True)
-                with col2:
-                    st.markdown(f'<div class="stat-card j-card"><div>{region} 전세</div><div style="font-size:24px;">{j_val:+.2f}%</div><div style="color:#FF4500;">🔥 누적TOP</div></div>', unsafe_allow_html=True)
-
-            # 그래프 텍스트 컬러 (브라운)
-            graph_font = dict(color="#6F4E37", size=12)
-
-            # 최근 8주 데이터 슬라이싱 (에러 방지를 위해 tail 활용)
             st.markdown('<div class="chart-title">📈 매매 증감 추이 (최근 8주)</div>', unsafe_allow_html=True)
-            sub_m = df_maemae.iloc[max(0, curr_idx-7):curr_idx+1]
+            sub_m = df_maemae.iloc[start_idx : curr_idx + 1][['날짜'] + sel_regions]
             fig_m = px.line(sub_m, x='날짜', y=sel_regions, markers=True)
-            fig_m.update_traces(line_color='#006400', line_width=4)
-            fig_m.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=graph_font)
-            st.plotly_chart(fig_m, use_container_width=True)
+            fig_m.update_traces(line_width=6, marker=dict(size=10))
+            fig_m.update_layout(
+                height=350,
+                paper_bgcolor='rgba(0,0,0,0)', 
+                plot_bgcolor='rgba(0,0,0,0)', 
+                font=graph_font,
+                hovermode=False, # 툴팁 방지
+                xaxis=dict(tickfont=dict(weight='bold'), fixedrange=True), # 축 고정
+                yaxis=dict(tickfont=dict(weight='bold'), fixedrange=True),
+                legend=dict(font=dict(weight='bold'))
+            )
+            # config 옵션으로 고정된 이미지처럼 표시
+            st.plotly_chart(fig_m, use_container_width=True, config={'staticPlot': True})
 
             st.markdown('<div class="chart-title">📉 전세 증감 추이 (최근 8주)</div>', unsafe_allow_html=True)
-            sub_j = df_jeonse.iloc[max(0, curr_idx-7):curr_idx+1]
+            sub_j = df_jeonse.iloc[start_idx : curr_idx + 1][['날짜'] + sel_regions]
             fig_j = px.line(sub_j, x='날짜', y=sel_regions, markers=True)
-            fig_j.update_traces(line_color='#006400', line_width=4)
-            fig_j.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=graph_font)
-            st.plotly_chart(fig_j, use_container_width=True)
+            fig_j.update_traces(line_width=6, marker=dict(size=10))
+            fig_j.update_layout(
+                height=350,
+                paper_bgcolor='rgba(0,0,0,0)', 
+                plot_bgcolor='rgba(0,0,0,0)', 
+                font=graph_font,
+                hovermode=False,
+                xaxis=dict(tickfont=dict(weight='bold'), fixedrange=True),
+                yaxis=dict(tickfont=dict(weight='bold'), fixedrange=True),
+                legend=dict(font=dict(weight='bold'))
+            )
+            st.plotly_chart(fig_j, use_container_width=True, config={'staticPlot': True})
 
-    # 시장온도, 랭킹 탭은 기존과 동일하게 유지...
-    
-    if st.button("🚪 앱 종료", key="exit_trigger"):
+    with tab2:
+        st.markdown('<div class="chart-title">🌡️ 시장 온도계 (8주 합산)</div>', unsafe_allow_html=True)
+        m_sum = df_maemae.iloc[max(0, len(date_list)-8):].drop(columns=['날짜']).sum()
+        j_sum = df_jeonse.iloc[max(0, len(date_list)-8):].drop(columns=['날짜']).sum()
+        heat_df = pd.DataFrame({'매매합계': m_sum, '전세합계': j_sum}).sort_values(by='매매합계', ascending=False)
+        st.dataframe(heat_df.style.background_gradient(cmap='RdYlBu_r').format("{:+.2f}%"), use_container_width=True, height=500)
+
+    with tab3:
+        sel_date_rank = st.selectbox("📅 랭킹 기준일 선택", date_list, index=len(date_list)-1, key="tab3_date")
+        curr_idx_rank = date_list.index(sel_date_rank)
+        
+        st.markdown('<div class="chart-title" style="background:#e67e22;">🔥 주간 상승 지역 TOP 10</div>', unsafe_allow_html=True)
+        c1, c2 = st.columns(2)
+        with c1:
+            st.markdown('<p style="font-weight:900; text-align:center; color:#D32F2F; font-size:15px;">[매매 주간]</p>', unsafe_allow_html=True)
+            m_w = df_maemae[df_maemae['날짜'] == sel_date_rank].drop(columns=['날짜']).iloc[0].sort_values(ascending=False).head(10)
+            for i, (n, v) in enumerate(m_w.items()):
+                if v > 0: st.markdown(f'<div class="rank-card m-weekly"><span>{i+1}. {n}</span><span>+{v:.2f}</span></div>', unsafe_allow_html=True)
+        with c2:
+            st.markdown('<p style="font-weight:900; text-align:center; color:#01579B; font-size:15px;">[전세 주간]</p>', unsafe_allow_html=True)
+            j_w = df_jeonse[df_jeonse['날짜'] == sel_date_rank].drop(columns=['날짜']).iloc[0].sort_values(ascending=False).head(10)
+            for i, (n, v) in enumerate(j_w.items()):
+                if v > 0: st.markdown(f'<div class="rank-card j-weekly"><span>{i+1}. {n}</span><span>+{v:.2f}</span></div>', unsafe_allow_html=True)
+
+        st.markdown('<div class="chart-title" style="background:#f1c40f; color:#000;">📊 8주 누적 상승 TOP 10</div>', unsafe_allow_html=True)
+        c3, c4 = st.columns(2)
+        with c3:
+            st.markdown('<p style="font-weight:900; text-align:center; color:#7F6000; font-size:15px;">[매매 누적]</p>', unsafe_allow_html=True)
+            m_8 = df_maemae.iloc[max(0, curr_idx_rank-7) : curr_idx_rank+1].drop(columns=['날짜']).sum().sort_values(ascending=False).head(10)
+            for i, (n, v) in enumerate(m_8.items()):
+                if v > 0: st.markdown(f'<div class="rank-card m-accum"><span>{i+1}. {n}</span><span>+{v:.2f}%</span></div>', unsafe_allow_html=True)
+        with c4:
+            st.markdown('<p style="font-weight:900; text-align:center; color:#1B5E20; font-size:15px;">[전세 누적]</p>', unsafe_allow_html=True)
+            j_8 = df_jeonse.iloc[max(0, curr_idx_rank-7) : curr_idx_rank+1].drop(columns=['날짜']).sum().sort_values(ascending=False).head(10)
+            for i, (n, v) in enumerate(j_8.items()):
+                if v > 0: st.markdown(f'<div class="rank-card j-accum"><span>{i+1}. {n}</span><span>+{v:.2f}%</span></div>', unsafe_allow_html=True)
+
+    if st.button("🚪 앱 종료", key="exit_trigger", use_container_width=True):
         st.session_state.is_exit = True
         st.rerun()
 
