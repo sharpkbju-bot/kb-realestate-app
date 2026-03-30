@@ -176,9 +176,23 @@ st.markdown("""
         border: 3px solid #FFD700 !important;
     }
 
-    /* 초기화/선택완료 버튼 스타일 - 모바일 나란히 배치를 위해 간격 조정 */
+    /* ★ 모바일 강제 가로 정렬을 위한 Flex 레이아웃 ★ */
+    [data-testid="column"] {
+        flex: 1 1 0% !important;
+        min-width: 0 !important;
+    }
+    div[data-testid="stHorizontalBlock"] {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: flex-start !important;
+        gap: 0.5rem !important;
+    }
+
+    /* 초기화/선택완료 버튼 스타일 최적화 */
     .control-btn-container div.stButton > button {
         height: 40px !important; font-size: 14px !important;
+        margin-bottom: 10px !important;
     }
     .reset-btn div.stButton > button { background-color: #f8d7da !important; color: #721c24 !important; border: 2px solid #f5c6cb !important; }
     .confirm-btn div.stButton > button { background-color: #d4edda !important; color: #155724 !important; border: 2px solid #c3e6cb !important; }
@@ -216,7 +230,7 @@ def main():
 
         sel_regions = st.multiselect("🔍 비교 지역 선택", region_list, key="region_selector", default=st.session_state.sel_regions)
 
-        # 모바일에서도 나란히 배치되도록 컬럼 비율 유지
+        # 모바일에서도 절대 한 줄로 나오도록 컬럼 생성
         btn_col1, btn_col2 = st.columns(2)
         with btn_col1:
             st.markdown('<div class="control-btn-container reset-btn">', unsafe_allow_html=True)
