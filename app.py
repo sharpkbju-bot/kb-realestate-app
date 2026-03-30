@@ -44,40 +44,48 @@ set_bg('bg.jpg')
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
-    html, body, [class*="css"] { font-family: 'Noto Sans KR', sans-serif; color: #000000; }
+    
+    /* 전체 기본 폰트 설정 */
+    html, body, [class*="css"], .stMarkdown, p, span, div { 
+        font-family: 'Noto Sans KR', sans-serif !important; 
+    }
 
     /* 브랜드 헤더 */
     .brand-container { text-align: center; padding: 20px; border: 3px solid #006400; border-radius: 15px; background-color: rgba(255,255,255,0.7); margin-bottom: 25px; }
     .brand-name { color: #006400; font-size: 40px; font-weight: 900; }
     .brand-suffix { color: #FF4500; font-size: 22px; font-weight: 900; }
     
-    /* 버튼형 탭 디자인 (st.tabs 스타일 복구) */
+    /* 버튼형 탭 디자인 (Bold 900 적용) */
     .stButton > button { 
         width: 100% !important; height: 65px !important; border-radius: 0px !important; 
         border: 2px solid #2c3e50 !important; font-weight: 900 !important; font-size: 18px !important;
         background-color: rgba(255,255,255,0.9) !important; color: #1a1a1a !important;
-        margin-bottom: -2px !important; transition: 0.3s;
+        margin-bottom: -2px !important;
     }
-    /* 선택된 탭 스타일 */
     .stButton > button[kind="primary"] { background-color: #006400 !important; color: #ffffff !important; border: 2px solid #2c3e50 !important; }
 
-    /* 드롭다운(selectbox) 디자인 강화 */
-    label[data-testid="stWidgetLabel"] p { font-weight: 900 !important; font-size: 20px !important; color: #111111 !important; margin-bottom: 10px; }
+    /* 드롭다운(selectbox) 날짜 글자 BOLD 처리 집중 보강 */
+    label[data-testid="stWidgetLabel"] p { font-weight: 900 !important; font-size: 20px !important; color: #111111 !important; }
     
+    /* 선택 박스 본체 */
     div[data-baseweb="select"] > div:first-child { 
-        background-color: #E6E6FA !important; /* 세련된 연보라 배경 */
-        border: 3px solid #4B0082 !important; /* 진한 보라 테두리 */
-        border-radius: 12px !important; min-height: 55px !important; 
+        background-color: #E6E6FA !important; border: 3px solid #4B0082 !important; border-radius: 12px !important; min-height: 55px !important; 
     }
-    /* 선택된 텍스트 크기 및 굵기 */
-    div[data-baseweb="select"] span, div[data-testid="stMarkdownContainer"] p { 
-        color: #4B0082 !important; font-weight: 900 !important; font-size: 22px !important; 
+    
+    /* 선택된 텍스트 및 드롭다운 목록 내의 모든 텍스트 강제 BOLD */
+    div[data-baseweb="select"] * { 
+        font-weight: 900 !important; font-size: 22px !important; color: #4B0082 !important; 
+    }
+    
+    /* 드롭다운 클릭 시 나타나는 리스트(Pop-over) 내부 글자 BOLD */
+    [data-themed-scrollbar-container="true"] span {
+        font-weight: 900 !important; font-size: 20px !important; color: #4B0082 !important;
     }
 
     /* 통계 카드 */
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 69, 0, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(255, 69, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 69, 0, 0); } }
     .highlight-card { animation: pulse 2s infinite !important; border: 4px solid #FF4500 !important; }
-    .stat-card { padding: 15px; border-radius: 12px; margin: 10px 0; display: flex; flex-direction: column; align-items: center; font-weight: 900; font-size: 18px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 1px solid #cccccc; }
+    .stat-card { padding: 15px; border-radius: 12px; margin: 10px 0; display: flex; flex-direction: column; align-items: center; font-weight: 900; font-size: 18px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 2px solid #cccccc; }
     .m-card { border-left: 12px solid #FF4500; color: #D32F2F; }
     .j-card { border-left: 12px solid #01579B; color: #01579B; }
 
@@ -91,7 +99,7 @@ st.markdown("""
     .m-accum { background: linear-gradient(135deg, #FFF9C4, #FFFFFF); border-left: 10px solid #FBC02D; }
     .j-accum { background: linear-gradient(135deg, #E8F5E9, #FFFFFF); border-left: 10px solid #2E7D32; }
 
-    /* 종료 버튼 전용 컨테이너 */
+    /* 종료 버튼 */
     .exit-btn-wrap > button { 
         width: 100% !important; height: 60px !important; border-radius: 15px !important; 
         font-weight: 900 !important; font-size: 20px !important; color: #FFD700 !important; 
@@ -120,12 +128,12 @@ def main():
     date_list = sorted(df_maemae['날짜'].unique().tolist())
     region_list = sorted([col for col in df_maemae.columns if col != '날짜'])
     
-    # 탭 구현 (디자인 완전 복구)
+    # 탭 구현
     t_cols = st.columns(3)
     tabs = ["📊 지역 분석", "🌡️ 시장 온도", "🏆 누적 랭킹 TOP 10"]
     for i, t_label in enumerate(tabs):
         is_active = (st.session_state.active_tab == t_label)
-        if t_cols[i].button(t_label, key=f"tab_btn_{i}", use_container_width=True, 
+        if t_cols[i].button(t_label, key=f"t_btn_{i}", use_container_width=True, 
                             type="primary" if is_active else "secondary"):
             st.session_state.active_tab = t_label
             st.session_state.date_reset_key += 1
@@ -133,7 +141,7 @@ def main():
 
     # 1. 지역 분석
     if st.session_state.active_tab == "📊 지역 분석":
-        sel_date = st.selectbox("📅 기준 날짜 선택", date_list, index=len(date_list)-1, key=f"v1_{st.session_state.date_reset_key}")
+        sel_date = st.selectbox("📅 기준 날짜 선택", date_list, index=len(date_list)-1, key=f"date_sel_{st.session_state.date_reset_key}")
         sel_regions = st.multiselect("🔍 비교 지역 선택", region_list, default=[region_list[0]] if region_list else [])
         
         if sel_regions:
@@ -153,7 +161,6 @@ def main():
                     j_cls = "stat-card j-card highlight-card" if is_j_hot else "stat-card j-card"
                     st.markdown(f'<div class="{j_cls}"><div>{region} 전세({sel_date})</div><div style="font-size:28px;">{j_val:+.2f}%</div>{"<div style=\'color:#01579B; font-size:14px;\'>🔥 누적 TOP</div>" if is_j_hot else ""}</div>', unsafe_allow_html=True)
             
-            # 그래프 섹션 (짙은 그린 + 터치 방지)
             sub_m = df_maemae.iloc[max(0, curr_idx-7) : curr_idx+1][['날짜'] + sel_regions]
             sub_j = df_jeonse.iloc[max(0, curr_idx-7) : curr_idx+1][['날짜'] + sel_regions]
             c_palette = ['#006400'] + px.colors.qualitative.Plotly
@@ -174,7 +181,7 @@ def main():
 
     # 3. 누적 랭킹
     elif st.session_state.active_tab == "🏆 누적 랭킹 TOP 10":
-        sel_date_rank = st.selectbox("📅 랭킹 기준일 선택", date_list, index=len(date_list)-1, key=f"v3_{st.session_state.date_reset_key}")
+        sel_date_rank = st.selectbox("📅 랭킹 기준일 선택", date_list, index=len(date_list)-1, key=f"rank_sel_{st.session_state.date_reset_key}")
         curr_idx_rank = date_list.index(sel_date_rank)
         
         st.markdown('<div class="chart-title" style="background:#e67e22;">🔥 주간 상승 지역 TOP 10</div>', unsafe_allow_html=True)
