@@ -55,7 +55,7 @@ st.markdown("""
     /* 메인 타이틀 테두리 */
     .brand-container { 
         text-align: center; 
-        padding: 14px; 
+        padding: 20px; 
         border: 2px solid #006400; 
         border-radius: 15px; 
         background-color: rgba(255,255,255,0.6);
@@ -82,19 +82,27 @@ st.markdown("""
     .stTabs [aria-selected="true"] { background-color: #006400 !important; }
     .stTabs [aria-selected="true"] div p { color: #ffffff !important; }
 
-    /* 드롭다운/셀렉트 박스 테두리 */
+    /* 입력창(드롭다운) 스타일 보강: 다크모드 글자 안보임 해결 */
     div[data-baseweb="select"] > div:first-child {
         background-color: #f0f2f6 !important; 
         border: 2px solid #4B0082 !important; 
         border-radius: 10px !important; 
-        min-height: 48px !important; 
-        display: flex !important; 
-        align-items: center !important;
+        min-height: 48px !important;
     }
     
+    /* 입력되는 글자색을 검정색으로 강제 고정 */
+    div[data-baseweb="select"] input {
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
+    }
+
+    /* 선택된 항목 및 텍스트 색상 */
     div[data-baseweb="select"] div[data-testid="stMarkdownContainer"] p,
-    div[data-baseweb="select"] span, div[data-baseweb="select"] div {
-        color: #4B0082 !important; font-weight: 900 !important; font-size: 18px !important;
+    div[data-baseweb="select"] span, 
+    div[data-baseweb="select"] div {
+        color: #4B0082 !important; 
+        font-weight: 900 !important; 
+        font-size: 18px !important;
     }
 
     label[data-testid="stWidgetLabel"] p { font-weight: 900 !important; font-size: 16px !important; color: #222222 !important; }
@@ -257,7 +265,7 @@ def main():
             for i, (n, v) in enumerate(m_w.items()):
                 if v > 0: st.markdown(f'<div class="rank-card m-weekly"><span>{i+1}. {n}</span><span>+{v:.2f}</span></div>', unsafe_allow_html=True)
         with c2:
-            st.markdown('<p style="font-weight:900; text-align:center; color:#01579B; font-size:15px;"><br>[전세 주간 상승률]</p>', unsafe_allow_html=True)
+            st.markdown('<p style="font-weight:900; text-align:center; color:#01579B; font-size:15px;">[전세 주간 상승률]</p>', unsafe_allow_html=True)
             j_w = df_jeonse[df_jeonse['날짜'] == sel_date_rank].drop(columns=['날짜']).iloc[0].sort_values(ascending=False).head(10)
             for i, (n, v) in enumerate(j_w.items()):
                 if v > 0: st.markdown(f'<div class="rank-card j-weekly"><span>{i+1}. {n}</span><span>+{v:.2f}</span></div>', unsafe_allow_html=True)
@@ -269,7 +277,7 @@ def main():
             for i, (n, v) in enumerate(m_8.items()):
                 if v > 0: st.markdown(f'<div class="rank-card m-accum"><span>{i+1}. {n}</span><span>+{v:.2f}%</span></div>', unsafe_allow_html=True)
         with c4:
-            st.markdown('<p style="font-weight:900; text-align:center; color:#1B5E20; font-size:15px;"><br>[전세 누적 상승률]</p>', unsafe_allow_html=True)
+            st.markdown('<p style="font-weight:900; text-align:center; color:#1B5E20; font-size:15px;">[전세 누적 상승률]</p>', unsafe_allow_html=True)
             j_8 = df_jeonse.iloc[max(0, curr_idx_rank-7) : curr_idx_rank+1].drop(columns=['날짜']).sum().sort_values(ascending=False).head(10)
             for i, (n, v) in enumerate(j_8.items()):
                 if v > 0: st.markdown(f'<div class="rank-card j-accum"><span>{i+1}. {n}</span><span>+{v:.2f}%</span></div>', unsafe_allow_html=True)
