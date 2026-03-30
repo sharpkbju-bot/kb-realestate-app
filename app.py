@@ -54,7 +54,7 @@ st.markdown("""
     /* 탭 디자인 */
     .stTabs [data-baseweb="tab-list"] { width: 100%; background-color: rgba(255,255,255,0.4); border-radius: 12px 12px 0 0; }
     .stTabs [data-baseweb="tab"] { flex: 1; height: 60px; background-color: rgba(255,255,255,0.8); }
-    .stTabs [data-baseweb="tab"] div p { font-size: 18px; font-weight: 900; color: #1a1a1a; }
+    .stTabs [data-baseweb="tab"] div p { font-size: 15px; font-weight: 900; color: #1a1a1a; }
     .stTabs [aria-selected="true"] { background-color: #006400 !important; }
     .stTabs [aria-selected="true"] div p { color: #ffffff !important; }
 
