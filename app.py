@@ -54,7 +54,7 @@ set_bg_from_local('bg.jpg')
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
-    html, body, [class*="css"] { font-family: 'Noto Sans KR', sans-serif; color: #000000; }
+    html, body, [class*=\"css\"] { font-family: 'Noto Sans KR', sans-serif; color: #000000; }
 
     .brand-container { 
         text-align: center; padding: 20px; border: 2px solid #006400; border-radius: 15px; 
@@ -63,25 +63,25 @@ st.markdown("""
     .brand-name { color: #006400; font-size: 35px; font-weight: 900; }
     .brand-suffix { color: #FF4500; font-size: 20px; font-weight: 900; }
 
-    .stTabs [data-baseweb="tab-list"] { 
+    .stTabs [data-baseweb=\"tab-list\"] { 
         width: 100% !important; background-color: rgba(255,255,255,0.4) !important; 
         border-radius: 12px 12px 0 0 !important; border: 2px solid #2c3e50 !important;
         padding: 2px !important; gap: 0px !important;
     }
-    .stTabs [data-baseweb="tab"] { 
+    .stTabs [data-baseweb=\"tab\"] { 
         flex: 1 !important; height: 65px !important; background-color: rgba(255,255,255,0.8) !important; 
         border-right: 1px solid #ddd !important; display: flex !important; align-items: center !important; justify-content: center !important;
     }
-    .stTabs [data-baseweb="tab"] div p { font-size: 16px !important; font-weight: 900 !important; color: #1a1a1a !important; }
-    .stTabs [aria-selected="true"] { background-color: #006400 !important; }
-    .stTabs [aria-selected="true"] div p { color: #ffffff !important; }
+    .stTabs [data-baseweb=\"tab\"] div p { font-size: 16px !important; font-weight: 900 !important; color: #1a1a1a !important; }
+    .stTabs [aria-selected=\"true\"] { background-color: #006400 !important; }
+    .stTabs [aria-selected=\"true\"] div p { color: #ffffff !important; }
 
-    label[data-testid="stWidgetLabel"] p { font-weight: 900 !important; font-size: 18px !important; color: #111111 !important; }
+    label[data-testid=\"stWidgetLabel\"] p { font-weight: 900 !important; font-size: 18px !important; color: #111111 !important; }
 
-    div[data-baseweb="select"] > div:first-child {
+    div[data-baseweb=\"select\"] > div:first-child {
         background-color: #f0f2f6 !important; border: 2px solid #4B0082 !important; border-radius: 10px !important; min-height: 48px !important;
     }
-    div[data-baseweb="select"] span, div[data-baseweb="select"] div[data-testid="stMarkdownContainer"] p, div[data-baseweb="select"] div {
+    div[data-baseweb=\"select\"] span, div[data-baseweb=\"select\"] div[data-testid=\"stMarkdownContainer\"] p, div[data-baseweb=\"select\"] div {
         color: #4B0082 !important; font-weight: 900 !important; font-size: 18px !important;
     }
 
@@ -140,27 +140,12 @@ def main():
     date_list = sorted(df_maemae['날짜'].unique().tolist())
     region_list = sorted([col for col in df_maemae.columns if col != '날짜'])
     
-    # ★ 탭 이동 시 날짜 초기화를 위한 세션 로직 ★
-    if "current_tab" not in st.session_state:
-        st.session_state.current_tab = 0
-    if "date_version" not in st.session_state:
-        st.session_state.date_version = 0
+    # 탭 생성 (동작 오류 방지를 위해 rerun 제거)
+    tab1, tab2, tab3 = st.tabs(["📊 지역 분석", "🌡️ 시장 온도", "🏆 누적 랭킹 TOP 10"])
 
-    tab_titles = ["📊 지역 분석", "🌡️ 시장 온도", "🏆 누적 랭킹 TOP 10"]
-    tabs = st.tabs(tab_titles)
-
-    # 각 탭 클릭 시 날짜 버전 업데이트 (selectbox 초기화 유도)
-    for i, tab in enumerate(tabs):
-        with tab:
-            if st.session_state.current_tab != i:
-                st.session_state.current_tab = i
-                st.session_state.date_version += 1
-                st.rerun()
-
-    # 1번 탭: 지역 분석
-    with tabs[0]:
-        # key에 date_version을 포함하여 탭 이동 시마다 강제 리셋
-        sel_date = st.selectbox("📅 기준 날짜 선택", date_list, index=len(date_list)-1, key=f"date_sel_{st.session_state.date_version}")
+    with tab1:
+        # 탭별 독립적인 key 부여로 이동 시 자연스럽게 최신 날짜 유지
+        sel_date = st.selectbox("📅 기준 날짜 선택", date_list, index=len(date_list)-1, key="tab1_date_fixed")
         sel_regions = st.multiselect("🔍 비교 지역 선택", region_list, default=[region_list[0]] if region_list else [])
         
         if sel_regions:
@@ -185,7 +170,7 @@ def main():
             start_idx = max(0, curr_idx - 7)
             st.markdown('<div class="chart-title">📈 매매 증감 추이 (최근 8주)</div>', unsafe_allow_html=True)
             sub_m = df_maemae.iloc[start_idx : curr_idx + 1][['날짜'] + sel_regions]
-            # ★ 그래프 컬러 짙은 그린(#006400) 및 터치 불가(staticPlot) ★
+            # 그래프 컬러: 짙은 그린 / 터치 불가: staticPlot
             fig_m = px.line(sub_m, x='날짜', y=sel_regions, markers=True, color_discrete_sequence=['#006400'])
             fig_m.update_layout(height=350, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
             st.plotly_chart(fig_m, use_container_width=True, config={'staticPlot': True})
@@ -196,17 +181,15 @@ def main():
             fig_j.update_layout(height=350, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
             st.plotly_chart(fig_j, use_container_width=True, config={'staticPlot': True})
 
-    # 2번 탭: 시장 온도
-    with tabs[1]:
+    with tab2:
         st.markdown('<div class="chart-title">🌡️ 시장 온도계 (8주 합산)</div>', unsafe_allow_html=True)
         m_sum = df_maemae.iloc[-8:].drop(columns=['날짜']).sum()
         j_sum = df_jeonse.iloc[-8:].drop(columns=['날짜']).sum()
         heat_df = pd.DataFrame({'매매합계': m_sum, '전세합계': j_sum}).sort_values(by='매매합계', ascending=False)
         st.dataframe(heat_df.style.background_gradient(cmap='RdYlBu_r').format("{:+.2f}%"), use_container_width=True, height=500)
 
-    # 3번 탭: 누적 랭킹
-    with tabs[2]:
-        sel_date_rank = st.selectbox("📅 랭킹 기준일 선택", date_list, index=len(date_list)-1, key=f"rank_sel_{st.session_state.date_version}")
+    with tab3:
+        sel_date_rank = st.selectbox("📅 랭킹 기준일 선택", date_list, index=len(date_list)-1, key="tab3_date_fixed")
         curr_idx_rank = date_list.index(sel_date_rank)
         
         st.markdown('<div class="chart-title" style="background:#e67e22;">🔥 주간 상승 지역 TOP 10</div>', unsafe_allow_html=True)
@@ -236,7 +219,8 @@ def main():
                 if v > 0: st.markdown(f'<div class="rank-card j-accum"><span>{i+1}. {n}</span><span>+{v:.2f}%</span></div>', unsafe_allow_html=True)
 
     st.markdown("<br><br>", unsafe_allow_html=True)
-    if st.button("🚪 안전하게 앱 종료하기", key="exit_trigger", use_container_width=True):
+    # 버튼 텍스트 Bold 적용 완료
+    if st.button("🚪 **안전하게 앱 종료하기**", key="exit_trigger", use_container_width=True):
         st.session_state.is_exit = True
         st.rerun()
 
