@@ -140,12 +140,13 @@ def main():
                 col1, col2 = st.columns(2)
                 with col1:
                     m_class = "stat-card m-card highlight-card" if is_m_hot else "stat-card m-card"
-                    # ★ 매매 카드 누적 TOP 문구 추가 부분 ★
                     m_top_tag = '<div style="color:#FF4500; font-size:12px;">🔥 누적 TOP</div>' if is_m_hot else ""
-                    st.markdown(f'<div class="{m_class}"><div>{region} 매매</div><div style="font-size:24px;">{m_val:+.2f}%</div>{m_top_tag}</div>', unsafe_allow_html=True)
+                    # 매매 카드 텍스트 수정
+                    st.markdown(f'<div class="{m_class}"><div>{region} 매매 증감({sel_date})</div><div style="font-size:24px;">{m_val:+.2f}%</div>{m_top_tag}</div>', unsafe_allow_html=True)
                 with col2:
                     j_class = "stat-card j-card highlight-card" if is_j_hot else "stat-card j-card"
-                    st.markdown(f'<div class="{j_class}"><div>{region} 전세</div><div style="font-size:24px;">{j_val:+.2f}%</div><div style="color:#FF4500; font-size:12px;">🔥 누적 TOP</div></div>', unsafe_allow_html=True)
+                    # 전세 카드 텍스트 수정
+                    st.markdown(f'<div class="{j_class}"><div>{region} 전세 증감({sel_date})</div><div style="font-size:24px;">{j_val:+.2f}%</div><div style="color:#FF4500; font-size:12px;">🔥 누적 TOP</div></div>', unsafe_allow_html=True)
             start_idx = max(0, curr_idx - 7)
             custom_colors = px.colors.qualitative.Plotly.copy()
             custom_colors[0] = '#006400'
