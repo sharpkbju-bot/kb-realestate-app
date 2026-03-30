@@ -54,13 +54,14 @@ st.markdown("""
     /* 탭 디자인 */
     .stTabs [data-baseweb="tab-list"] { width: 100%; background-color: rgba(255,255,255,0.4); border-radius: 12px; }
     .stTabs [data-baseweb="tab"] { flex: 1; height: 70px; background-color: rgba(255,255,255,0.8); }
-    .stTabs [data-baseweb="tab"] div p { font-size: 20px; font-weight: 900; color: #1a1a1a; }
+    .stTabs [data-baseweb="tab"] div p { font-size: 19px; font-weight: 900; color: #1a1a1a; }
     .stTabs [aria-selected="true"] { background-color: #006400 !important; }
     .stTabs [aria-selected="true"] div p { color: #ffffff !important; }
 
-    /* ★ 선택 박스 및 라벨 볼드 처리 ★ */
+    /* 위젯 라벨 볼드 */
     label[data-testid="stWidgetLabel"] p { font-weight: 900 !important; font-size: 18px !important; color: #111111 !important; }
     
+    /* 선택 박스 스타일 */
     div[data-baseweb="select"] > div:first-child {
         background-color: #f0f2f6 !important; 
         border: 2px solid #999999 !important;
@@ -68,15 +69,16 @@ st.markdown("""
         min-height: 50px !important;
     }
     div[data-baseweb="select"] span, div[data-baseweb="select"] div {
-        color: #4B0082 !important; font-weight: 900 !important; font-size: 19px !important;
+        color: #4B0082 !important; font-weight: 900 !important; font-size: 18px !important;
     }
 
-    /* ★ 시장 온도계 테이블 스타일 ★ */
-    [data-testid="stTable"] th { background-color: #2c3e50 !important; color: white !important; font-weight: 900 !important; font-size: 16px !important; }
-    [data-testid="stDataFrame"] div[data-testid="stTable"] td { font-weight: 900 !important; font-size: 15px !important; color: #000080 !important; }
+    /* 조회 버튼 스타일 (지역분석 폼 전용) */
+    .stButton > button {
+        font-weight: 900 !important; border-radius: 10px !important;
+    }
 
-    /* ★ 종료 버튼 볼드 ★ */
-    div.stButton > button {
+    /* 종료 버튼 전용 스타일 */
+    .exit-btn > div > button {
         width: 100% !important; height: 60px !important; border-radius: 12px !important;
         font-weight: 900 !important; font-size: 20px !important; color: #FFD700 !important;
         background: linear-gradient(135deg, #444444, #000000) !important;
@@ -85,9 +87,9 @@ st.markdown("""
 
     .chart-title { font-size: 18px; font-weight: 900; color: #ffffff; background: #2c3e50; border-radius: 8px; text-align: center; padding: 10px; margin: 20px 0 10px 0; }
     
-    /* 강조 카드 */
-    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 69, 0, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(255, 69, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 69, 0, 0); } }
     .highlight-card { animation: pulse 2s infinite; border: 3px solid #FF4500 !important; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 69, 0, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(255, 69, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 69, 0, 0); } }
+
     .stat-card { padding: 15px; border-radius: 12px; margin: 10px 0; display: flex; flex-direction: column; align-items: center; font-weight: 900; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); background: white; }
     .m-card { border-left: 10px solid #FF4500; color: #D32F2F; }
     .j-card { border-left: 10px solid #01579B; color: #01579B; }
@@ -123,11 +125,15 @@ def main():
     date_list = sorted(df_maemae['날짜'].unique().tolist())
     region_list = sorted([col for col in df_maemae.columns if col != '날짜'])
 
-    tab1, tab2, tab3 = st.tabs(["📊 지역분석", "🌡️ 시장온도", "🏆 랭킹TOP"])
+    # 탭 명칭 수정: 랭킹 TOP 10
+    tab1, tab2, tab3 = st.tabs(["📊 지역분석", "🌡️ 시장온도", "🏆 랭킹 TOP 10"])
 
     with tab1:
-        sel_date = st.selectbox("📅 기준 날짜 선택", date_list, index=len(date_list)-1, key="tab1_date")
-        sel_regions = st.multiselect("🔍 비교 지역 선택", region_list, default=[region_list[0]] if region_list else [])
+        # 드롭다운 자동 닫기를 위해 폼(Form) 활용
+        with st.form("search_form"):
+            sel_date = st.selectbox("📅 기준 날짜 선택", date_list, index=len(date_list)-1)
+            sel_regions = st.multiselect("🔍 비교 지역 선택", region_list, default=[region_list[0]] if region_list else [])
+            submitted = st.form_submit_button("지역 확정 및 조회 (박스 닫기)")
         
         if sel_regions:
             curr_idx = date_list.index(sel_date)
@@ -168,12 +174,11 @@ def main():
         st.markdown('<div class="chart-title">🌡️ 시장 온도계 (8주 합산)</div>', unsafe_allow_html=True)
         m_sum = df_maemae.iloc[max(0, len(date_list)-8):].drop(columns=['날짜']).sum()
         j_sum = df_jeonse.iloc[max(0, len(date_list)-8):].drop(columns=['날짜']).sum()
-        heat_df = pd.DataFrame({'지역명': m_sum.index, '매매합계': m_sum.values, '전세합계': j_sum.values}).sort_values(by='매매합계', ascending=False)
+        heat_df = pd.DataFrame({'지역명': m_sum.index, '매매 합계': m_sum.values, '전세 합계': j_sum.values}).sort_values(by='매매 합계', ascending=False)
         
-        # ★ 시장 온도계 표 디자인 강화 ★
         st.dataframe(
-            heat_df.style.background_gradient(cmap='RdYlBu_r', subset=['매매합계', '전세합계'])
-            .format({'매매합계': '{:+.2f}%', '전세합계': '{:+.2f}%'})
+            heat_df.style.background_gradient(cmap='RdYlBu_r', subset=['매매 합계', '전세 합계'])
+            .format({'매매 합계': '{:+.2f}%', '전세 합계': '{:+.2f}%'})
             .set_properties(**{'font-weight': '900', 'color': '#000000', 'font-size': '16px'}),
             use_container_width=True, height=550, hide_index=True
         )
@@ -182,31 +187,39 @@ def main():
         sel_date_rank = st.selectbox("📅 랭킹 기준일 선택", date_list, index=len(date_list)-1, key="tab3_date")
         curr_idx_rank = date_list.index(sel_date_rank)
         
+        # 주간 리스트에 [매매], [전세] 표기 추가
         st.markdown('<div class="chart-title" style="background:#e67e22;">🔥 주간 상승 지역 TOP 10</div>', unsafe_allow_html=True)
         c1, c2 = st.columns(2)
         with c1:
+            st.markdown('<p style="text-align:center; font-weight:900; color:#D32F2F;">[매매 주간]</p>', unsafe_allow_html=True)
             m_w = df_maemae[df_maemae['날짜'] == sel_date_rank].drop(columns=['날짜']).iloc[0].sort_values(ascending=False).head(10)
             for n, v in m_w.items():
                 if v > 0: st.markdown(f'<div class="rank-card m-weekly"><span>{n}</span><span>+{v:.2f}</span></div>', unsafe_allow_html=True)
         with c2:
+            st.markdown('<p style="text-align:center; font-weight:900; color:#01579B;">[전세 주간]</p>', unsafe_allow_html=True)
             j_w = df_jeonse[df_jeonse['날짜'] == sel_date_rank].drop(columns=['날짜']).iloc[0].sort_values(ascending=False).head(10)
             for n, v in j_w.items():
                 if v > 0: st.markdown(f'<div class="rank-card j-weekly"><span>{n}</span><span>+{v:.2f}</span></div>', unsafe_allow_html=True)
 
+        # 8주 누적 리스트에 [매매], [전세] 표기 추가
         st.markdown('<div class="chart-title" style="background:#f1c40f; color:#000;">📊 8주 누적 상승 TOP 10</div>', unsafe_allow_html=True)
         c3, c4 = st.columns(2)
         with c3:
+            st.markdown('<p style="text-align:center; font-weight:900; color:#7F6000;">[매매 누적]</p>', unsafe_allow_html=True)
             m_8 = df_maemae.iloc[max(0, curr_idx_rank-7) : curr_idx_rank+1].drop(columns=['날짜']).sum().sort_values(ascending=False).head(10)
             for n, v in m_8.items():
                 if v > 0: st.markdown(f'<div class="rank-card m-accum"><span>{n}</span><span>+{v:.2f}%</span></div>', unsafe_allow_html=True)
         with c4:
+            st.markdown('<p style="text-align:center; font-weight:900; color:#1B5E20;">[전세 누적]</p>', unsafe_allow_html=True)
             j_8 = df_jeonse.iloc[max(0, curr_idx_rank-7) : curr_idx_rank+1].drop(columns=['날짜']).sum().sort_values(ascending=False).head(10)
             for n, v in j_8.items():
                 if v > 0: st.markdown(f'<div class="rank-card j-accum"><span>{n}</span><span>+{v:.2f}%</span></div>', unsafe_allow_html=True)
 
-    if st.button("🚪 안전하게 앱 종료하기", key="exit_trigger"):
+    st.markdown('<div class="exit-btn">', unsafe_allow_html=True)
+    if st.button("🚪 앱 종료", key="exit_trigger"):
         st.session_state.is_exit = True
         st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
