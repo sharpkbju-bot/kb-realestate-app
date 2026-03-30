@@ -28,7 +28,7 @@ if st.session_state.is_exit:
         <div class="exit-wrapper">
             <h1 class="exit-title">Dr.J의 부동산</h1>
             <h2 class="exit-wishes">모두 부자됩시다.</h2>
-            <p class="exit-msg">Dr.J의 부동산<br>모두 부자됩시다.</p>
+            /* <p class="exit-msg">Dr.J의 부동산<br>모두 부자됩시다.</p> */
         </div>
     """, unsafe_allow_html=True)
     st.stop()
