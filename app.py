@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -5,22 +6,51 @@ import base64
 import os
 
 # 1. 페이지 설정
-st.set_page_config(page_title="Dr.J의 부동산", page_icon="🏠", layout="centered")
+st.set_page_config(
+    page_title="Dr.J의 부동산", 
+    page_icon="🏠",
+    layout="centered"
+)
 
 # 세션 상태 초기화 및 종료 로직
 if "is_exit" not in st.session_state:
     st.session_state.is_exit = False
 
+# ★ 종료 시 나타나는 화면 스타일 수정 ★
 if st.session_state.is_exit:
     st.markdown("""
         <style>
         .stApp { background-color: white !important; background-image: none !important; }
-        .exit-wrapper { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; text-align: center; }
+        .exit-wrapper { 
+            position: fixed; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            width: 100%; 
+            text-align: center; 
+            z-index: 1000;
+        }
+        /* 메인 타이틀: 30px, Navy 적용 */
+        .exit-title { 
+            font-size: 30px !important; 
+            font-weight: 900; 
+            color: #000080; /* Navy */
+            margin-bottom: 10px;
+        }
+        /* 부자됩시다 문구: 20px로 축소 */
+        .exit-wishes { 
+            font-size: 20px !important; 
+            font-weight: 700; 
+            color: #333333; 
+            margin-bottom: 10px;
+        }
+        .exit-msg { font-size: 16px; color: #666; }
         header { visibility: hidden; }
         </style>
         <div class="exit-wrapper">
-            <h1 style="color: #006400; font-weight: 900;">Dr.J의 부동산</h1>
-            <h2 style="color: #006400; font-weight: 900;">모두 부자됩시다.</h2>
+            <h1 class="exit-title">Dr.J의 부동산</h1>
+            <h2 class="exit-wishes">모두 부자됩시다.</h2>
+            <p class="exit-msg">안전하게 종료되었습니다.</p>
         </div>
     """, unsafe_allow_html=True)
     st.stop()
@@ -120,7 +150,6 @@ def main():
         sel_regions = st.multiselect("🔍 비교 지역 선택", region_list, default=[region_list[0]] if region_list else [])
         
         if sel_regions:
-            # 시황 카드 출력
             for region in sel_regions:
                 m_val = df_maemae[df_maemae['날짜'] == sel_date][region].values[0]
                 j_val = df_jeonse[df_jeonse['날짜'] == sel_date][region].values[0]
@@ -131,33 +160,25 @@ def main():
                 with col2:
                     st.markdown(f'<div class="stat-card j-card"><div>{region} 전세</div><div style="font-size:24px;">{j_val:+.2f}%</div><div style="color:#FF4500; font-size:12px;">🔥 누적TOP</div></div>', unsafe_allow_html=True)
 
-            # 그래프 출력 데이터 준비
             curr_idx = date_list.index(sel_date)
             start_idx = max(0, curr_idx - 7)
             graph_font = dict(size=14, color="#6F4E37", family="Noto Sans KR") # 브라운 텍스트
 
-            # ★ 첫 번째 지역을 다크 그린으로 고정하기 위한 컬러 시퀀스 정의 ★
-            custom_colors = px.colors.qualitative.Plotly.copy() # 기본 팔레트 가져오기
+            custom_colors = px.colors.qualitative.Plotly.copy()
             custom_colors[0] = '#006400' # 첫 번째 색상을 다크 그린으로 명시적 변경
 
             st.markdown('<div class="chart-title">📈 매매 증감 추이 (최근 8주)</div>', unsafe_allow_html=True)
             sub_m = df_maemae.iloc[start_idx : curr_idx + 1][['날짜'] + sel_regions]
-            # px.line에서 color 옵션에 지역 컬럼을 주고, color_discrete_sequence에 커스텀 팔레트 적용
-            fig_m = px.line(sub_m, x='날짜', y=sel_regions, markers=True, 
-                            color_discrete_sequence=custom_colors)
+            fig_m = px.line(sub_m, x='날짜', y=sel_regions, markers=True, color_discrete_sequence=custom_colors)
             fig_m.update_traces(line_width=4, marker=dict(size=10))
-            fig_m.update_layout(height=350, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
-                                font=graph_font, hovermode=False)
+            fig_m.update_layout(height=350, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=graph_font, hovermode=False)
             st.plotly_chart(fig_m, use_container_width=True, config={'staticPlot': True})
 
             st.markdown('<div class="chart-title">📉 전세 증감 추이 (최근 8주)</div>', unsafe_allow_html=True)
             sub_j = df_jeonse.iloc[start_idx : curr_idx + 1][['날짜'] + sel_regions]
-            # 전세 그래프에도 동일한 커스텀 팔레트 적용
-            fig_j = px.line(sub_j, x='날짜', y=sel_regions, markers=True, 
-                            color_discrete_sequence=custom_colors)
+            fig_j = px.line(sub_j, x='날짜', y=sel_regions, markers=True, color_discrete_sequence=custom_colors)
             fig_j.update_traces(line_width=4, marker=dict(size=10))
-            fig_j.update_layout(height=350, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
-                                font=graph_font, hovermode=False)
+            fig_j.update_layout(height=350, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=graph_font, hovermode=False)
             st.plotly_chart(fig_j, use_container_width=True, config={'staticPlot': True})
 
     # 하단 종료 버튼
