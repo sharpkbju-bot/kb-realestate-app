@@ -54,6 +54,16 @@ st.markdown("""
     .stTabs [aria-selected="true"] { background-color: #006400 !important; }
     .stTabs [aria-selected="true"] div p { color: #ffffff !important; }
 
+    /* 선택 박스 스타일 */
+    div[data-baseweb="select"] > div:first-child {
+        background-color: #f0f2f6 !important; 
+        border: 1px solid #cccccc !important;
+        border-radius: 10px !important;
+        min-height: 48px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    
     /* 선택 박스 내 날짜 글자색(퍼플) 및 Bold */
     div[data-baseweb="select"] div[data-testid="stMarkdownContainer"] p,
     div[data-baseweb="select"] span,
@@ -66,7 +76,7 @@ st.markdown("""
     .m-card { border-left: 10px solid #FF4500; color: #D32F2F; }
     .j-card { border-left: 10px solid #01579B; color: #01579B; border: 3px solid #FF4500; }
 
-    /* 그래프 터치 차단 */
+    /* 그래프 터치 차단 유지 */
     .stPlotlyChart { pointer-events: none !important; user-select: none !important; }
 
     .chart-title { font-size: 18px; font-weight: 900; color: #ffffff; background: #2c3e50; border-radius: 8px; text-align: center; padding: 10px; margin: 20px 0; }
@@ -110,7 +120,7 @@ def main():
         sel_regions = st.multiselect("🔍 비교 지역 선택", region_list, default=[region_list[0]] if region_list else [])
         
         if sel_regions:
-            # --- 시황 카드 출력 로직 복구 ---
+            # 시황 카드 출력
             for region in sel_regions:
                 m_val = df_maemae[df_maemae['날짜'] == sel_date][region].values[0]
                 j_val = df_jeonse[df_jeonse['날짜'] == sel_date][region].values[0]
@@ -119,33 +129,40 @@ def main():
                 with col1:
                     st.markdown(f'<div class="stat-card m-card"><div>{region} 매매</div><div style="font-size:24px;">{m_val:+.2f}%</div></div>', unsafe_allow_html=True)
                 with col2:
-                    # 전세 카드는 강조 테두리 포함
                     st.markdown(f'<div class="stat-card j-card"><div>{region} 전세</div><div style="font-size:24px;">{j_val:+.2f}%</div><div style="color:#FF4500; font-size:12px;">🔥 누적TOP</div></div>', unsafe_allow_html=True)
 
-            # --- 그래프 출력 ---
+            # 그래프 출력 데이터 준비
             curr_idx = date_list.index(sel_date)
             start_idx = max(0, curr_idx - 7)
             graph_font = dict(size=14, color="#6F4E37", family="Noto Sans KR") # 브라운 텍스트
 
+            # ★ 첫 번째 지역을 다크 그린으로 고정하기 위한 컬러 시퀀스 정의 ★
+            custom_colors = px.colors.qualitative.Plotly.copy() # 기본 팔레트 가져오기
+            custom_colors[0] = '#006400' # 첫 번째 색상을 다크 그린으로 명시적 변경
+
             st.markdown('<div class="chart-title">📈 매매 증감 추이 (최근 8주)</div>', unsafe_allow_html=True)
             sub_m = df_maemae.iloc[start_idx : curr_idx + 1][['날짜'] + sel_regions]
-            fig_m = px.line(sub_m, x='날짜', y=sel_regions, markers=True)
-            fig_m.update_traces(line_color='#006400', line_width=4) # 다크 그린 선
-            fig_m.update_layout(height=350, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=graph_font, hovermode=False)
+            # px.line에서 color 옵션에 지역 컬럼을 주고, color_discrete_sequence에 커스텀 팔레트 적용
+            fig_m = px.line(sub_m, x='날짜', y=sel_regions, markers=True, 
+                            color_discrete_sequence=custom_colors)
+            fig_m.update_traces(line_width=4, marker=dict(size=10))
+            fig_m.update_layout(height=350, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
+                                font=graph_font, hovermode=False)
             st.plotly_chart(fig_m, use_container_width=True, config={'staticPlot': True})
 
             st.markdown('<div class="chart-title">📉 전세 증감 추이 (최근 8주)</div>', unsafe_allow_html=True)
             sub_j = df_jeonse.iloc[start_idx : curr_idx + 1][['날짜'] + sel_regions]
-            fig_j = px.line(sub_j, x='날짜', y=sel_regions, markers=True)
-            fig_j.update_traces(line_color='#006400', line_width=4)
-            fig_j.update_layout(height=350, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=graph_font, hovermode=False)
+            # 전세 그래프에도 동일한 커스텀 팔레트 적용
+            fig_j = px.line(sub_j, x='날짜', y=sel_regions, markers=True, 
+                            color_discrete_sequence=custom_colors)
+            fig_j.update_traces(line_width=4, marker=dict(size=10))
+            fig_j.update_layout(height=350, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
+                                font=graph_font, hovermode=False)
             st.plotly_chart(fig_j, use_container_width=True, config={'staticPlot': True})
 
-    # 탭 2, 3 로직 생략 (기존 유지)
-    
-    # 종료 버튼을 페이지 최하단에 배치
+    # 하단 종료 버튼
     st.markdown("<br><br>", unsafe_allow_html=True)
-    if st.button("🚪 앱 종료", key="exit_btn", use_container_width=True):
+    if st.button("🚪 안전하게 앱 종료하기", key="exit_btn", use_container_width=True):
         st.session_state.is_exit = True
         st.rerun()
 
