@@ -82,122 +82,74 @@ st.markdown("""
     .stTabs [aria-selected="true"] { background-color: #006400 !important; }
     .stTabs [aria-selected="true"] div p { color: #ffffff !important; }
 
-    /* 입력창(드롭다운) 스타일 보강 */
+    /* 입력창 스타일 */
     div[data-baseweb="select"] > div:first-child {
         background-color: #f0f2f6 !important; 
         border: 2px solid #4B0082 !important; 
         border-radius: 10px !important; 
         min-height: 48px !important;
     }
-    
-    div[data-baseweb="select"] input {
-        color: #000000 !important;
-        -webkit-text-fill-color: #000000 !important;
-    }
-
-    div[data-baseweb="select"] div[data-testid="stMarkdownContainer"] p,
-    div[data-baseweb="select"] span, 
-    div[data-baseweb="select"] div {
-        color: #4B0082 !important; 
-        font-weight: 900 !important; 
-        font-size: 18px !important;
+    div[data-baseweb="select"] input { color: #000000 !important; -webkit-text-fill-color: #000000 !important; }
+    div[data-baseweb="select"] span, div[data-baseweb="select"] div {
+        color: #4B0082 !important; font-weight: 900 !important; font-size: 18px !important;
     }
 
     label[data-testid="stWidgetLabel"] p { font-weight: 900 !important; font-size: 16px !important; color: #222222 !important; }
 
+    /* 통계 카드 스타일 */
     @keyframes pulse {
         0% { box-shadow: 0 0 0 0 rgba(255, 69, 0, 0.7); }
         70% { box-shadow: 0 0 0 15px rgba(255, 69, 0, 0); }
         100% { box-shadow: 0 0 0 0 rgba(255, 69, 0, 0); }
     }
-    .highlight-card {
-        animation: pulse 2s infinite;
-        border: 4px solid #FF4500 !important;
-    }
-
-    /* 통계 카드 테두리 */
+    .highlight-card { animation: pulse 2s infinite; border: 4px solid #FF4500 !important; }
     .stat-card { 
-        padding: 15px; 
-        border-radius: 12px; 
-        margin: 10px 0; 
-        display: flex; 
-        flex-direction: column; 
-        align-items: center; 
-        font-weight: 900; 
-        font-size: 16px; 
-        background: white; 
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        padding: 15px; border-radius: 12px; margin: 10px 0; display: flex; 
+        flex-direction: column; align-items: center; font-weight: 900; 
+        font-size: 16px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         border: 1px solid #cccccc;
     }
     .m-card { border-left: 10px solid #FF4500; border-right: 2px solid #FF4500; border-top: 2px solid #FF4500; border-bottom: 2px solid #FF4500; color: #D32F2F; }
     .j-card { border-left: 10px solid #01579B; border-right: 2px solid #01579B; border-top: 2px solid #01579B; border-bottom: 2px solid #01579B; color: #01579B; }
 
-    .stPlotlyChart { pointer-events: none !important; user-select: none !important; }
-    
+    /* 차트 타이틀 */
     .chart-title { 
-        font-size: 18px; 
-        font-weight: 900; 
-        color: #ffffff; 
-        background: #2c3e50; 
-        border-radius: 8px; 
-        text-align: center; 
-        padding: 10px; 
-        margin: 20px 0; 
+        font-size: 18px; font-weight: 900; color: #ffffff; background: #2c3e50; 
+        border-radius: 8px; text-align: center; padding: 10px; margin: 20px 0; 
         border: 2px solid #FFD700;
     }
-    
-    .rank-card { 
-        padding: 10px 15px; 
-        border-radius: 12px; 
-        margin-bottom: 8px; 
-        display: flex; 
-        align-items: center; 
-        justify-content: space-between; 
-        font-weight: 900; 
-        font-size: 15px; 
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        border: 1.5px solid #333333;
-    }
-    .m-weekly { background: linear-gradient(135deg, #FFEFBA, #FFFFFF); border-left: 8px solid #FF4500; border-color: #FF4500; color: #D32F2F; }
-    .j-weekly { background: linear-gradient(135deg, #E0F7FA, #FFFFFF); border-left: 8px solid #01579B; border-color: #01579B; color: #01579B; }
-    .m-accum { background: linear-gradient(135deg, #FFF9C4, #FFFFFF); border-left: 8px solid #FBC02D; border-color: #FBC02D; color: #7F6000; }  
-    .j-accum { background: linear-gradient(135deg, #E8F5E9, #FFFFFF); border-left: 8px solid #2E7D32; border-color: #2E7D32; color: #1B5E20; }
-    
-    /* 공통 버튼 스타일 */
-    div.stButton > button {
-        width: 100% !important; border-radius: 12px !important;
-        font-weight: 900 !important;
-    }
 
-    /* 종료 버튼 전용 테두리 */
+    /* 버튼 모바일 최적화 (가로 배치 고정 및 넘침 방지) */
+    div[data-testid="stHorizontalBlock"] {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 8px !important;
+    }
+    div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+        flex: 1 1 0% !important;
+        min-width: 0 !important;
+    }
+    .control-btn-container div.stButton > button {
+        height: 45px !important; 
+        font-size: 13px !important; 
+        padding: 0px 5px !important;
+        white-space: nowrap !important;
+    }
+    .reset-btn div.stButton > button { background-color: #f8d7da !important; color: #721c24 !important; border: 2px solid #f5c6cb !important; }
+    .confirm-btn div.stButton > button { background-color: #d4edda !important; color: #155724 !important; border: 2px solid #c3e6cb !important; }
+
+    /* 시장 온도계 표 가독성 보정 */
+    .stDataFrame th { background-color: #2c3e50 !important; color: #ffffff !important; }
+    .stDataFrame td { color: #000000 !important; font-weight: 900 !important; }
+
+    /* 종료 버튼 스타일 */
     .exit-btn-container div.stButton > button {
         height: 55px !important; font-size: 18px !important; color: #FFD700 !important;
         background: linear-gradient(135deg, #444444, #111111) !important;
         border: 3px solid #FFD700 !important;
     }
 
-    /* ★ 모바일 강제 가로 정렬을 위한 Flex 레이아웃 ★ */
-    [data-testid="column"] {
-        flex: 1 1 0% !important;
-        min-width: 0 !important;
-    }
-    div[data-testid="stHorizontalBlock"] {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        align-items: flex-start !important;
-        gap: 0.5rem !important;
-    }
-
-    /* 초기화/선택완료 버튼 스타일 최적화 */
-    .control-btn-container div.stButton > button {
-        height: 40px !important; font-size: 14px !important;
-        margin-bottom: 10px !important;
-    }
-    .reset-btn div.stButton > button { background-color: #f8d7da !important; color: #721c24 !important; border: 2px solid #f5c6cb !important; }
-    .confirm-btn div.stButton > button { background-color: #d4edda !important; color: #155724 !important; border: 2px solid #c3e6cb !important; }
-
-    .stDataFrame { border: 2px solid #2c3e50; border-radius: 10px; overflow: hidden; }
     header { visibility: hidden; }
     </style>
     """, unsafe_allow_html=True)
@@ -230,7 +182,7 @@ def main():
 
         sel_regions = st.multiselect("🔍 비교 지역 선택", region_list, key="region_selector", default=st.session_state.sel_regions)
 
-        # 모바일에서도 절대 한 줄로 나오도록 컬럼 생성
+        # 버튼 배치 (너비 초과 방지 설정 적용)
         btn_col1, btn_col2 = st.columns(2)
         with btn_col1:
             st.markdown('<div class="control-btn-container reset-btn">', unsafe_allow_html=True)
