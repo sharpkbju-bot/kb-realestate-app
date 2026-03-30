@@ -52,17 +52,44 @@ st.markdown("""
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
     html, body, [class*="css"] { font-family: 'Noto Sans KR', sans-serif; color: #000000; }
 
+    /* 메인 타이틀 테두리 */
+    .brand-container { 
+        text-align: center; 
+        padding: 20px; 
+        border: 2px solid #006400; 
+        border-radius: 15px; 
+        background-color: rgba(255,255,255,0.6);
+        margin-bottom: 20px;
+    }
     .brand-name { color: #006400; font-size: 35px; font-weight: 900; }
     .brand-suffix { color: #FF4500; font-size: 20px; font-weight: 900; }
 
-    .stTabs [data-baseweb="tab-list"] { width: 100%; background-color: rgba(255,255,255,0.4); border-radius: 12px 12px 0 0; }
-    .stTabs [data-baseweb="tab"] { flex: 1; height: 60px; background-color: rgba(255,255,255,0.8); }
+    /* 탭 메뉴 테두리 */
+    .stTabs [data-baseweb="tab-list"] { 
+        width: 100%; 
+        background-color: rgba(255,255,255,0.4); 
+        border-radius: 12px 12px 0 0; 
+        border: 2px solid #2c3e50;
+        padding: 2px;
+    }
+    .stTabs [data-baseweb="tab"] { 
+        flex: 1; 
+        height: 60px; 
+        background-color: rgba(255,255,255,0.8); 
+        border-right: 1px solid #ddd;
+    }
     .stTabs [data-baseweb="tab"] div p { font-size: 15px !important; font-weight: 900 !important; color: #1a1a1a; }
     .stTabs [aria-selected="true"] { background-color: #006400 !important; }
     .stTabs [aria-selected="true"] div p { color: #ffffff !important; }
 
+    /* 드롭다운/셀렉트 박스 테두리 */
     div[data-baseweb="select"] > div:first-child {
-        background-color: #f0f2f6 !important; border: 1px solid #cccccc !important; border-radius: 10px !important; min-height: 48px !important; display: flex !important; align-items: center !important;
+        background-color: #f0f2f6 !important; 
+        border: 2px solid #4B0082 !important; 
+        border-radius: 10px !important; 
+        min-height: 48px !important; 
+        display: flex !important; 
+        align-items: center !important;
     }
     
     div[data-baseweb="select"] div[data-testid="stMarkdownContainer"] p,
@@ -79,28 +106,74 @@ st.markdown("""
     }
     .highlight-card {
         animation: pulse 2s infinite;
-        border: 3px solid #FF4500 !important;
+        border: 4px solid #FF4500 !important;
     }
 
-    .stat-card { padding: 15px; border-radius: 12px; margin: 10px 0; display: flex; flex-direction: column; align-items: center; font-weight: 900; font-size: 16px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .m-card { border-left: 10px solid #FF4500; color: #D32F2F; }
-    .j-card { border-left: 10px solid #01579B; color: #01579B; }
+    /* 통계 카드 테두리 */
+    .stat-card { 
+        padding: 15px; 
+        border-radius: 12px; 
+        margin: 10px 0; 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        font-weight: 900; 
+        font-size: 16px; 
+        background: white; 
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        border: 1px solid #cccccc;
+    }
+    .m-card { border-left: 10px solid #FF4500; border-right: 2px solid #FF4500; border-top: 2px solid #FF4500; border-bottom: 2px solid #FF4500; color: #D32F2F; }
+    .j-card { border-left: 10px solid #01579B; border-right: 2px solid #01579B; border-top: 2px solid #01579B; border-bottom: 2px solid #01579B; color: #01579B; }
 
     .stPlotlyChart { pointer-events: none !important; user-select: none !important; }
-    .chart-title { font-size: 18px; font-weight: 900; color: #ffffff; background: #2c3e50; border-radius: 8px; text-align: center; padding: 10px; margin: 20px 0; }
     
-    .rank-card { padding: 10px 15px; border-radius: 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; font-weight: 900; font-size: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-    .m-weekly { background: linear-gradient(135deg, #FFEFBA, #FFFFFF); border-left: 8px solid #FF4500; color: #D32F2F; }
-    .j-weekly { background: linear-gradient(135deg, #E0F7FA, #FFFFFF); border-left: 8px solid #01579B; color: #01579B; }
-    .m-accum { background: linear-gradient(135deg, #FFF9C4, #FFFFFF); border-left: 8px solid #FBC02D; color: #7F6000; }  
-    .j-accum { background: linear-gradient(135deg, #E8F5E9, #FFFFFF); border-left: 8px solid #2E7D32; color: #1B5E20; }
+    /* 차트 타이틀 테두리 */
+    .chart-title { 
+        font-size: 18px; 
+        font-weight: 900; 
+        color: #ffffff; 
+        background: #2c3e50; 
+        border-radius: 8px; 
+        text-align: center; 
+        padding: 10px; 
+        margin: 20px 0; 
+        border: 2px solid #FFD700;
+    }
     
+    /* 랭킹 카드 테두리 */
+    .rank-card { 
+        padding: 10px 15px; 
+        border-radius: 12px; 
+        margin-bottom: 8px; 
+        display: flex; 
+        align-items: center; 
+        justify-content: space-between; 
+        font-weight: 900; 
+        font-size: 15px; 
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        border: 1.5px solid #333333;
+    }
+    .m-weekly { background: linear-gradient(135deg, #FFEFBA, #FFFFFF); border-left: 8px solid #FF4500; border-color: #FF4500; color: #D32F2F; }
+    .j-weekly { background: linear-gradient(135deg, #E0F7FA, #FFFFFF); border-left: 8px solid #01579B; border-color: #01579B; color: #01579B; }
+    .m-accum { background: linear-gradient(135deg, #FFF9C4, #FFFFFF); border-left: 8px solid #FBC02D; border-color: #FBC02D; color: #7F6000; }  
+    .j-accum { background: linear-gradient(135deg, #E8F5E9, #FFFFFF); border-left: 8px solid #2E7D32; border-color: #2E7D32; color: #1B5E20; }
+    
+    /* 종료 버튼 테두리 */
     div.stButton > button {
         width: 100% !important; height: 55px !important; border-radius: 12px !important;
         font-weight: 900 !important; font-size: 18px !important; color: #FFD700 !important;
         background: linear-gradient(135deg, #444444, #111111) !important;
-        border: 2px solid #FFD700 !important;
+        border: 3px solid #FFD700 !important;
     }
+
+    /* 데이터프레임(시장온도) 영역 테두리 */
+    .stDataFrame {
+        border: 2px solid #2c3e50;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
     header { visibility: hidden; }
     </style>
     """, unsafe_allow_html=True)
@@ -119,7 +192,7 @@ def load_data():
     return df_m, df_j
 
 def main():
-    st.markdown('<div style="text-align:center; padding: 20px;"><span class="brand-name">Dr.J</span><span class="brand-suffix">의 부동산</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="brand-container"><span class="brand-name">Dr.J</span><span class="brand-suffix">의 부동산</span></div>', unsafe_allow_html=True)
     df_maemae, df_jeonse = load_data()
     date_list = sorted(df_maemae['날짜'].unique().tolist())
     region_list = sorted([col for col in df_maemae.columns if col != '날짜'])
@@ -141,11 +214,9 @@ def main():
                 with col1:
                     m_class = "stat-card m-card highlight-card" if is_m_hot else "stat-card m-card"
                     m_top_tag = '<div style="color:#FF4500; font-size:12px;">🔥 누적 TOP</div>' if is_m_hot else ""
-                    # 매매 카드 텍스트 수정
                     st.markdown(f'<div class="{m_class}"><div>{region} 매매 증감({sel_date})</div><div style="font-size:24px;">{m_val:+.2f}%</div>{m_top_tag}</div>', unsafe_allow_html=True)
                 with col2:
                     j_class = "stat-card j-card highlight-card" if is_j_hot else "stat-card j-card"
-                    # 전세 카드 텍스트 수정
                     st.markdown(f'<div class="{j_class}"><div>{region} 전세 증감({sel_date})</div><div style="font-size:24px;">{j_val:+.2f}%</div><div style="color:#FF4500; font-size:12px;">🔥 누적 TOP</div></div>', unsafe_allow_html=True)
             start_idx = max(0, curr_idx - 7)
             custom_colors = px.colors.qualitative.Plotly.copy()
@@ -167,7 +238,6 @@ def main():
         j_sum = df_jeonse.iloc[-8:].drop(columns=['날짜']).sum()
         heat_df = pd.DataFrame({'매매합계': m_sum, '전세합계': j_sum}).sort_values(by='매매합계', ascending=False)
         
-        # ★ 차트 내부 글자 중앙 정렬 및 Bold 처리 ★
         st.dataframe(
             heat_df.style.background_gradient(cmap='RdYlBu_r')
             .format("{:+.2f}%")
@@ -179,7 +249,7 @@ def main():
     with tab3:
         sel_date_rank = st.selectbox("📅 랭킹 기준일 선택", date_list, index=len(date_list)-1, key="tab3_date")
         curr_idx_rank = date_list.index(sel_date_rank)
-        st.markdown('<div class="chart-title" style="background:#e67e22;">🔥 주간 상승 지역 TOP 10</div>', unsafe_allow_html=True)
+        st.markdown('<div class="chart-title" style="background:#e67e22; border-color: #d35400;">🔥 주간 상승 지역 TOP 10</div>', unsafe_allow_html=True)
         c1, c2 = st.columns(2)
         with c1:
             st.markdown('<p style="font-weight:900; text-align:center; color:#D32F2F; font-size:15px;">[매매 주간 상승률]</p>', unsafe_allow_html=True)
@@ -191,7 +261,7 @@ def main():
             j_w = df_jeonse[df_jeonse['날짜'] == sel_date_rank].drop(columns=['날짜']).iloc[0].sort_values(ascending=False).head(10)
             for i, (n, v) in enumerate(j_w.items()):
                 if v > 0: st.markdown(f'<div class="rank-card j-weekly"><span>{i+1}. {n}</span><span>+{v:.2f}</span></div>', unsafe_allow_html=True)
-        st.markdown('<div class="chart-title" style="background:#f1c40f; color:#000;">📊 8주 누적 상승 TOP 10</div>', unsafe_allow_html=True)
+        st.markdown('<div class="chart-title" style="background:#f1c40f; color:#000; border-color: #b7950b;">📊 8주 누적 상승 TOP 10</div>', unsafe_allow_html=True)
         c3, c4 = st.columns(2)
         with c3:
             st.markdown('<p style="font-weight:900; text-align:center; color:#7F6000; font-size:15px;">[매매 누적 상승률]</p>', unsafe_allow_html=True)
