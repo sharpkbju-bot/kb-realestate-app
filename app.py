@@ -78,6 +78,20 @@ st.markdown("""
     .j-card { border-left: 12px solid #01579B; color: #01579B; }
     .stat-value { font-size: 24px !important; }
 
+    /* ★ 스포트라이트 기능 완벽 복구 및 시인성 강화 ★ */
+    @keyframes spotlight_m { 
+        0% { box-shadow: 0 0 0 0 rgba(255, 69, 0, 0.7); transform: scale(1); } 
+        50% { box-shadow: 0 0 0 15px rgba(255, 69, 0, 0); transform: scale(1.02); } 
+        100% { box-shadow: 0 0 0 0 rgba(255, 69, 0, 0); transform: scale(1); } 
+    }
+    @keyframes spotlight_j { 
+        0% { box-shadow: 0 0 0 0 rgba(1, 87, 155, 0.7); transform: scale(1); } 
+        50% { box-shadow: 0 0 0 15px rgba(1, 87, 155, 0); transform: scale(1.02); } 
+        100% { box-shadow: 0 0 0 0 rgba(1, 87, 155, 0); transform: scale(1); } 
+    }
+    .highlight-m { animation: spotlight_m 2s infinite !important; border: 3px solid #FF4500 !important; border-left: 12px solid #FF4500 !important; z-index: 10; }
+    .highlight-j { animation: spotlight_j 2s infinite !important; border: 3px solid #01579B !important; border-left: 12px solid #01579B !important; z-index: 10; }
+
     /* 차트 타이틀 (20px -> 17px) */
     .chart-title { font-size: 17px; font-weight: 900; color: #ffffff !important; background: #2c3e50; border-radius: 12px; text-align: center; padding: 10px; margin: 20px 0; border: 2.5px solid #FFD700; }
     
@@ -148,10 +162,12 @@ def main():
                 is_m_hot, is_j_hot = region in m_top, region in j_top
                 c1, c2 = st.columns(2)
                 with c1:
-                    m_cls = "stat-card m-card highlight-card" if is_m_hot else "stat-card m-card"
+                    # 매매 스포트라이트 전용 클래스(highlight-m) 적용
+                    m_cls = "stat-card m-card highlight-m" if is_m_hot else "stat-card m-card"
                     st.markdown(f'<div class="{m_cls}"><div>{region} 매매({sel_date})</div><div class="stat-value">{m_val:+.2f}%</div>{"<div style=\'color:#FF4500; font-size:12px;\'>🔥 누적 TOP</div>" if is_m_hot else ""}</div>', unsafe_allow_html=True)
                 with c2:
-                    j_cls = "stat-card j-card highlight-card" if is_j_hot else "stat-card j-card"
+                    # 전세 스포트라이트 전용 클래스(highlight-j) 적용
+                    j_cls = "stat-card j-card highlight-j" if is_j_hot else "stat-card j-card"
                     st.markdown(f'<div class="{j_cls}"><div>{region} 전세({sel_date})</div><div class="stat-value">{j_val:+.2f}%</div>{"<div style=\'color:#01579B; font-size:12px;\'>🔥 누적 TOP</div>" if is_j_hot else ""}</div>', unsafe_allow_html=True)
             
             c_palette = ['#006400'] + px.colors.qualitative.Plotly
