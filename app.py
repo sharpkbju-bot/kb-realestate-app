@@ -70,7 +70,7 @@ st.markdown("""
 
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 69, 0, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(255, 69, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 69, 0, 0); } }
     .highlight-card { animation: pulse 2s infinite !important; border: 4px solid #FF4500 !important; }
-    .stat-card { padding: 15px; border-radius: 12px; margin: 10px 0; display: flex; flex-direction: column; align-items: center; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 2px solid #cccccc; font-size: 13px; }
+    .stat-card { padding: 15px; border-radius: 12px; margin: 10px 0; display: flex; flex-direction: column; align-items: center; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 2px solid #cccccc; font-size: 18px; }
     .m-card { border-left: 12px solid #FF4500; color: #D32F2F; }
     .j-card { border-left: 12px solid #01579B; color: #01579B; }
     .stat-value { font-size: 24px !important; }
