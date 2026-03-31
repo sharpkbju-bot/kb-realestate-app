@@ -40,7 +40,7 @@ def set_bg(image_file):
         st.markdown(f'<style>.stApp {{ background-image: url("data:image/jpg;base64,{encoded_string}"); background-size: cover; background-attachment: fixed; background-position: center; }}</style>', unsafe_allow_html=True)
 set_bg('bg.jpg')
 
-# UI 디자인 통합 스타일시트
+# UI 디자인 통합 스타일시트 (디자인/크기/굵기 절대 유지 + 호환성 패치)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
@@ -68,22 +68,22 @@ st.markdown("""
         color: #4B0082 !important; font-weight: 900 !important; font-size: 18px !important; 
     }
 
-    /* ★ 시작일/종료일 선택기 모바일 나란히 50:50 배치 및 길이 최적화 ★ */
-    div[data-testid="stHorizontalBlock"]:has(div[data-baseweb="select"]) {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        width: 100% !important;
-        gap: 8px !important;
-    }
-    div[data-testid="stHorizontalBlock"]:has(div[data-baseweb="select"]) > div[data-testid="column"] {
-        width: calc(50% - 4px) !important;
-        flex: 1 1 calc(50% - 4px) !important;
-        min-width: 0 !important;
-        max-width: 50% !important;
+    /* ★ 모바일 기기에서 2분할 레이아웃이 깨지지 않도록 강제 (카드 사라짐 완벽 해결) ★ */
+    @media (max-width: 768px) {
+        div[data-testid="stHorizontalBlock"] {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            gap: 10px !important;
+        }
+        div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+            flex: 1 1 0% !important;
+            min-width: 0 !important;
+            width: auto !important;
+        }
     }
 
-    /* ★ 시작일(1번째 컬럼) 컬러 블루로 덮어쓰기 ★ */
+    /* ★ 시작일(1번째 컬럼의 날짜 선택창) 컬러: 짙은 블루 ★ */
     div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:nth-child(1) div[data-baseweb="select"] > div:first-child {
         border-color: #01579B !important;
     }
@@ -91,7 +91,7 @@ st.markdown("""
         color: #01579B !important;
     }
 
-    /* ★ 종료일(2번째 컬럼) 컬러 레드로 덮어쓰기 ★ */
+    /* ★ 종료일(2번째 컬럼의 날짜 선택창) 컬러: 강렬한 레드 ★ */
     div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:nth-child(2) div[data-baseweb="select"] > div:first-child {
         border-color: #D32F2F !important;
     }
@@ -150,7 +150,7 @@ def main():
     tabs = ["📊 지역 분석", "🌡️ 시장 온도", "🏆 누적 랭킹 TOP 10"]
     for i, t_label in enumerate(tabs):
         is_active = (st.session_state.active_tab == t_label)
-        if t_cols[i].button(t_label, key=f"t_btn_y_{i}", use_container_width=True, 
+        if t_cols[i].button(t_label, key=f"t_btn_f_mobile_{i}", use_container_width=True, 
                             type="primary" if is_active else "secondary"):
             st.session_state.active_tab = t_label
             st.session_state.date_reset_key += 1
@@ -160,6 +160,7 @@ def main():
         start = next((i for i, d in enumerate(dates) if str(d).startswith('2026')), 0)
         return min(start, current_idx)
 
+    # 1. 지역 분석 탭
     if st.session_state.active_tab == "📊 지역 분석":
         
         c_date1, c_date2 = st.columns(2)
@@ -204,6 +205,7 @@ def main():
             st.markdown(f'<div class="chart-title">📉 전세 증감 추이 ({start_date} ~ {end_date})</div>', unsafe_allow_html=True)
             st.plotly_chart(px.line(df_jeonse.iloc[start_idx : end_idx+1][['날짜']+sel_regions], x='날짜', y=sel_regions, markers=True, color_discrete_sequence=c_palette).update_layout(height=320, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'), use_container_width=True, config={'staticPlot': True})
 
+    # 2. 시장 온도 탭
     elif st.session_state.active_tab == "🌡️ 시장 온도":
         st.markdown('<div class="chart-title">🌡️ 시장 온도계 (2026년 누적)</div>', unsafe_allow_html=True)
         df_m_2026 = df_maemae[df_maemae['날짜'].astype(str).str.startswith('2026')]
@@ -214,6 +216,7 @@ def main():
         heat_df = pd.DataFrame({'매매합계': m_sum, '전세합계': j_sum}).sort_values(by='매매합계', ascending=False)
         st.dataframe(heat_df.style.background_gradient(cmap='RdYlBu_r').format("{:+.2f}%"), use_container_width=True, height=450)
 
+    # 3. 누적 랭킹 탭
     elif st.session_state.active_tab == "🏆 누적 랭킹 TOP 10":
         sel_date_rank = st.selectbox("📅 랭킹 기준일 선택", date_list, index=len(date_list)-1, key=f"ds3_y_{st.session_state.date_reset_key}")
         curr_idx_rank = date_list.index(sel_date_rank)
@@ -247,7 +250,7 @@ def main():
 
     st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown('<div class="exit-btn-wrap">', unsafe_allow_html=True)
-    if st.button("🚪 **안전하게 앱 종료하기**", key="exit_v_final_ytd", use_container_width=True):
+    if st.button("🚪 **안전하게 앱 종료하기**", key="exit_v_final_mobile", use_container_width=True):
         st.session_state.is_exit = True
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
