@@ -68,14 +68,41 @@ st.markdown("""
         color: #4B0082 !important; font-weight: 900 !important; font-size: 18px !important; 
     }
 
+    /* 모바일 기기 레이아웃 고정 */
+    @media (max-width: 768px) {
+        div[data-testid="stHorizontalBlock"] {
+            display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; gap: 10px !important;
+        }
+        div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+            flex: 1 1 0% !important; min-width: 0 !important; width: auto !important;
+        }
+    }
+
+    div[data-testid="column"]:nth-child(1) div[data-testid="stSelectbox"] div[data-baseweb="select"] > div:first-child {
+        border-color: #01579B !important; background-color: #E1F5FE !important;
+    }
+    div[data-testid="column"]:nth-child(1) div[data-testid="stSelectbox"] div[data-baseweb="select"] * { color: #01579B !important; }
+    div[data-testid="column"]:nth-child(1) div[data-testid="stSelectbox"] label p { color: #01579B !important; }
+
+    div[data-testid="column"]:nth-child(2) div[data-testid="stSelectbox"] div[data-baseweb="select"] > div:first-child {
+        border-color: #D32F2F !important; background-color: #FFEBEE !important;
+    }
+    div[data-testid="column"]:nth-child(2) div[data-testid="stSelectbox"] div[data-baseweb="select"] * { color: #D32F2F !important; }
+    div[data-testid="column"]:nth-child(2) div[data-testid="stSelectbox"] label p { color: #D32F2F !important; }
+
+    div[data-testid="stMultiSelect"] div[data-baseweb="select"] > div:first-child {
+        background-color: #E6E6FA !important; border: 3px solid #4B0082 !important; border-radius: 12px !important; min-height: 50px !important;
+    }
+    div[data-testid="stMultiSelect"] span { color: #4B0082 !important; font-size: 18px !important; }
+
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 69, 0, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(255, 69, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 69, 0, 0); } }
     .highlight-card { animation: pulse 2s infinite !important; border: 4px solid #FF4500 !important; }
-    .stat-card { padding: 15px; border-radius: 12px; margin: 10px 0; display: flex; flex-direction: column; align-items: center; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 2px solid #cccccc; font-size: 17px; }
+    .stat-card { padding: 15px; border-radius: 12px; margin: 10px 0; display: flex; flex-direction: column; align-items: center; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 2px solid #cccccc; font-size: 15px; }
     .m-card { border-left: 12px solid #FF4500; color: #D32F2F; }
     .j-card { border-left: 12px solid #01579B; color: #01579B; }
     .stat-value { font-size: 24px !important; }
 
-    .chart-title { font-size: 15px; font-weight: 900; color: #ffffff !important; background: #2c3e50; border-radius: 12px; text-align: center; padding: 10px; margin: 20px 0; border: 2.5px solid #FFD700; }
+    .chart-title { font-size: 17px; font-weight: 900; color: #ffffff !important; background: #2c3e50; border-radius: 12px; text-align: center; padding: 10px; margin: 20px 0; border: 2.5px solid #FFD700; }
     
     .rank-card { padding: 10px 15px; border-radius: 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; border: 2.5px solid #333; font-size: 14px; font-weight: 900 !important; }
     .m-weekly { background: linear-gradient(135deg, #FFEFBA, #FFFFFF) !important; border-left: 10px solid #FF4500 !important; color: #D32F2F !important; }
@@ -90,8 +117,9 @@ st.markdown("""
         border: 3px solid #FFFFFF !important; 
     }
     
-    /* 분석 테이블 전용 스타일 */
-    .analysis-table { width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.85); border-radius: 10px; overflow: hidden; margin-top: 15px; border: 2px solid #2c3e50; }
+    /* ★ 분석 테이블 가로 스크롤 래퍼 추가 (모바일 잘림 완벽 방지) ★ */
+    .table-wrapper { width: 100%; overflow-x: auto; border-radius: 10px; border: 2px solid #2c3e50; margin-top: 15px; background: rgba(255,255,255,0.85); -webkit-overflow-scrolling: touch; }
+    .analysis-table { width: 100%; border-collapse: collapse; min-width: max-content; }
     .analysis-table th { background: #2c3e50; color: white; padding: 8px; font-size: 14px; text-align: center; }
     .analysis-table td { padding: 10px; border-bottom: 1px solid #ddd; font-size: 13px; text-align: center; color: #333; }
     .analysis-table tr:last-child td { border-bottom: none; }
@@ -159,14 +187,14 @@ def main():
             
             c_palette = ['#006400'] + px.colors.qualitative.Plotly
             
-            # 그래프 출력
             st.markdown(f'<div class="chart-title">📈 매매 증감 추이 ({start_date} ~ {end_date})</div>', unsafe_allow_html=True)
             st.plotly_chart(px.line(df_maemae.iloc[s_idx:e_idx+1][['날짜']+sel_regions], x='날짜', y=sel_regions, markers=True, color_discrete_sequence=c_palette).update_layout(height=320, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'), use_container_width=True, config={'staticPlot': True})
             
-            # ★ AI 분석 테이블 추가 ★
             st.markdown(f'<div class="chart-title" style="background:#4B0082; border-color:#E6E6FA;">🧐 {start_date[5:]} ~ {end_date[5:]} 기간 심층 분석</div>', unsafe_allow_html=True)
             
-            analysis_html = "<table class='analysis-table'><tr><th>지역명</th><th>구분</th><th>누적증감</th><th>최고상승(주)</th><th>최저하락(주)</th></tr>"
+            # ★ 에러 해결: 마크다운 엔진 오류를 막기 위해 HTML을 들여쓰기 없이 한 줄로 연결 ★
+            # ★ 래퍼 추가: 모바일 기기 화면을 벗어나지 않도록 스크롤 영역 생성 ★
+            analysis_html = "<div class='table-wrapper'><table class='analysis-table'><tr><th style='white-space:nowrap;'>지역명</th><th style='white-space:nowrap;'>구분</th><th style='white-space:nowrap;'>누적증감</th><th style='white-space:nowrap;'>최고상승(주)</th><th style='white-space:nowrap;'>최저하락(주)</th></tr>"
             
             for region in sel_regions:
                 m_series = df_maemae.iloc[s_idx:e_idx+1][region]
@@ -177,28 +205,24 @@ def main():
                 j_max_date = df_jeonse.iloc[s_idx:e_idx+1].loc[j_series.idxmax(), '날짜']
                 j_min_date = df_jeonse.iloc[s_idx:e_idx+1].loc[j_series.idxmin(), '날짜']
                 
-                analysis_html += f"""
-                <tr>
-                    <td rowspan='2' style='background:#f9f9f9; font-weight:900;'>{region}</td>
-                    <td style='color:#D32F2F;'>매매</td>
-                    <td style='font-weight:900;'>{m_series.sum():+.2f}%</td>
-                    <td>{m_max_date[5:]}({m_series.max():+.2f})</td>
-                    <td>{m_min_date[5:]}({m_series.min():+.2f})</td>
-                </tr>
-                <tr>
-                    <td style='color:#01579B;'>전세</td>
-                    <td style='font-weight:900;'>{j_series.sum():+.2f}%</td>
-                    <td>{j_max_date[5:]}({j_series.max():+.2f})</td>
-                    <td>{j_min_date[5:]}({j_series.min():+.2f})</td>
-                </tr>
-                """
-            analysis_html += "</table>"
+                # HTML 태그들을 띄어쓰기(들여쓰기) 없이 바로 붙여서 마크다운 오작동 방지 및 줄바꿈/두줄 표시 적용
+                analysis_html += (
+                    f"<tr><td rowspan='2' style='background:#f9f9f9; font-weight:900; white-space:nowrap;'>{region}</td>"
+                    f"<td style='color:#D32F2F; white-space:nowrap;'>매매</td>"
+                    f"<td style='font-weight:900; white-space:nowrap;'>{m_series.sum():+.2f}%</td>"
+                    f"<td>{m_max_date[5:]}<br>{m_series.max():+.2f}%</td>"
+                    f"<td>{m_min_date[5:]}<br>{m_series.min():+.2f}%</td></tr>"
+                    f"<tr><td style='color:#01579B; white-space:nowrap;'>전세</td>"
+                    f"<td style='font-weight:900; white-space:nowrap;'>{j_series.sum():+.2f}%</td>"
+                    f"<td>{j_max_date[5:]}<br>{j_series.max():+.2f}%</td>"
+                    f"<td>{j_min_date[5:]}<br>{j_series.min():+.2f}%</td></tr>"
+                )
+            analysis_html += "</table></div>"
             st.markdown(analysis_html, unsafe_allow_html=True)
 
             st.markdown(f'<div class="chart-title" style="margin-top:30px;">📉 전세 증감 추이 ({start_date} ~ {end_date})</div>', unsafe_allow_html=True)
             st.plotly_chart(px.line(df_jeonse.iloc[s_idx:e_idx+1][['날짜']+sel_regions], x='날짜', y=sel_regions, markers=True, color_discrete_sequence=c_palette).update_layout(height=320, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'), use_container_width=True, config={'staticPlot': True})
 
-    # 나머지 탭(시장온도, 랭킹) 및 종료 버튼 로직은 기존 파일과 동일하게 유지
     elif st.session_state.active_tab == "🌡️ 시장 온도":
         st.markdown('<div class="chart-title">🌡️ 시장 온도계 (2026년 누적)</div>', unsafe_allow_html=True)
         df_m_2026 = df_maemae[df_maemae['날짜'].astype(str).str.startswith('2026')]
