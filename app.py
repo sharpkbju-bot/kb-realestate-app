@@ -163,10 +163,10 @@ def main():
             st.markdown(f'<div class="chart-title">📈 매매 증감 추이 ({start_date} ~ {end_date})</div>', unsafe_allow_html=True)
             st.plotly_chart(px.line(df_maemae.iloc[s_idx:e_idx+1][['날짜']+sel_regions], x='날짜', y=sel_regions, markers=True, color_discrete_sequence=c_palette).update_layout(height=320, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'), use_container_width=True, config={'staticPlot': True})
             
-            # ★ AI 분석 테이블 추가 ★
+            # ★ AI 분석 테이블 (글자 한 줄 표시 & 상하 배치 수정) ★
             st.markdown(f'<div class="chart-title" style="background:#4B0082; border-color:#E6E6FA;">🧐 {start_date[5:]} ~ {end_date[5:]} 기간 심층 분석</div>', unsafe_allow_html=True)
             
-            analysis_html = "<table class='analysis-table'><tr><th>지역명</th><th>구분</th><th>누적증감</th><th>최고상승(주)</th><th>최저하락(주)</th></tr>"
+            analysis_html = "<table class='analysis-table'><tr><th style='white-space:nowrap;'>지역명</th><th style='white-space:nowrap;'>구분</th><th style='white-space:nowrap;'>누적증감</th><th style='white-space:nowrap;'>최고상승(주)</th><th style='white-space:nowrap;'>최저하락(주)</th></tr>"
             
             for region in sel_regions:
                 m_series = df_maemae.iloc[s_idx:e_idx+1][region]
@@ -179,17 +179,17 @@ def main():
                 
                 analysis_html += f"""
                 <tr>
-                    <td rowspan='2' style='background:#f9f9f9; font-weight:900;'>{region}</td>
-                    <td style='color:#D32F2F;'>매매</td>
-                    <td style='font-weight:900;'>{m_series.sum():+.2f}%</td>
-                    <td>{m_max_date[5:]}({m_series.max():+.2f})</td>
-                    <td>{m_min_date[5:]}({m_series.min():+.2f})</td>
+                    <td rowspan='2' style='background:#f9f9f9; font-weight:900; white-space:nowrap;'>{region}</td>
+                    <td style='color:#D32F2F; white-space:nowrap;'>매매</td>
+                    <td style='font-weight:900; white-space:nowrap;'>{m_series.sum():+.2f}%</td>
+                    <td>{m_max_date[5:]}<br>{m_series.max():+.2f}%</td>
+                    <td>{m_min_date[5:]}<br>{m_series.min():+.2f}%</td>
                 </tr>
                 <tr>
-                    <td style='color:#01579B;'>전세</td>
-                    <td style='font-weight:900;'>{j_series.sum():+.2f}%</td>
-                    <td>{j_max_date[5:]}({j_series.max():+.2f})</td>
-                    <td>{j_min_date[5:]}({j_series.min():+.2f})</td>
+                    <td style='color:#01579B; white-space:nowrap;'>전세</td>
+                    <td style='font-weight:900; white-space:nowrap;'>{j_series.sum():+.2f}%</td>
+                    <td>{j_max_date[5:]}<br>{j_series.max():+.2f}%</td>
+                    <td>{j_min_date[5:]}<br>{j_series.min():+.2f}%</td>
                 </tr>
                 """
             analysis_html += "</table>"
