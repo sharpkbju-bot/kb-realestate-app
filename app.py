@@ -130,38 +130,54 @@ def main():
         start = next((i for i, d in enumerate(dates) if str(d).startswith('2026')), 0)
         return min(start, current_idx)
 
-    # 1. 지역 분석 탭
+    # 1. 지역 분석 탭 (★ 시작일 / 종료일 범위 선택 적용 ★)
     if st.session_state.active_tab == "📊 지역 분석":
-        sel_date = st.selectbox("📅 기준 날짜 선택", date_list, index=len(date_list)-1, key=f"ds1_y_{st.session_state.date_reset_key}")
+        
+        c_date1, c_date2 = st.columns(2)
+        with c_date1:
+            start_date = st.selectbox("📅 기준 시작일", date_list, index=max(0, len(date_list)-9), key=f"start_date_{st.session_state.date_reset_key}")
+        with c_date2:
+            end_date = st.selectbox("📅 기준 종료일", date_list, index=len(date_list)-1, key=f"end_date_{st.session_state.date_reset_key}")
+            
         sel_regions = st.multiselect("🔍 비교 지역 선택", region_list, default=[region_list[0]] if region_list else [])
         
         if sel_regions:
-            curr_idx = date_list.index(sel_date)
-            start_idx = get_2026_start_idx(date_list, curr_idx)
+            start_idx = date_list.index(start_date)
+            end_idx = date_list.index(end_date)
             
-            # 2026년 누적 TOP 10 추출
-            m_top = df_maemae.iloc[start_idx : curr_idx+1].drop(columns=['날짜']).sum().sort_values(ascending=False).head(10).index.tolist()
-            j_top = df_jeonse.iloc[start_idx : curr_idx+1].drop(columns=['날짜']).sum().sort_values(ascending=False).head(10).index.tolist()
+            # 시작일이 종료일보다 뒤에 있으면 자동으로 교정
+            if start_idx > end_idx:
+                start_idx, end_idx = end_idx, start_idx
+                start_date, end_date = end_date, start_date
+            
+            # 선택한 기간 동안의 누적 TOP 10 추출 (스포트라이트용)
+            m_top = df_maemae.iloc[start_idx : end_idx+1].drop(columns=['날짜']).sum().sort_values(ascending=False).head(10).index.tolist()
+            j_top = df_jeonse.iloc[start_idx : end_idx+1].drop(columns=['날짜']).sum().sort_values(ascending=False).head(10).index.tolist()
 
             for region in sel_regions:
-                m_val = df_maemae[df_maemae['날짜'] == sel_date][region].values[0]
-                j_val = df_jeonse[df_jeonse['날짜'] == sel_date][region].values[0]
+                # 선택한 기간 동안의 누적합 계산
+                m_val = df_maemae.iloc[start_idx : end_idx+1][region].sum()
+                j_val = df_jeonse.iloc[start_idx : end_idx+1][region].sum()
                 is_m_hot, is_j_hot = region in m_top, region in j_top
                 c1, c2 = st.columns(2)
+                
+                # 카드 공간 효율을 위해 연도를 제외한 월-일(MM-DD) 형식 적용
+                date_label = f"{start_date[5:]}~{end_date[5:]}"
+                
                 with c1:
                     m_cls = "stat-card m-card highlight-card" if is_m_hot else "stat-card m-card"
-                    st.markdown(f'<div class="{m_cls}"><div>{region} 매매({sel_date})</div><div class="stat-value">{m_val:+.2f}%</div>{"<div style=\'color:#FF4500; font-size:12px;\'>🔥 누적 TOP</div>" if is_m_hot else ""}</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="{m_cls}"><div>{region} 매매({date_label})</div><div class="stat-value">{m_val:+.2f}%</div>{"<div style=\'color:#FF4500; font-size:12px;\'>🔥 기간 TOP</div>" if is_m_hot else ""}</div>', unsafe_allow_html=True)
                 with c2:
                     j_cls = "stat-card j-card highlight-card" if is_j_hot else "stat-card j-card"
-                    st.markdown(f'<div class="{j_cls}"><div>{region} 전세({sel_date})</div><div class="stat-value">{j_val:+.2f}%</div>{"<div style=\'color:#01579B; font-size:12px;\'>🔥 누적 TOP</div>" if is_j_hot else ""}</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="{j_cls}"><div>{region} 전세({date_label})</div><div class="stat-value">{j_val:+.2f}%</div>{"<div style=\'color:#01579B; font-size:12px;\'>🔥 기간 TOP</div>" if is_j_hot else ""}</div>', unsafe_allow_html=True)
             
             c_palette = ['#006400'] + px.colors.qualitative.Plotly
             
-            st.markdown('<div class="chart-title">📈 매매 증감 추이 (2026년)</div>', unsafe_allow_html=True)
-            st.plotly_chart(px.line(df_maemae.iloc[start_idx : curr_idx+1][['날짜']+sel_regions], x='날짜', y=sel_regions, markers=True, color_discrete_sequence=c_palette).update_layout(height=320, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'), use_container_width=True, config={'staticPlot': True})
+            st.markdown(f'<div class="chart-title">📈 매매 증감 추이 ({start_date} ~ {end_date})</div>', unsafe_allow_html=True)
+            st.plotly_chart(px.line(df_maemae.iloc[start_idx : end_idx+1][['날짜']+sel_regions], x='날짜', y=sel_regions, markers=True, color_discrete_sequence=c_palette).update_layout(height=320, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'), use_container_width=True, config={'staticPlot': True})
             
-            st.markdown('<div class="chart-title">📉 전세 증감 추이 (2026년)</div>', unsafe_allow_html=True)
-            st.plotly_chart(px.line(df_jeonse.iloc[start_idx : curr_idx+1][['날짜']+sel_regions], x='날짜', y=sel_regions, markers=True, color_discrete_sequence=c_palette).update_layout(height=320, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'), use_container_width=True, config={'staticPlot': True})
+            st.markdown(f'<div class="chart-title">📉 전세 증감 추이 ({start_date} ~ {end_date})</div>', unsafe_allow_html=True)
+            st.plotly_chart(px.line(df_jeonse.iloc[start_idx : end_idx+1][['날짜']+sel_regions], x='날짜', y=sel_regions, markers=True, color_discrete_sequence=c_palette).update_layout(height=320, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'), use_container_width=True, config={'staticPlot': True})
 
     # 2. 시장 온도 탭
     elif st.session_state.active_tab == "🌡️ 시장 온도":
