@@ -40,7 +40,7 @@ def set_bg(image_file):
         st.markdown(f'<style>.stApp {{ background-image: url("data:image/jpg;base64,{encoded_string}"); background-size: cover; background-attachment: fixed; background-position: center; }}</style>', unsafe_allow_html=True)
 set_bg('bg.jpg')
 
-# UI 디자인 통합 스타일시트 (디자인/크기/굵기 절대 유지 + 호환성 패치)
+# UI 디자인 통합 스타일시트 (오류 유발 코드 제거 및 컬러 직관성 추가)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
@@ -61,52 +61,52 @@ st.markdown("""
     .stButton > button[kind="primary"] { background-color: #006400 !important; color: #ffffff !important; border: 2.5px solid #2c3e50 !important; }
 
     label[data-testid="stWidgetLabel"] p { font-size: 17px !important; color: #111111 !important; }
-    div[data-baseweb="select"] > div:first-child { 
+    
+    /* ----------------------------------------------------- */
+    /* ★ 날짜 선택 박스 디자인 (모바일에서 너무 길어지지 않게 고정) ★ */
+    div[data-testid="stSelectbox"] {
+        max-width: 280px !important; 
+        margin: 0 auto !important; 
+    }
+    
+    /* 기본 드롭다운(랭킹 기준일 등) 스타일 */
+    div[data-testid="stSelectbox"] div[data-baseweb="select"] > div:first-child { 
         background-color: #E6E6FA !important; border: 3px solid #4B0082 !important; border-radius: 12px !important; min-height: 50px !important; 
     }
-    div[data-baseweb="select"] span, div[data-baseweb="select"] div { 
+    div[data-testid="stSelectbox"] div[data-baseweb="select"] span, 
+    div[data-testid="stSelectbox"] div[data-baseweb="select"] div { 
         color: #4B0082 !important; font-weight: 900 !important; font-size: 18px !important; 
     }
+    
+    /* ★ 첫 번째 컬럼(기준 시작일) - 짙은 블루 테마 ★ */
+    div[data-testid="column"]:nth-child(1) div[data-testid="stSelectbox"] div[data-baseweb="select"] > div:first-child {
+        border-color: #01579B !important; background-color: #E1F5FE !important;
+    }
+    div[data-testid="column"]:nth-child(1) div[data-testid="stSelectbox"] div[data-baseweb="select"] * { color: #01579B !important; }
+    div[data-testid="column"]:nth-child(1) div[data-testid="stSelectbox"] label p { color: #01579B !important; }
 
-    /* ★ 모바일 기기에서 2분할 레이아웃이 깨지지 않도록 강제 (카드 사라짐 완벽 해결) ★ */
-    @media (max-width: 768px) {
-        div[data-testid="stHorizontalBlock"] {
-            display: flex !important;
-            flex-direction: row !important;
-            flex-wrap: nowrap !important;
-            gap: 10px !important;
-        }
-        div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
-            flex: 1 1 0% !important;
-            min-width: 0 !important;
-            width: auto !important;
-        }
+    /* ★ 두 번째 컬럼(기준 종료일) - 강렬한 레드 테마 ★ */
+    div[data-testid="column"]:nth-child(2) div[data-testid="stSelectbox"] div[data-baseweb="select"] > div:first-child {
+        border-color: #D32F2F !important; background-color: #FFEBEE !important;
     }
+    div[data-testid="column"]:nth-child(2) div[data-testid="stSelectbox"] div[data-baseweb="select"] * { color: #D32F2F !important; }
+    div[data-testid="column"]:nth-child(2) div[data-testid="stSelectbox"] label p { color: #D32F2F !important; }
+    /* ----------------------------------------------------- */
 
-    /* ★ 시작일(1번째 컬럼의 날짜 선택창) 컬러: 짙은 블루 ★ */
-    div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:nth-child(1) div[data-baseweb="select"] > div:first-child {
-        border-color: #01579B !important;
+    /* 지역 선택 멀티셀렉트 */
+    div[data-testid="stMultiSelect"] div[data-baseweb="select"] > div:first-child {
+        background-color: #E6E6FA !important; border: 3px solid #4B0082 !important; border-radius: 12px !important; min-height: 50px !important;
     }
-    div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:nth-child(1) div[data-baseweb="select"] * {
-        color: #01579B !important;
-    }
-
-    /* ★ 종료일(2번째 컬럼의 날짜 선택창) 컬러: 강렬한 레드 ★ */
-    div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:nth-child(2) div[data-baseweb="select"] > div:first-child {
-        border-color: #D32F2F !important;
-    }
-    div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:nth-child(2) div[data-baseweb="select"] * {
-        color: #D32F2F !important;
-    }
+    div[data-testid="stMultiSelect"] span { color: #4B0082 !important; font-size: 18px !important; }
 
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 69, 0, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(255, 69, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 69, 0, 0); } }
     .highlight-card { animation: pulse 2s infinite !important; border: 4px solid #FF4500 !important; }
-    .stat-card { padding: 15px; border-radius: 12px; margin: 10px 0; display: flex; flex-direction: column; align-items: center; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 2px solid #cccccc; font-size: 18px; }
+    .stat-card { padding: 15px; border-radius: 12px; margin: 10px 0; display: flex; flex-direction: column; align-items: center; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 2px solid #cccccc; font-size: 15px; }
     .m-card { border-left: 12px solid #FF4500; color: #D32F2F; }
     .j-card { border-left: 12px solid #01579B; color: #01579B; }
     .stat-value { font-size: 24px !important; }
 
-    .chart-title { font-size: 15px; font-weight: 900; color: #ffffff !important; background: #2c3e50; border-radius: 12px; text-align: center; padding: 10px; margin: 20px 0; border: 2.5px solid #FFD700; }
+    .chart-title { font-size: 17px; font-weight: 900; color: #ffffff !important; background: #2c3e50; border-radius: 12px; text-align: center; padding: 10px; margin: 20px 0; border: 2.5px solid #FFD700; }
     
     .rank-card { padding: 10px 15px; border-radius: 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; border: 2.5px solid #333; font-size: 14px; font-weight: 900 !important; }
     .m-weekly { background: linear-gradient(135deg, #FFEFBA, #FFFFFF) !important; border-left: 10px solid #FF4500 !important; color: #D32F2F !important; }
@@ -150,7 +150,7 @@ def main():
     tabs = ["📊 지역 분석", "🌡️ 시장 온도", "🏆 누적 랭킹 TOP 10"]
     for i, t_label in enumerate(tabs):
         is_active = (st.session_state.active_tab == t_label)
-        if t_cols[i].button(t_label, key=f"t_btn_f_mobile_{i}", use_container_width=True, 
+        if t_cols[i].button(t_label, key=f"t_btn_y_{i}", use_container_width=True, 
                             type="primary" if is_active else "secondary"):
             st.session_state.active_tab = t_label
             st.session_state.date_reset_key += 1
@@ -175,6 +175,7 @@ def main():
             start_idx = date_list.index(start_date)
             end_idx = date_list.index(end_date)
             
+            # 날짜 역전 방지
             if start_idx > end_idx:
                 start_idx, end_idx = end_idx, start_idx
                 start_date, end_date = end_date, start_date
@@ -250,7 +251,7 @@ def main():
 
     st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown('<div class="exit-btn-wrap">', unsafe_allow_html=True)
-    if st.button("🚪 **안전하게 앱 종료하기**", key="exit_v_final_mobile", use_container_width=True):
+    if st.button("🚪 **안전하게 앱 종료하기**", key="exit_v_final", use_container_width=True):
         st.session_state.is_exit = True
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
