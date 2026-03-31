@@ -40,7 +40,7 @@ def set_bg(image_file):
         st.markdown(f'<style>.stApp {{ background-image: url("data:image/jpg;base64,{encoded_string}"); background-size: cover; background-attachment: fixed; background-position: center; }}</style>', unsafe_allow_html=True)
 set_bg('bg.jpg')
 
-# UI 디자인 통합 스타일시트
+# UI 디자인 통합 스타일시트 (디자인/크기/굵기 절대 유지)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
@@ -66,30 +66,6 @@ st.markdown("""
     }
     div[data-baseweb="select"] span, div[data-baseweb="select"] div { 
         color: #4B0082 !important; font-weight: 900 !important; font-size: 18px !important; 
-    }
-
-    /* ★ 시작일/종료일 선택기 모바일 나란히 배치 및 사이즈 최적화 ★ */
-    div[data-testid="stHorizontalBlock"]:has(div[data-testid="stSelectbox"]) {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        gap: 10px !important;
-    }
-    div[data-testid="stHorizontalBlock"]:has(div[data-testid="stSelectbox"]) > div[data-testid="column"] {
-        flex: 1 1 0% !important;
-        min-width: 0 !important;
-    }
-    /* ★ 시작일 색상 변경: 블루 계열 ★ */
-    div[data-testid="stHorizontalBlock"]:has(div[data-testid="stSelectbox"]) > div[data-testid="column"]:nth-child(1) div[data-baseweb="select"] span,
-    div[data-testid="stHorizontalBlock"]:has(div[data-testid="stSelectbox"]) > div[data-testid="column"]:nth-child(1) div[data-testid="stMarkdownContainer"] p,
-    div[data-testid="stHorizontalBlock"]:has(div[data-testid="stSelectbox"]) > div[data-testid="column"]:nth-child(1) div[data-baseweb="select"] div {
-        color: #01579B !important; 
-    }
-    /* ★ 종료일 색상 변경: 레드 계열 ★ */
-    div[data-testid="stHorizontalBlock"]:has(div[data-testid="stSelectbox"]) > div[data-testid="column"]:nth-child(2) div[data-baseweb="select"] span,
-    div[data-testid="stHorizontalBlock"]:has(div[data-testid="stSelectbox"]) > div[data-testid="column"]:nth-child(2) div[data-testid="stMarkdownContainer"] p,
-    div[data-testid="stHorizontalBlock"]:has(div[data-testid="stSelectbox"]) > div[data-testid="column"]:nth-child(2) div[data-baseweb="select"] div {
-        color: #D32F2F !important;
     }
 
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 69, 0, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(255, 69, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 69, 0, 0); } }
@@ -149,11 +125,12 @@ def main():
             st.session_state.date_reset_key += 1
             st.rerun()
 
+    # 2026년 시작 인덱스 탐색 함수 (누적 계산용)
     def get_2026_start_idx(dates, current_idx):
         start = next((i for i, d in enumerate(dates) if str(d).startswith('2026')), 0)
         return min(start, current_idx)
 
-    # 1. 지역 분석 탭
+    # 1. 지역 분석 탭 (★ 시작일 / 종료일 범위 선택 적용 ★)
     if st.session_state.active_tab == "📊 지역 분석":
         
         c_date1, c_date2 = st.columns(2)
@@ -168,19 +145,23 @@ def main():
             start_idx = date_list.index(start_date)
             end_idx = date_list.index(end_date)
             
+            # 시작일이 종료일보다 뒤에 있으면 자동으로 교정
             if start_idx > end_idx:
                 start_idx, end_idx = end_idx, start_idx
                 start_date, end_date = end_date, start_date
             
+            # 선택한 기간 동안의 누적 TOP 10 추출 (스포트라이트용)
             m_top = df_maemae.iloc[start_idx : end_idx+1].drop(columns=['날짜']).sum().sort_values(ascending=False).head(10).index.tolist()
             j_top = df_jeonse.iloc[start_idx : end_idx+1].drop(columns=['날짜']).sum().sort_values(ascending=False).head(10).index.tolist()
 
             for region in sel_regions:
+                # 선택한 기간 동안의 누적합 계산
                 m_val = df_maemae.iloc[start_idx : end_idx+1][region].sum()
                 j_val = df_jeonse.iloc[start_idx : end_idx+1][region].sum()
                 is_m_hot, is_j_hot = region in m_top, region in j_top
                 c1, c2 = st.columns(2)
                 
+                # 카드 공간 효율을 위해 연도를 제외한 월-일(MM-DD) 형식 적용
                 date_label = f"{start_date[5:]}~{end_date[5:]}"
                 
                 with c1:
@@ -201,6 +182,7 @@ def main():
     # 2. 시장 온도 탭
     elif st.session_state.active_tab == "🌡️ 시장 온도":
         st.markdown('<div class="chart-title">🌡️ 시장 온도계 (2026년 누적)</div>', unsafe_allow_html=True)
+        # 2026년 데이터만 필터링하여 합산
         df_m_2026 = df_maemae[df_maemae['날짜'].astype(str).str.startswith('2026')]
         df_j_2026 = df_jeonse[df_jeonse['날짜'].astype(str).str.startswith('2026')]
         
