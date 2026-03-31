@@ -74,6 +74,16 @@ st.markdown("""
     div[data-testid="stHorizontalBlock"]:has(div[data-testid="stSelectbox"]) > div[data-testid="column"] {
         flex: 1 1 0% !important; min-width: 0 !important;
     }
+    div[data-testid="stHorizontalBlock"]:has(div[data-testid="stSelectbox"]) > div[data-testid="column"]:nth-child(1) div[data-baseweb="select"] span,
+    div[data-testid="stHorizontalBlock"]:has(div[data-testid="stSelectbox"]) > div[data-testid="column"]:nth-child(1) div[data-testid="stMarkdownContainer"] p,
+    div[data-testid="stHorizontalBlock"]:has(div[data-testid="stSelectbox"]) > div[data-testid="column"]:nth-child(1) div[data-baseweb="select"] div {
+        color: #01579B !important; 
+    }
+    div[data-testid="stHorizontalBlock"]:has(div[data-testid="stSelectbox"]) > div[data-testid="column"]:nth-child(2) div[data-baseweb="select"] span,
+    div[data-testid="stHorizontalBlock"]:has(div[data-testid="stSelectbox"]) > div[data-testid="column"]:nth-child(2) div[data-testid="stMarkdownContainer"] p,
+    div[data-testid="stHorizontalBlock"]:has(div[data-testid="stSelectbox"]) > div[data-testid="column"]:nth-child(2) div[data-baseweb="select"] div {
+        color: #D32F2F !important;
+    }
 
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 69, 0, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(255, 69, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 69, 0, 0); } }
     .highlight-card { animation: pulse 2s infinite !important; border: 4px solid #FF4500 !important; }
@@ -92,7 +102,7 @@ st.markdown("""
 
     .analysis-table { width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.9); border-radius: 10px; overflow: hidden; margin-top: 15px; border: 2px solid #2c3e50; table-layout: fixed; }
     .analysis-table th { background: #2c3e50; color: white; padding: 6px 2px; font-size: 11px; text-align: center; white-space: nowrap; }
-    .analysis-table td { padding: 8px 2px; border-bottom: 1px solid #ddd; font-size: 11px; text-align: center; color: #333; line-height: 1.3; overflow: hidden; }
+    .analysis-table td { padding: 8px 2px; border-bottom: 1px solid #ddd; font-size: 11px; text-align: center; color: #333; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; }
     .analysis-table tr:last-child td { border-bottom: none; }
     .point-date { font-weight: 900; color: #555; display: block; margin-bottom: 2px; font-size: 10px; }
     .point-val { font-weight: 900; display: block; font-size: 11px; }
@@ -103,6 +113,7 @@ st.markdown("""
         background: linear-gradient(135deg, #A7C7E7, #749BC2) !important; border: 3px solid #FFFFFF !important; 
     }
     
+    .stDataFrame div { font-size: 13px !important; }
     header { visibility: hidden; }
     </style>
     """, unsafe_allow_html=True)
@@ -136,6 +147,10 @@ def main():
             st.session_state.date_reset_key += 1
             st.rerun()
 
+    def get_2026_start_idx(dates, current_idx):
+        start = next((i for i, d in enumerate(dates) if str(d).startswith('2026')), 0)
+        return min(start, current_idx)
+
     if st.session_state.active_tab == "📊 지역 분석":
         c_date1, c_date2 = st.columns(2)
         with c_date1:
@@ -165,14 +180,23 @@ def main():
                     st.markdown(f'<div class="{j_cls}"><div>{region} 전세({d_label})</div><div class="stat-value">{j_val:+.2f}%</div></div>', unsafe_allow_html=True)
             
             c_palette = ['#006400'] + px.colors.qualitative.Plotly
+            
+            # 매매 그래프
             st.markdown(f'<div class="chart-title">📈 매매 증감 추이 ({start_date} ~ {end_date})</div>', unsafe_allow_html=True)
             st.plotly_chart(px.line(df_maemae.iloc[s_idx:e_idx+1][['날짜']+sel_regions], x='날짜', y=sel_regions, markers=True, color_discrete_sequence=c_palette).update_layout(height=320, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'), use_container_width=True, config={'staticPlot': True})
             
-            # ★ 에러 수정된 분석 테이블 코드 ★
+            # 전세 그래프
+            st.markdown(f'<div class="chart-title" style="margin-top:30px;">📉 전세 증감 추이 ({start_date} ~ {end_date})</div>', unsafe_allow_html=True)
+            st.plotly_chart(px.line(df_jeonse.iloc[s_idx:e_idx+1][['날짜']+sel_regions], x='날짜', y=sel_regions, markers=True, color_discrete_sequence=c_palette).update_layout(height=320, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'), use_container_width=True, config={'staticPlot': True})
+
+            # ★ AI 분석 테이블을 그래프 하단으로 배치 및 들여쓰기 에러 제거 ★
             st.markdown(f'<div class="chart-title" style="background:#4B0082; border-color:#E6E6FA;">🧐 기간 심층 분석 ({start_date[5:]} ~ {end_date[5:]})</div>', unsafe_allow_html=True)
             
-            # 테이블 시작
-            table_body = ""
+            # 들여쓰기 없이 한 줄로 HTML 생성 (Markdown 코드 블록 오작동 방지)
+            html_str = "<table class='analysis-table'>"
+            html_str += "<colgroup><col style='width: 22%'><col style='width: 14%'><col style='width: 18%'><col style='width: 23%'><col style='width: 23%'></colgroup>"
+            html_str += "<thead><tr><th>지역명</th><th>구분</th><th>누적증감</th><th>최고상승(주)</th><th>최저하락(주)</th></tr></thead><tbody>"
+            
             for region in sel_regions:
                 m_series = df_maemae.iloc[s_idx:e_idx+1][region]
                 j_series = df_jeonse.iloc[s_idx:e_idx+1][region]
@@ -182,44 +206,17 @@ def main():
                 j_max_idx = j_series.idxmax()
                 j_min_idx = j_series.idxmin()
                 
-                table_body += f"""
-                <tr>
-                    <td rowspan='2' style='background:#fcfcfc; font-weight:900;'>{region}</td>
-                    <td style='color:#D32F2F;'>매매</td>
-                    <td style='font-weight:900;'>{m_series.sum():+.2f}%</td>
-                    <td><span class='point-date'>{df_maemae.at[m_max_idx, '날짜'][5:]}</span><span class='point-val'>{m_series.max():+.2f}</span></td>
-                    <td><span class='point-date'>{df_maemae.at[m_min_idx, '날짜'][5:]}</span><span class='point-val'>{m_series.min():+.2f}</span></td>
-                </tr>
-                <tr>
-                    <td style='color:#01579B;'>전세</td>
-                    <td style='font-weight:900;'>{j_series.sum():+.2f}%</td>
-                    <td><span class='point-date'>{df_jeonse.at[j_max_idx, '날짜'][5:]}</span><span class='point-val'>{j_series.max():+.2f}</span></td>
-                    <td><span class='point-date'>{df_jeonse.at[j_min_idx, '날짜'][5:]}</span><span class='point-val'>{j_series.min():+.2f}</span></td>
-                </tr>
-                """
+                html_str += f"<tr><td rowspan='2' style='background:#fcfcfc; font-weight:900;'>{region}</td>"
+                html_str += f"<td style='color:#D32F2F;'>매매</td><td style='font-weight:900;'>{m_series.sum():+.2f}%</td>"
+                html_str += f"<td><span class='point-date'>{df_maemae.at[m_max_idx, '날짜'][5:]}</span><span class='point-val'>{m_series.max():+.2f}</span></td>"
+                html_str += f"<td><span class='point-date'>{df_maemae.at[m_min_idx, '날짜'][5:]}</span><span class='point-val'>{m_series.min():+.2f}</span></td></tr>"
+                
+                html_str += f"<tr><td style='color:#01579B;'>전세</td><td style='font-weight:900;'>{j_series.sum():+.2f}%</td>"
+                html_str += f"<td><span class='point-date'>{df_jeonse.at[j_max_idx, '날짜'][5:]}</span><span class='point-val'>{j_series.max():+.2f}</span></td>"
+                html_str += f"<td><span class='point-date'>{df_jeonse.at[j_min_idx, '날짜'][5:]}</span><span class='point-val'>{j_series.min():+.2f}</span></td></tr>"
             
-            # 전체 테이블 래핑
-            full_table_html = f"""
-            <table class='analysis-table'>
-                <colgroup>
-                    <col style='width: 22%'>
-                    <col style='width: 14%'>
-                    <col style='width: 18%'>
-                    <col style='width: 23%'>
-                    <col style='width: 23%'>
-                </colgroup>
-                <thead>
-                    <tr><th>지역명</th><th>구분</th><th>누적증감</th><th>최고상승(주)</th><th>최저하락(주)</th></tr>
-                </thead>
-                <tbody>
-                    {table_body}
-                </tbody>
-            </table>
-            """
-            st.markdown(full_table_html, unsafe_allow_html=True)
-
-            st.markdown(f'<div class="chart-title" style="margin-top:30px;">📉 전세 증감 추이 ({start_date} ~ {end_date})</div>', unsafe_allow_html=True)
-            st.plotly_chart(px.line(df_jeonse.iloc[s_idx:e_idx+1][['날짜']+sel_regions], x='날짜', y=sel_regions, markers=True, color_discrete_sequence=c_palette).update_layout(height=320, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'), use_container_width=True, config={'staticPlot': True})
+            html_str += "</tbody></table>"
+            st.markdown(html_str, unsafe_allow_html=True)
 
     # 나머지 탭 로직 (시장온도, 랭킹) 유지
     elif st.session_state.active_tab == "🌡️ 시장 온도":
@@ -233,7 +230,7 @@ def main():
     elif st.session_state.active_tab == "🏆 누적 랭킹 TOP 10":
         sel_date_rank = st.selectbox("📅 랭킹 기준일 선택", date_list, index=len(date_list)-1, key=f"rk_d_{st.session_state.date_reset_key}")
         c_idx_rk = date_list.index(sel_date_rank)
-        s_idx_rk = next((i for i, d in enumerate(date_list) if str(d).startswith('2026')), 0)
+        s_idx_rk = get_2026_start_idx(date_list, c_idx_rk)
         st.markdown('<div class="chart-title" style="background:#e67e22; border-color:#d35400;">🔥 주간 상승 지역 TOP 10</div>', unsafe_allow_html=True)
         c1, c2 = st.columns(2)
         with c1:
@@ -256,9 +253,11 @@ def main():
                 if v > 0: st.markdown(f'<div class="rank-card j-accum"><span>{i+1}. {n}</span><span>+{v:.2f}%</span></div>', unsafe_allow_html=True)
 
     st.markdown("<br><br>", unsafe_allow_html=True)
+    st.markdown('<div class="exit-btn-wrap">', unsafe_allow_html=True)
     if st.button("🚪 **안전하게 앱 종료하기**", key="exit_final_v_v", use_container_width=True):
         st.session_state.is_exit = True
         st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
