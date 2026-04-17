@@ -13,7 +13,7 @@ if "is_exit" not in st.session_state: st.session_state.is_exit = False
 if "active_tab" not in st.session_state: st.session_state.active_tab = "📊 지역 분석"
 if "date_reset_key" not in st.session_state: st.session_state.date_reset_key = 0
 
-# 종료 로직: 짙은 연두색(형광) 및 한 줄 처리 적용 (기존 100% 유지)
+# 종료 로직: 형광 연두색 및 한 줄 처리 유지
 if st.session_state.is_exit:
     st.markdown("""
         <style>
@@ -211,8 +211,8 @@ def main():
             st.plotly_chart(fig_gap, use_container_width=True, config={'staticPlot': True})
 
         elif analysis_type == "이동평균선 및 골든크로스 분석":
-            # [수정] 모바일 대응 강제 좌측 정렬 및 레이아웃 유지 (!important 추가)
-            st.markdown('<p style="color:#333; font-size:14px; text-align:left !important; width:100%;">매매 증감의 <b>4주(단기) 및 12주(장기) 이동평균선을 통해 시장의 방향성을 진단합니다.</b></p>', unsafe_allow_html=True)
+            # [수정 완료] 스마트폰 강제 좌측 정렬을 위해 div wrapper와 flex-start를 직접 주입함
+            st.markdown('<div style="display: flex !important; justify-content: flex-start !important; text-align: left !important; width: 100% !important;"><span style="color:#333; font-size:14px;">매매 증감의 <b>4주(단기) 및 12주(장기) 이동평균선을 통해 시장의 방향성을 진단합니다.</b></span></div>', unsafe_allow_html=True)
             sel_region_ma = st.selectbox("📌 분석 지역 선택", region_list, key=f"ma_reg_{st.session_state.date_reset_key}")
             cum_m_ma = df_maemae[sel_region_ma].cumsum(); ma4 = cum_m_ma.rolling(window=4).mean(); ma12 = cum_m_ma.rolling(window=12).mean()
             ma_df = pd.DataFrame({'날짜': df_maemae['날짜'], '실제 누적': cum_m_ma, '4주(단기)': ma4, '12주(장기)': ma12})
