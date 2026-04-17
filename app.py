@@ -212,8 +212,8 @@ def main():
             st.plotly_chart(fig_gap, use_container_width=True, config={'staticPlot': True})
 
         elif analysis_type == "이동평균선 및 골든크로스 분석":
-            # [최종 수정] 모바일 브라우저 강제 중앙 정렬을 회피하는 가장 확실한 HTML 속성(align="left") 적용
-            st.markdown('<p align="left" style="color:#333; font-size:14px; text-align:left !important; width:100%; margin-bottom:10px; display:block;">매매 증감의 <b>4주(단기) 및 12주(장기) 이동평균선을 통해 시장의 방향성을 진단합니다.</b></p>', unsafe_allow_html=True)
+            # [최종 수정] 모바일 환경의 강제 중앙 정렬을 무력화하는 테이블 속성(display: table) 결합 적용
+            st.markdown('<div style="width:100%; display:table;"><div style="display:table-cell; text-align:left !important;"><span style="color:#333; font-size:14px;">매매 증감의 <b>4주(단기) 및 12주(장기) 이동평균선을 통해 시장의 방향성을 진단합니다.</b></span></div></div>', unsafe_allow_html=True)
             
             sel_region_ma = st.selectbox("📌 분석 지역 선택", region_list, key=f"ma_reg_{st.session_state.date_reset_key}")
             cum_m_ma = df_maemae[sel_region_ma].cumsum(); ma4 = cum_m_ma.rolling(window=4).mean(); ma12 = cum_m_ma.rolling(window=12).mean()
