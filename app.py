@@ -211,8 +211,8 @@ def main():
             st.plotly_chart(fig_gap, use_container_width=True, config={'staticPlot': True})
 
         elif analysis_type == "이동평균선 및 골든크로스 분석":
-            # [수정] 텍스트 좌측 정렬 반영 (text-align:left)
-            st.markdown('<p style="color:#333; font-size:14px; text-align:left;">매매 증감의 <b>4주(단기) 및 12주(장기) 이동평균선을 통해 시장의 방향성을 진단합니다.</b></p>', unsafe_allow_html=True)
+            # [수정] 모바일 대응 강제 좌측 정렬 및 레이아웃 유지 (!important 추가)
+            st.markdown('<p style="color:#333; font-size:14px; text-align:left !important; width:100%;">매매 증감의 <b>4주(단기) 및 12주(장기) 이동평균선을 통해 시장의 방향성을 진단합니다.</b></p>', unsafe_allow_html=True)
             sel_region_ma = st.selectbox("📌 분석 지역 선택", region_list, key=f"ma_reg_{st.session_state.date_reset_key}")
             cum_m_ma = df_maemae[sel_region_ma].cumsum(); ma4 = cum_m_ma.rolling(window=4).mean(); ma12 = cum_m_ma.rolling(window=12).mean()
             ma_df = pd.DataFrame({'날짜': df_maemae['날짜'], '실제 누적': cum_m_ma, '4주(단기)': ma4, '12주(장기)': ma12})
