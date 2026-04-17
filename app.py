@@ -42,7 +42,7 @@ def set_bg(image_file):
         st.markdown(f'<style>.stApp {{ background-image: url("data:image/jpg;base64,{encoded_string}"); background-size: cover; background-attachment: fixed; background-position: center; }}</style>', unsafe_allow_html=True)
 set_bg('bg.jpg')
 
-# UI 디자인 통합 스타일시트 (기존 100% 유지)
+# UI 디자인 통합 스타일시트
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
@@ -50,9 +50,13 @@ st.markdown("""
     * { font-family: 'Noto Sans KR', sans-serif !important; }
     p, span, div, label { font-weight: 900 !important; }
 
-    .brand-container { text-align: center; padding: 20px; border: 3px solid #006400; border-radius: 15px; background-color: rgba(255,255,255,0.7); margin-bottom: 25px; }
+    /* [수정] brand-container에 position: relative 추가하여 내부 절대 배치 기준점 설정 */
+    .brand-container { position: relative; text-align: center; padding: 20px; border: 3px solid #006400; border-radius: 15px; background-color: rgba(255,255,255,0.7); margin-bottom: 25px; }
     .brand-name { color: #006400; font-size: 40px; }
     .brand-suffix { color: #FF4500; font-size: 22px; }
+    
+    /* [수정] 버전 표시 위치 우측 상단 고정 */
+    .version-tag { position: absolute; top: 12px; right: 15px; font-size: 14px; font-weight: 900; color: #555; }
     
     .stButton > button { 
         width: 100% !important; height: 60px !important; border-radius: 12px !important; 
@@ -109,14 +113,14 @@ def load_data():
     return df_m, df_j
 
 def main():
-    # [v3.00 추가] 타이틀 우측에 작게 버전 표시
-    st.markdown('<div class="brand-container"><span class="brand-name">Dr.J</span><span class="brand-suffix">의 부동산</span><span style="font-size:14px; font-weight:900; color:#555; vertical-align:super; margin-left:8px;">v3.00</span></div>', unsafe_allow_html=True)
+    # [수정] v3.00 버전을 별도의 클래스로 분리하여 우측 상단 모서리에 배치
+    st.markdown('<div class="brand-container"><span class="brand-name">Dr.J</span><span class="brand-suffix">의 부동산</span><span class="version-tag">v3.00</span></div>', unsafe_allow_html=True)
     
     df_maemae, df_jeonse = load_data()
     date_list = sorted(df_maemae['날짜'].unique().tolist())
     region_list = sorted([col for col in df_maemae.columns if col != '날짜'])
     
-    # 탭 구현 [수정: 4개의 탭으로 확장, 기존 탭 이름 유지]
+    # 탭 구현
     t_cols = st.columns(4)
     tabs = ["📊 지역 분석", "🌡️ 시장 온도", "🏆 누적 랭킹 TOP 10", "📈 투자 심층 분석"]
     for i, t_label in enumerate(tabs):
@@ -131,7 +135,7 @@ def main():
         start = next((i for i, d in enumerate(dates) if str(d).startswith('2026')), 0)
         return min(start, current_idx)
 
-    # 1. 지역 분석 탭 (기존 100% 유지)
+    # 1. 지역 분석 탭
     if st.session_state.active_tab == "📊 지역 분석":
         c_date1, c_date2 = st.columns(2)
         with c_date1:
@@ -171,7 +175,7 @@ def main():
             st.markdown(f'<div class="chart-title">📉 전세 증감 추이 ({start_date} ~ {end_date})</div>', unsafe_allow_html=True)
             st.plotly_chart(px.line(df_jeonse.iloc[start_idx : end_idx+1][['날짜']+sel_regions], x='날짜', y=sel_regions, markers=True, color_discrete_sequence=c_palette).update_layout(height=320, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'), use_container_width=True, config={'staticPlot': True})
 
-    # 2. 시장 온도 탭 (기존 100% 유지)
+    # 2. 시장 온도 탭
     elif st.session_state.active_tab == "🌡️ 시장 온도":
         st.markdown('<div class="chart-title">🌡️ 시장 온도계 (2026년 누적)</div>', unsafe_allow_html=True)
         df_m_2026 = df_maemae[df_maemae['날짜'].astype(str).str.startswith('2026')]
@@ -181,7 +185,7 @@ def main():
         heat_df = pd.DataFrame({'매매합계': m_sum, '전세합계': j_sum}).sort_values(by='매매합계', ascending=False)
         st.dataframe(heat_df.style.background_gradient(cmap='RdYlBu_r').format("{:+.2f}%"), use_container_width=True, height=450)
 
-    # 3. 누적 랭킹 탭 (기존 100% 유지)
+    # 3. 누적 랭킹 탭
     elif st.session_state.active_tab == "🏆 누적 랭킹 TOP 10":
         sel_date_rank = st.selectbox("📅 랭킹 기준일 선택", date_list, index=len(date_list)-1, key=f"ds3_y_{st.session_state.date_reset_key}")
         curr_idx_rank = date_list.index(sel_date_rank)
@@ -213,11 +217,10 @@ def main():
             for i, (n, v) in enumerate(j_8.items()):
                 if v > 0: st.markdown(f'<div class="rank-card j-accum"><span>{i+1}. {n}</span><span>+{v:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 4. [신규 추가] 투자 심층 분석 탭
+    # 4. 투자 심층 분석 탭
     elif st.session_state.active_tab == "📈 투자 심층 분석":
         st.markdown('<div class="chart-title" style="background:#8e44ad; border-color: #9b59b6;">📈 투자 심층 분석 도구</div>', unsafe_allow_html=True)
         
-        # 분석 모듈 선택 (기존 디자인 상속)
         analysis_type = st.selectbox("🔍 분석 모듈을 선택하세요", 
                                      ["전세가율(Gap) 흐름 추적기", "이동평균선 및 골든크로스 분석", "광명시 집중 리포트"], 
                                      key=f"analysis_{st.session_state.date_reset_key}")
@@ -226,7 +229,6 @@ def main():
             st.markdown('<p style="color:#333; font-size:14px; text-align:center;">전세 지수 상승이 매매 지수 상승을 추월하여 <b>Gap이 축소되는 시점</b>을 파악합니다.</p>', unsafe_allow_html=True)
             sel_region_gap = st.selectbox("📌 분석 지역 선택", region_list, key=f"gap_reg_{st.session_state.date_reset_key}")
             
-            # 누적 증감 연산
             cum_m = df_maemae[sel_region_gap].cumsum()
             cum_j = df_jeonse[sel_region_gap].cumsum()
             gap_df = pd.DataFrame({'날짜': df_maemae['날짜'], '매매 누적성장': cum_m, '전세 누적성장': cum_j})
@@ -244,7 +246,6 @@ def main():
             ma12 = cum_m_ma.rolling(window=12).mean()
             ma_df = pd.DataFrame({'날짜': df_maemae['날짜'], '실제 누적': cum_m_ma, '4주(단기)': ma4, '12주(장기)': ma12})
             
-            # 골든크로스/데드크로스 연산
             cross_status = "데이터 부족"
             if len(ma4) >= 2 and pd.notna(ma4.iloc[-1]) and pd.notna(ma12.iloc[-1]):
                 if ma4.iloc[-2] <= ma12.iloc[-2] and ma4.iloc[-1] > ma12.iloc[-1]:
@@ -282,7 +283,7 @@ def main():
             else:
                 st.warning("현재 데이터셋에 '광명시' 데이터가 존재하지 않습니다.")
 
-    # 하단 종료 버튼 영역 (기존 100% 유지)
+    # 하단 종료 버튼 영역
     st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown('<div class="exit-btn-wrap">', unsafe_allow_html=True)
     if st.button("🚪 **안전하게 앱 종료하기**", key="exit_v_final_ytd", use_container_width=True):
