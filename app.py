@@ -109,7 +109,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-@st.cache_data(ttl=5)
+@st.cache_data
 def load_data():
     try:
         df_m = pd.read_csv('maemae.csv', encoding='cp949')
@@ -122,8 +122,7 @@ def load_data():
     for col in [c for c in df_m.columns if c != '날짜']:
         df_m[col] = pd.to_numeric(df_m[col], errors='coerce').fillna(0)
         df_j[col] = pd.to_numeric(df_j[col], errors='coerce').fillna(0)
-    df_m['날짜'] = df_m['날짜'].astype(str).str.strip()
-    df_j['날짜'] = df_j['날짜'].astype(str).str.strip()
+    df_m['날짜'] = df_m['날짜'].astype(str)
     return df_m, df_j
 
 def main():
