@@ -13,7 +13,7 @@ if "is_exit" not in st.session_state: st.session_state.is_exit = False
 if "active_tab" not in st.session_state: st.session_state.active_tab = "📊 지역 분석"
 if "date_reset_key" not in st.session_state: st.session_state.date_reset_key = 0
 
-# [수정] 종료 로직: 짙은 연두색(형광) 및 한 줄 처리 적용
+# 종료 로직: 짙은 연두색(형광) 및 한 줄 처리 적용
 if st.session_state.is_exit:
     st.markdown("""
         <style>
@@ -22,7 +22,6 @@ if st.session_state.is_exit:
         .exit-logo-font { font-family: 'Noto Sans KR', sans-serif; font-weight: 900; line-height: 1.2; margin-bottom: 15px; }
         .exit-logo-drj { color: #006400; font-size: 50px; }
         .exit-logo-bds { color: #FF4500; font-size: 28px; }
-        /* [변경] 글자색 형광 연두색, 한 줄 유지(white-space) */
         .exit-wishes { font-size: 32px !important; font-weight: 900; color: #ADFF2F !important; margin-bottom: 10px; white-space: nowrap; }
         header { visibility: hidden; }
         </style>
@@ -32,7 +31,6 @@ if st.session_state.is_exit:
             <p style="font-weight:900; color:#666;">with by 70억 자산가 SY.LEE</p>
         </div>
     """, unsafe_allow_html=True)
-    # 브라우저 닫기 시도
     components.html("<script>window.close();</script>")
     st.stop()
 
@@ -72,7 +70,6 @@ st.markdown("""
         color: #4B0082 !important; font-weight: 900 !important; font-size: 18px !important; 
     }
 
-    /* [수정] 종료 버튼 중앙 정렬 강제 */
     .exit-btn-wrap {
         display: flex !important;
         justify-content: center !important;
@@ -81,7 +78,7 @@ st.markdown("""
     }
 
     .exit-btn-wrap > button { 
-        width: 200px !important; /* 너비 고정으로 중앙 안정감 확보 */
+        width: 200px !important; 
         height: 55px !important; border-radius: 15px !important; 
         font-weight: 900 !important; font-size: 18px !important; color: #FFFFFF !important; 
         background: linear-gradient(135deg, #A7C7E7, #749BC2) !important;
@@ -89,7 +86,6 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
     }
 
-    /* 이하 기존 디자인 유지 */
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 69, 0, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(255, 69, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 69, 0, 0); } }
     .highlight-card { animation: pulse 2s infinite !important; border: 4px solid #FF4500 !important; }
     .stat-card { padding: 15px; border-radius: 12px; margin: 10px 0; display: flex; flex-direction: column; align-items: center; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 2px solid #cccccc; font-size: 18px; }
@@ -114,6 +110,8 @@ def load_data():
         except UnicodeDecodeError: return pd.read_csv(file, encoding='utf-8')
     df_m = read_csv_safe('maemae.csv')
     df_j = read_csv_safe('jeonse.csv')
+    df_m['날짜'] = df_m['날짜'].astype(str).str.strip()
+    df_j['날짜'] = df_j['날짜'].astype(str).str.strip()
     for col in df_m.columns:
         if col != '날짜': 
             df_m[col] = pd.to_numeric(df_m[col], errors='coerce').fillna(0)
@@ -126,7 +124,6 @@ def main():
     date_list = sorted(df_maemae['날짜'].unique().tolist())
     region_list = sorted([col for col in df_maemae.columns if col != '날짜'])
     
-    # 탭 구현
     t_cols = st.columns(3)
     tabs = ["📊 지역 분석", "🌡️ 시장 온도", "🏆 누적 랭킹 TOP 10"]
     for i, t_label in enumerate(tabs):
@@ -141,7 +138,6 @@ def main():
         start = next((i for i, d in enumerate(dates) if str(d).startswith('2026')), 0)
         return min(start, current_idx)
 
-    # 1. 지역 분석 탭
     if st.session_state.active_tab == "📊 지역 분석":
         c_date1, c_date2 = st.columns(2)
         with c_date1:
@@ -181,7 +177,6 @@ def main():
             st.markdown(f'<div class="chart-title">📉 전세 증감 추이 ({start_date} ~ {end_date})</div>', unsafe_allow_html=True)
             st.plotly_chart(px.line(df_jeonse.iloc[start_idx : end_idx+1][['날짜']+sel_regions], x='날짜', y=sel_regions, markers=True, color_discrete_sequence=c_palette).update_layout(height=320, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'), use_container_width=True, config={'staticPlot': True})
 
-    # 2. 시장 온도 탭
     elif st.session_state.active_tab == "🌡️ 시장 온도":
         st.markdown('<div class="chart-title">🌡️ 시장 온도계 (2026년 누적)</div>', unsafe_allow_html=True)
         df_m_2026 = df_maemae[df_maemae['날짜'].astype(str).str.startswith('2026')]
@@ -191,7 +186,6 @@ def main():
         heat_df = pd.DataFrame({'매매합계': m_sum, '전세합계': j_sum}).sort_values(by='매매합계', ascending=False)
         st.dataframe(heat_df.style.background_gradient(cmap='RdYlBu_r').format("{:+.2f}%"), use_container_width=True, height=450)
 
-    # 3. 누적 랭킹 탭
     elif st.session_state.active_tab == "🏆 누적 랭킹 TOP 10":
         sel_date_rank = st.selectbox("📅 랭킹 기준일 선택", date_list, index=len(date_list)-1, key=f"ds3_y_{st.session_state.date_reset_key}")
         curr_idx_rank = date_list.index(sel_date_rank)
@@ -201,14 +195,22 @@ def main():
         c1, c2 = st.columns(2)
         with c1:
             st.markdown('<p style="text-align:center; color:#D32F2F; font-size:14px;">[매매 주간 상승]</p>', unsafe_allow_html=True)
-            m_w = df_maemae[df_maemae['날짜'] == sel_date_rank].drop(columns=['날짜']).iloc[0].sort_values(ascending=False).head(10)
-            for i, (n, v) in enumerate(m_w.items()):
-                if v > 0: st.markdown(f'<div class="rank-card m-weekly"><span>{i+1}. {n}</span><span>+{v:.2f}</span></div>', unsafe_allow_html=True)
+            m_w_df = df_maemae[df_maemae['날짜'] == sel_date_rank]
+            if not m_w_df.empty:
+                m_w = m_w_df.drop(columns=['날짜']).iloc[0].sort_values(ascending=False).head(10)
+                for i, (n, v) in enumerate(m_w.items()):
+                    if v > 0: st.markdown(f'<div class="rank-card m-weekly"><span>{i+1}. {n}</span><span>+{v:.2f}</span></div>', unsafe_allow_html=True)
+            else:
+                st.markdown('<div style="text-align:center; color:#999; font-weight:900; margin-top:10px;">데이터 없음</div>', unsafe_allow_html=True)
         with c2:
             st.markdown('<p style="text-align:center; color:#01579B; font-size:14px;">[전세 주간 상승]</p>', unsafe_allow_html=True)
-            j_w = df_jeonse[df_jeonse['날짜'] == sel_date_rank].drop(columns=['날짜']).iloc[0].sort_values(ascending=False).head(10)
-            for i, (n, v) in enumerate(j_w.items()):
-                if v > 0: st.markdown(f'<div class="rank-card j-weekly"><span>{i+1}. {n}</span><span>+{v:.2f}</span></div>', unsafe_allow_html=True)
+            j_w_df = df_jeonse[df_jeonse['날짜'] == sel_date_rank]
+            if not j_w_df.empty:
+                j_w = j_w_df.drop(columns=['날짜']).iloc[0].sort_values(ascending=False).head(10)
+                for i, (n, v) in enumerate(j_w.items()):
+                    if v > 0: st.markdown(f'<div class="rank-card j-weekly"><span>{i+1}. {n}</span><span>+{v:.2f}</span></div>', unsafe_allow_html=True)
+            else:
+                st.markdown('<div style="text-align:center; color:#999; font-weight:900; margin-top:10px;">데이터 없음</div>', unsafe_allow_html=True)
 
         st.markdown('<div class="chart-title" style="background:#f1c40f; color:#000; border-color: #b7950b;">📊 2026년 누적 상승 TOP 10</div>', unsafe_allow_html=True)
         c3, c4 = st.columns(2)
@@ -223,7 +225,6 @@ def main():
             for i, (n, v) in enumerate(j_8.items()):
                 if v > 0: st.markdown(f'<div class="rank-card j-accum"><span>{i+1}. {n}</span><span>+{v:.2f}%</span></div>', unsafe_allow_html=True)
 
-    # 하단 종료 버튼 영역
     st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown('<div class="exit-btn-wrap">', unsafe_allow_html=True)
     if st.button("🚪 **안전하게 앱 종료하기**", key="exit_v_final_ytd", use_container_width=True):
