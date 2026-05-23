@@ -201,14 +201,22 @@ def main():
         c1, c2 = st.columns(2)
         with c1:
             st.markdown('<p style="text-align:center; color:#D32F2F; font-size:14px;">[매매 주간 상승]</p>', unsafe_allow_html=True)
-            m_w = df_maemae[df_maemae['날짜'] == sel_date_rank].drop(columns=['날짜']).iloc[0].sort_values(ascending=False).head(10)
-            for i, (n, v) in enumerate(m_w.items()):
-                if v > 0: st.markdown(f'<div class="rank-card m-weekly"><span>{i+1}. {n}</span><span>+{v:.2f}</span></div>', unsafe_allow_html=True)
+            m_w_df = df_maemae[df_maemae['날짜'] == sel_date_rank]
+            if not m_w_df.empty:
+                m_w = m_w_df.drop(columns=['날짜']).iloc[0].sort_values(ascending=False).head(10)
+                for i, (n, v) in enumerate(m_w.items()):
+                    if v > 0: st.markdown(f'<div class="rank-card m-weekly"><span>{i+1}. {n}</span><span>+{v:.2f}</span></div>', unsafe_allow_html=True)
+            else:
+                st.markdown('<div style="text-align:center; color:#999; font-weight:900; margin-top:10px;">데이터 없음</div>', unsafe_allow_html=True)
         with c2:
             st.markdown('<p style="text-align:center; color:#01579B; font-size:14px;">[전세 주간 상승]</p>', unsafe_allow_html=True)
-            j_w = df_jeonse[df_jeonse['날짜'] == sel_date_rank].drop(columns=['날짜']).iloc[0].sort_values(ascending=False).head(10)
-            for i, (n, v) in enumerate(j_w.items()):
-                if v > 0: st.markdown(f'<div class="rank-card j-weekly"><span>{i+1}. {n}</span><span>+{v:.2f}</span></div>', unsafe_allow_html=True)
+            j_w_df = df_jeonse[df_jeonse['날짜'] == sel_date_rank]
+            if not j_w_df.empty:
+                j_w = j_w_df.drop(columns=['날짜']).iloc[0].sort_values(ascending=False).head(10)
+                for i, (n, v) in enumerate(j_w.items()):
+                    if v > 0: st.markdown(f'<div class="rank-card j-weekly"><span>{i+1}. {n}</span><span>+{v:.2f}</span></div>', unsafe_allow_html=True)
+            else:
+                st.markdown('<div style="text-align:center; color:#999; font-weight:900; margin-top:10px;">데이터 없음</div>', unsafe_allow_html=True)
 
         st.markdown('<div class="chart-title" style="background:#f1c40f; color:#000; border-color: #b7950b;">📊 2026년 누적 상승 TOP 10</div>', unsafe_allow_html=True)
         c3, c4 = st.columns(2)
