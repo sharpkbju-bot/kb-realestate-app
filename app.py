@@ -112,6 +112,11 @@ def load_data():
     df_j = read_csv_safe('jeonse.csv')
     df_m['날짜'] = df_m['날짜'].astype(str).str.strip()
     df_j['날짜'] = df_j['날짜'].astype(str).str.strip()
+    
+    # [추가된 방어 로직] 데이터 정렬 및 중복 제거로 인덱스 불일치(0.16% -> 0.61% 오류) 원천 차단
+    df_m = df_m.sort_values('날짜').drop_duplicates(subset=['날짜']).reset_index(drop=True)
+    df_j = df_j.sort_values('날짜').drop_duplicates(subset=['날짜']).reset_index(drop=True)
+
     for col in df_m.columns:
         if col != '날짜': 
             df_m[col] = pd.to_numeric(df_m[col], errors='coerce').fillna(0)
